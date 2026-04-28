@@ -7,6 +7,7 @@ import {
 } from './blockchainService';
 import { getItem, setItem } from './localDB';
 import offlineQueue from './offlineQueue';
+import type { MedicalDocumentMetadata } from '../models/MedicalRecord';
 
 // Types
 export interface MedicalRecord {
@@ -17,6 +18,8 @@ export interface MedicalRecord {
   veterinarian: string;
   notes: string;
   createdAt: string;
+  nextVisitDate?: string;
+  documents?: MedicalDocumentMetadata[];
 }
 
 export interface Vaccination extends MedicalRecord {

@@ -16,12 +16,12 @@ import SOSButton from '../components/SOSButton';
 import emergencyService, {
   type EmergencyContact,
   type VetClinic,
-} from '../services/emergencyService';
-import {
-  formatWeight as _formatWeight,
-  formatAddress as _formatAddress,
-} from '../utils/localeValues';
-import { useSecureScreen } from '../utils/secureScreen';
+} from "../services/emergencyService";
+import SOSButton from "../components/SOSButton";
+import EmergencyCallButton from "../components/EmergencyCallButton";
+import PetSelectorBar from "../components/PetSelectorBar";
+import { useSecureScreen } from "../utils/secureScreen";
+import { formatWeight, formatAddress } from "../utils/localeValues";
 
 type Tab = 'contacts' | 'nearby';
 const CONTACT_TYPES: EmergencyContact['type'][] = ['vet', 'clinic', 'emergency', 'poison-control'];
@@ -130,77 +130,79 @@ const EmergencyContactsScreen: React.FC = () => {
     ]);
   };
 
-  const renderContact = useCallback(
-    ({ item }: { item: EmergencyContact }) => (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View style={styles.cardInfo}>
-            <Text style={styles.cardName}>{item.name}</Text>
-            <Text style={styles.cardSub}>
-              {item.type}
-              {item.available24h ? ' · 24h' : ''}
-            </Text>
-            {item.address ? <Text style={styles.cardSub}>{item.address}</Text> : null}
-            {item.notes ? <Text style={styles.cardNotes}>{item.notes}</Text> : null}
-          </View>
-          <View style={styles.cardActions}>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.callBtn]}
-              onPress={() => emergencyService.callContact(item.phoneNumber)}
-              accessibilityLabel={`Call ${item.name}`}
-            >
-              <Text style={styles.actionBtnText}>📞</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.editBtn]}
-              onPress={() => openEditModal(item)}
-              accessibilityLabel={`Edit ${item.name}`}
-            >
-              <Text style={styles.actionBtnText}>✏️</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.deleteBtn]}
-              onPress={() => handleDelete(item)}
-              accessibilityLabel={`Delete ${item.name}`}
-            >
-              <Text style={styles.actionBtnText}>🗑️</Text>
-            </TouchableOpacity>
-          </View>
+  const renderContact = useCallback(({ item }: { item: EmergencyContact }) => (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <View style={styles.cardInfo}>
+          <Text style={styles.cardName}>{item.name}</Text>
+          <Text style={styles.cardSub}>
+            {item.type}
+            {item.available24h ? " · 24h" : ""}
+          </Text>
+          {item.address ? (
+            <Text style={styles.cardSub}>{item.address}</Text>
+          ) : null}
+          {item.notes ? (
+            <Text style={styles.cardNotes}>{item.notes}</Text>
+          ) : null}
+        </View>
+        <View style={styles.cardActions}>
+          {/* Direct call button — Issue #144/#75 */}
+          <EmergencyCallButton
+            phoneNumber={item.phoneNumber}
+            label={item.name}
+            compact
+            skipConfirm={item.available24h} // skip confirm for 24h emergency contacts
+          />
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.editBtn]}
+            onPress={() => openEditModal(item)}
+            accessibilityLabel={`Edit ${item.name}`}
+          >
+            <Text style={styles.actionBtnText}>✏️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.deleteBtn]}
+            onPress={() => handleDelete(item)}
+            accessibilityLabel={`Delete ${item.name}`}
+          >
+            <Text style={styles.actionBtnText}>🗑️</Text>
+          </TouchableOpacity>
         </View>
       </View>
     ),
     [openEditModal, handleDelete],
   );
 
-  const renderClinic = useCallback(
-    ({ item }: { item: VetClinic }) => (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View style={styles.cardInfo}>
-            <Text style={styles.cardName}>{item.name}</Text>
-            <Text style={styles.cardSub}>
-              {item.distance !== undefined ? `${item.distance.toFixed(1)} km` : ''}
-              {item.available24h ? ' · 24h' : ''}
-              {item.rating ? ` · ⭐ ${item.rating}` : ''}
-            </Text>
-            <Text style={styles.cardSub}>{item.address}</Text>
-          </View>
-          <View style={styles.cardActions}>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.callBtn]}
-              onPress={() => emergencyService.callContact(item.phoneNumber)}
-              accessibilityLabel={`Call ${item.name}`}
-            >
-              <Text style={styles.actionBtnText}>📞</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.navBtn]}
-              onPress={() => emergencyService.navigateToClinic(item.address)}
-              accessibilityLabel={`Navigate to ${item.name}`}
-            >
-              <Text style={styles.actionBtnText}>🗺️</Text>
-            </TouchableOpacity>
-          </View>
+  const renderClinic = useCallback(({ item }: { item: VetClinic }) => (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <View style={styles.cardInfo}>
+          <Text style={styles.cardName}>{item.name}</Text>
+          <Text style={styles.cardSub}>
+            {item.distance !== undefined
+              ? `${item.distance.toFixed(1)} km`
+              : ""}
+            {item.available24h ? " · 24h" : ""}
+            {item.rating ? ` · ⭐ ${item.rating}` : ""}
+          </Text>
+          <Text style={styles.cardSub}>{item.address}</Text>
+        </View>
+        <View style={styles.cardActions}>
+          {/* Direct call button — Issue #144/#75 */}
+          <EmergencyCallButton
+            phoneNumber={item.phoneNumber}
+            label={item.name}
+            compact
+            skipConfirm={item.available24h}
+          />
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.navBtn]}
+            onPress={() => emergencyService.navigateToClinic(item.address)}
+            accessibilityLabel={`Navigate to ${item.name}`}
+          >
+            <Text style={styles.actionBtnText}>🗺️</Text>
+          </TouchableOpacity>
         </View>
       </View>
     ),
@@ -210,6 +212,9 @@ const EmergencyContactsScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <SOSButton onSOSSent={handleSOSSent} />
+
+      {/* Pet selector — Issue #151/#82: switch between pets */}
+      <PetSelectorBar />
 
       <View style={styles.tabs}>
         <TouchableOpacity

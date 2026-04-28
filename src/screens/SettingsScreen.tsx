@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -13,28 +14,33 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
 
-import { logout, requestPasswordReset } from '../services/authService';
 import LanguageSelector from '../components/LanguageSelector';
+import type { NotificationPreferences, User } from '../models/User';
 import {
+  logout,
+  requestPasswordReset,
   isBiometricAuthenticationAvailable,
   isBiometricAuthenticationEnabled,
   promptForBiometricSetup,
   disableBiometricAuthentication,
 } from '../services/authService';
 import { getUserProfile, updateUserProfile } from '../services/userService';
-import type { NotificationPreferences, User } from '../models/User';
+import { useTheme, type ThemeMode } from '../utils/useTheme';
 
 // ─── App version info ─────────────────────────────────────────────────────────
 // Pulled from expo-constants at runtime; fallback to package values
 let APP_VERSION = '1.0.0';
 let BUILD_NUMBER = '1';
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const Constants = require('expo-constants').default;
   APP_VERSION = Constants.expoConfig?.version ?? APP_VERSION;
-  BUILD_NUMBER = String(Constants.expoConfig?.ios?.buildNumber ?? Constants.expoConfig?.android?.versionCode ?? BUILD_NUMBER);
+  BUILD_NUMBER = String(
+    Constants.expoConfig?.ios?.buildNumber ??
+      Constants.expoConfig?.android?.versionCode ??
+      BUILD_NUMBER,
+  );
 } catch {
   // expo-constants unavailable in test/non-expo environments
 }
@@ -69,13 +75,14 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, emai
     setLoading(true);
     try {
       await requestPasswordReset(email);
-      Alert.alert(
-        t('changePassword.emailSentTitle'),
-        t('changePassword.emailSentBody'),
-        [{ text: 'OK', onPress: onClose }],
-      );
+      Alert.alert(t('changePassword.emailSentTitle'), t('changePassword.emailSentBody'), [
+        { text: 'OK', onPress: onClose },
+      ]);
     } catch (err) {
-      Alert.alert(t('common.error'), err instanceof Error ? err.message : t('changePassword.failedSend'));
+      Alert.alert(
+        t('common.error'),
+        err instanceof Error ? err.message : t('changePassword.failedSend'),
+      );
     } finally {
       setLoading(false);
     }
@@ -114,7 +121,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, emai
 
 const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
   const { t } = useTranslation();
-  const [profile, setProfile] = useState<User | null>(null);
+  const { mode: themeMode, setMode: setThemeMode } = useTheme();
+  const [_profile, setProfile] = useState<User | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -147,7 +155,7 @@ const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
         setName(stored.name ?? '');
         setEmail(stored.email ?? '');
         setPhone(stored.phone ?? '');
-        setNotifPrefs(prev => ({ ...prev, ...(stored.notificationPreferences ?? {}) }));
+        setNotifPrefs((prev) => ({ ...prev, ...(stored.notificationPreferences ?? {}) }));
       }
 
       const available = await isBiometricAuthenticationAvailable();
@@ -161,8 +169,7 @@ const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
 
   // ── Profile save ───────────────────────────────────────────────────────────
 
-  const validateEmail = (value: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
   const handleSaveProfile = useCallback(async () => {
     if (!name.trim()) {
@@ -181,7 +188,10 @@ const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
       setProfileSaved(true);
       setTimeout(() => setProfileSaved(false), 3000);
     } catch (err) {
-      Alert.alert(t('common.error'), err instanceof Error ? err.message : t('settings.failedSaveProfile'));
+      Alert.alert(
+        t('common.error'),
+        err instanceof Error ? err.message : t('settings.failedSaveProfile'),
+      );
     } finally {
       setProfileSaving(false);
     }
@@ -295,9 +305,7 @@ const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
           keyboardType="phone-pad"
         />
 
-        {profileSaved && (
-          <Text style={styles.successText}>{t('settings.profileSaved')}</Text>
-        )}
+        {profileSaved && <Text style={styles.successText}>{t('settings.profileSaved')}</Text>}
 
         <TouchableOpacity
           style={[styles.btn, profileSaving && styles.btnDisabled]}
@@ -333,7 +341,7 @@ const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
               <Text style={styles.rowLabel}>{label}</Text>
               <Switch
                 value={Boolean(notifPrefs[key])}
-                onValueChange={v => void handleNotifToggle(key, v)}
+                onValueChange={(v) => void handleNotifToggle(key, v)}
                 trackColor={{ false: '#ddd', true: '#4CAF50' }}
                 thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
                 disabled={notifSaving}
@@ -347,10 +355,7 @@ const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
       {/* ── Security Settings ── */}
       <SectionHeader title={t('settings.security')} />
       <View style={styles.card}>
-        <TouchableOpacity
-          style={styles.row}
-          onPress={() => setShowChangePassword(true)}
-        >
+        <TouchableOpacity style={styles.row} onPress={() => setShowChangePassword(true)}>
           <Text style={styles.rowLabel}>{t('settings.changePassword')}</Text>
           <Text style={styles.chevron}>›</Text>
         </TouchableOpacity>
@@ -365,7 +370,7 @@ const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
               ) : (
                 <Switch
                   value={biometricEnabled}
-                  onValueChange={v => void handleBiometricToggle(v)}
+                  onValueChange={(v) => void handleBiometricToggle(v)}
                   trackColor={{ false: '#ddd', true: '#4CAF50' }}
                   thumbColor={Platform.OS === 'android' ? '#fff' : undefined}
                 />
@@ -373,6 +378,31 @@ const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
             </View>
           </>
         )}
+      </View>
+
+      {/* ── Theme ── */}
+      <SectionHeader title={t('settings.theme', 'Theme')} />
+      <View style={styles.card}>
+        {(['system', 'light', 'dark'] as ThemeMode[]).map((option, idx, arr) => (
+          <React.Fragment key={option}>
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() => void setThemeMode(option)}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: themeMode === option }}
+            >
+              <Text style={styles.rowLabel}>
+                {option === 'system'
+                  ? t('settings.themeSystem', 'Follow system')
+                  : option === 'light'
+                    ? t('settings.themeLight', 'Light')
+                    : t('settings.themeDark', 'Dark')}
+              </Text>
+              {themeMode === option && <Text style={styles.checkmark}>✓</Text>}
+            </TouchableOpacity>
+            {idx < arr.length - 1 && <RowSeparator />}
+          </React.Fragment>
+        ))}
       </View>
 
       {/* ── Language ── */}
@@ -394,18 +424,12 @@ const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
           <Text style={styles.rowValue}>{BUILD_NUMBER}</Text>
         </View>
         <RowSeparator />
-        <TouchableOpacity
-          style={styles.row}
-          onPress={() => void Linking.openURL(TERMS_URL)}
-        >
+        <TouchableOpacity style={styles.row} onPress={() => void Linking.openURL(TERMS_URL)}>
           <Text style={styles.rowLabel}>{t('settings.termsOfService')}</Text>
           <Text style={styles.chevron}>›</Text>
         </TouchableOpacity>
         <RowSeparator />
-        <TouchableOpacity
-          style={styles.row}
-          onPress={() => void Linking.openURL(PRIVACY_URL)}
-        >
+        <TouchableOpacity style={styles.row} onPress={() => void Linking.openURL(PRIVACY_URL)}>
           <Text style={styles.rowLabel}>{t('settings.privacyPolicy')}</Text>
           <Text style={styles.chevron}>›</Text>
         </TouchableOpacity>
@@ -507,6 +531,7 @@ const styles = StyleSheet.create({
   rowLabel: { fontSize: 15, color: '#1a1a1a' },
   rowValue: { fontSize: 15, color: '#888' },
   chevron: { fontSize: 20, color: '#bbb' },
+  checkmark: { fontSize: 16, color: '#4CAF50', fontWeight: '700' },
   separator: { height: 1, backgroundColor: '#f0f0f0' },
   notifLoader: { alignSelf: 'flex-end', marginBottom: 4 },
   logoutBtn: {

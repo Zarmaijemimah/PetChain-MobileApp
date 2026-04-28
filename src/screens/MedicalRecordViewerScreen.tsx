@@ -16,9 +16,14 @@ import MedicalRecordAttachments from '../components/MedicalRecordAttachments';
 import {
   getMedicalRecords,
   searchMedicalRecords,
+  verifyRecord,
   type MedicalRecord,
   type RecordFilters,
 } from '../services/medicalRecordService';
+
+import { VerificationBadge } from '../components/VerificationBadge';
+
+import { VerificationBadge } from '../components/VerificationBadge';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -65,7 +70,12 @@ const MedicalRecordViewerScreen: React.FC<Props> = ({ petId, petName, onBack }) 
       if (startDate) filters.startDate = startDate;
       if (endDate) filters.endDate = endDate;
       const res = await getMedicalRecords(petId, filters);
-      setRecords(res.data);
+      // Map backend fields to UI-friendly verificationStatus
+      const mapped = res.data.map((r) => ({
+        ...r,
+        verificationStatus: r.isBlockchainVerified ? 'verified' : 'unknown',
+      }));
+      setRecords(mapped);
     } catch {
       Alert.alert('Error', 'Failed to load medical records.');
     } finally {
@@ -481,6 +491,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 6,
   },
+  cardMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   typeBadge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   typeBadgeText: { fontSize: 12, fontWeight: '700', textTransform: 'capitalize', color: '#374151' },
   cardDate: { fontSize: 12, color: '#6B7280' },
@@ -538,14 +553,60 @@ const styles = StyleSheet.create({
   resetBtnText: { color: '#6B7280', fontSize: 14 },
   // Detail
   detailBody: { padding: 20 },
-  detailRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  detailLabel: { width: 90, fontSize: 13, color: '#6B7280', fontWeight: '600' },
-  detailValue: { flex: 1, fontSize: 14, color: '#111827' },
-});
+   detailRow: {
+     flexDirection: 'row',
+     paddingVertical: 12,
+     borderBottomWidth: 1,
+     borderBottomColor: '#F3F4F6',
+   },
+   detailLabel: { width: 90, fontSize: 13, color: '#6B7280', fontWeight: '600' },
+   detailValue: { flex: 1, fontSize: 14, color: '#111827' },
+
+   // Verification
+   verificationSection: {
+     marginTop: 20,
+     padding: 16,
+     backgroundColor: '#F0F9FF',
+     borderRadius: 12,
+     borderWidth: 1,
+     borderColor: '#B0E0FE',
+   },
+   verificationTitle: {
+     fontSize: 14,
+     fontWeight: '700',
+     color: '#0369A1',
+     marginBottom: 10,
+   },
+   verificationRow: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     gap: 10,
+     marginBottom: 12,
+   },
+   verificationText: {
+     flex: 1,
+     fontSize: 13,
+     color: '#0C4A6E',
+     lineHeight: 18,
+   },
+   errorText: {
+     color: '#DC2626',
+     fontSize: 12,
+     marginTop: 6,
+     fontStyle: 'italic',
+   },
+   verifyButton: {
+     backgroundColor: '#4A90A4',
+     paddingVertical: 12,
+     borderRadius: 10,
+     alignItems: 'center',
+     marginTop: 8,
+   },
+   verifyButtonText: {
+     color: '#fff',
+     fontWeight: '700',
+     fontSize: 15,
+   },
+ });
 
 export default MedicalRecordViewerScreen;

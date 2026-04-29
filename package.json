@@ -37,7 +37,11 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "storybook": "STORYBOOK_ENABLED=true expo start",
+    "storybook:generate": "sb-rn-get-stories",
+    "storybook:web": "storybook dev -p 6006",
+    "storybook:build": "storybook build"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
@@ -136,6 +140,14 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "8.59.0",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.5",
+    "@storybook/react-native": "^8.6.0",
+    "@storybook/addon-ondevice-controls": "^8.6.0",
+    "@storybook/addon-ondevice-actions": "^8.6.0",
+    "@storybook/addon-ondevice-notes": "^8.6.0",
+    "@storybook/addon-ondevice-backgrounds": "^8.6.0",
+    "@storybook/addon-actions": "^8.6.0",
+    "@storybook/blocks": "^8.6.0",
+    "babel-plugin-react-native-web": "^0.19.13"
   }
 }

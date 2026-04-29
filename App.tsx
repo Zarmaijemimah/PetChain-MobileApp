@@ -41,6 +41,12 @@ function App() {
     setUpdateStatus({ visible: false });
   };
 
+  useEffect(() => {
+    void registerNotificationActions();
+    const subscription = watchNotificationActions();
+    return () => subscription.remove();
+  }, []);
+
   // Render nothing (splash is still visible) until critical init is done
   if (!appReady) return <View style={styles.root} />;
 

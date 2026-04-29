@@ -1,5 +1,6 @@
 import { getItem, setItem, removeItem } from './localDB';
 import * as Notifications from 'expo-notifications';
+import { Linking } from 'react-native';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -50,9 +51,17 @@ export interface NotificationPreferences {
 }
 
 export type NotificationGroup = 'medication' | 'appointment' | 'vaccination' | 'alert' | 'scheduled';
+export type NotificationAction = 'open' | 'snooze' | 'mark_as_read';
 
 const PREFS_KEY = '@notification_preferences';
 const NOTIFICATION_MAP_KEY = '@notification_map'; // maps entity id -> notification ids
+const READ_NOTIFICATIONS_KEY = '@read_notifications';
+const SNOOZED_NOTIFICATIONS_KEY = '@snoozed_notifications';
+const SNOOZE_DELAY_MS = 10 * 60 * 1000;
+
+const ACTION_OPEN = 'OPEN_APP';
+const ACTION_SNOOZE = 'SNOOZE';
+const ACTION_MARK_AS_READ = 'MARK_AS_READ';
 
 const DEFAULT_PREFS: NotificationPreferences = {
   medicationReminders: true,
@@ -67,6 +76,124 @@ const DEFAULT_PREFS: NotificationPreferences = {
   quietHoursEnd: '07:00',
   petOverrides: [],
 };
+
+// ─── Notification actions ────────────────────────────────────────────────────
+
+const readActionState = async (key: string): Promise<Record<string, number>> => {
+  const stored = await getItem(key);
+  return stored ? JSON.parse(stored) : {};
+};
+
+const saveActionState = async (
+  key: string,
+  notificationId: string,
+  timestamp: number,
+): Promise<void> => {
+  const state = await readActionState(key);
+  state[notificationId] = timestamp;
+  await setItem(key, JSON.stringify(state));
+};
+
+const getNotificationUrl = (data: Record<string, unknown> = {}): string => {
+  const deepLink = data.deepLink ?? data.url;
+  if (typeof deepLink === 'string' && deepLink.length > 0) return deepLink;
+
+  if (typeof data.petId === 'string') return `petchain://pets/${encodeURIComponent(data.petId)}`;
+  if (data.type === 'medication') return 'petchain://medications';
+  if (data.type === 'appointment') return 'petchain://appointments';
+
+  return 'petchain://';
+};
+
+export const registerNotificationActions = async (): Promise<void> => {
+  const actions = [
+    {
+      identifier: ACTION_OPEN,
+      buttonTitle: 'Open',
+      options: { opensAppToForeground: true },
+    },
+    {
+      identifier: ACTION_SNOOZE,
+      buttonTitle: 'Snooze',
+      options: { opensAppToForeground: false },
+    },
+    {
+      identifier: ACTION_MARK_AS_READ,
+      buttonTitle: 'Mark read',
+      options: { opensAppToForeground: false },
+    },
+  ];
+
+  await Promise.all(
+    ['medication', 'appointment', 'vaccination', 'alert', 'scheduled'].map((category) =>
+      Notifications.setNotificationCategoryAsync(category, actions),
+    ),
+  );
+};
+
+export const markAsRead = async (notificationId: string): Promise<void> => {
+  if (!notificationId) return;
+  await saveActionState(READ_NOTIFICATIONS_KEY, notificationId, Date.now());
+  await (Notifications as any).dismissNotificationAsync?.(notificationId);
+};
+
+export const snooze = async (
+  notification: Notifications.Notification,
+  delayMs = SNOOZE_DELAY_MS,
+): Promise<string> => {
+  const snoozedUntil = Date.now() + delayMs;
+  const { content } = notification.request;
+  const notificationId = await Notifications.scheduleNotificationAsync({
+    content: {
+      title: content.title ?? '',
+      body: content.body ?? '',
+      sound: content.sound ?? undefined,
+      data: {
+        ...(content.data ?? {}),
+        snoozedUntil,
+        originalNotificationId: notification.request.identifier,
+      },
+      categoryIdentifier: content.categoryIdentifier,
+    },
+    trigger: {
+      type: 'date',
+      date: new Date(snoozedUntil),
+    } as Notifications.DateTriggerInput,
+  });
+
+  await saveActionState(SNOOZED_NOTIFICATIONS_KEY, notification.request.identifier, snoozedUntil);
+  return notificationId;
+};
+
+export const openApp = async (notification: Notifications.Notification): Promise<void> => {
+  await markAsRead(notification.request.identifier);
+  await Linking.openURL(getNotificationUrl(notification.request.content.data));
+};
+
+export const handleNotificationAction = async (
+  response: Notifications.NotificationResponse,
+): Promise<void> => {
+  const { actionIdentifier, notification } = response;
+
+  if (actionIdentifier === ACTION_SNOOZE) {
+    await snooze(notification);
+    return;
+  }
+
+  if (actionIdentifier === ACTION_MARK_AS_READ) {
+    await markAsRead(notification.request.identifier);
+    return;
+  }
+
+  await openApp(notification);
+};
+
+export const watchNotificationActions = (): ReturnType<
+  typeof Notifications.addNotificationResponseReceivedListener
+> =>
+  Notifications.addNotificationResponseReceivedListener((response) => {
+    void handleNotificationAction(response);
+  });
 
 // ─── Notification handler ─────────────────────────────────────────────────────
 

@@ -1,62 +1,67 @@
-import cors from 'cors';
-import express, { type Express, type NextFunction, type Request, type Response } from 'express';
+import express, { type Request, type Response } from "express";
 
-import { errBody } from './response';
-import { sanitizeInputs } from '../middleware/sanitize';
-import analyticsRouter from './routes/analytics';
-import appointmentsRouter from './routes/appointments';
-import auditLogsRouter from './routes/auditLogs';
-import backupsRouter from './routes/backups';
-import communityRouter from './routes/community';
-import docsRouter from './routes/docs';
-import emergencyRouter from './routes/emergency';
-import importRouter from './routes/import';
-import medicalRecordsRouter from './routes/medicalRecords';
-import medicationsRouter from './routes/medications';
-import paymentsRouter from './routes/payments';
-import petsRouter from './routes/pets';
-import syncRouter from './routes/sync';
-import usersRouter from './routes/users';
-import { attachAudit } from '../middleware/auditLog';
+const router = express.Router();
 
-export function createApp(): Express {
-  const app = express();
-  app.use(cors());
-  app.use(express.json());
-  app.use(sanitizeInputs);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  app.use(attachAudit as any);
+/**
+ * TEMP IMPLEMENTATION
+ * Replace DB calls once real repo pattern is confirmed
+ */
 
-  const api = express.Router();
-  api.get('/health', (_req, res) => {
-    res.json({ ok: true, service: 'petchain-api', timestamp: new Date().toISOString() });
-  });
+const fakeDB: any[] = [];
 
-  api.use('/analytics', analyticsRouter);
-  api.use('/backups', backupsRouter);
-  api.use('/users', usersRouter);
-  api.use('/pets', petsRouter);
-  api.use('/medical-records', medicalRecordsRouter);
-  api.use('/appointments', appointmentsRouter);
-  api.use('/medications', medicationsRouter);
-  api.use('/import', importRouter);
-  api.use('/payments', paymentsRouter);
-  api.use('/audit-logs', auditLogsRouter);
-  api.use('/docs', docsRouter);
-  api.use('/emergency', emergencyRouter);
-  api.use('/community', communityRouter);
-  api.use('/sync', syncRouter);
+router.get("/:petId", async (req: Request, res: Response) => {
+  const { petId } = req.params;
 
-  app.use('/api', api);
+  const record = fakeDB.find((x) => x.pet_id === petId);
 
-  app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    console.error('Unhandled Error:', err);
-    res.status(500).json(errBody('INTERNAL_ERROR', err.message || 'An unexpected error occurred'));
-  });
+  res.json(record || null);
+});
 
-  app.use((_req, res) => {
-    res.status(404).json(errBody('NOT_FOUND', 'Route not found'));
-  });
+router.put("/:petId", async (req: Request, res: Response) => {
+  const { petId } = req.params;
 
-  return app;
-}
+  const {
+    weight_min,
+    weight_max,
+    temperature_min,
+    temperature_max,
+    heart_rate_min,
+    heart_rate_max,
+    activity_min,
+    activity_max,
+  } = req.body;
+
+  // validation
+  if (temperature_min < 30 || temperature_max > 45) {
+    return res.status(400).json({ error: "Unsafe temperature range" });
+  }
+
+  if (heart_rate_min < 20 || heart_rate_max > 300) {
+    return res.status(400).json({ error: "Unsafe heart rate range" });
+  }
+
+  const existingIndex = fakeDB.findIndex((x) => x.pet_id === petId);
+
+  const newRecord = {
+    pet_id: petId,
+    weight_min,
+    weight_max,
+    temperature_min,
+    temperature_max,
+    heart_rate_min,
+    heart_rate_max,
+    activity_min,
+    activity_max,
+    updated_at: new Date(),
+  };
+
+  if (existingIndex === -1) {
+    fakeDB.push(newRecord);
+  } else {
+    fakeDB[existingIndex] = newRecord;
+  }
+
+  res.json({ success: true });
+});
+
+export default router;

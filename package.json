@@ -109,6 +109,7 @@
     "expo-splash-screen": "^55.0.19",
     "expo-sqlite": "^15.0.6",
     "expo-updates": "^0.26.0",
+    "express": "^5.2.1",
     "graphql": "^16.0.0",
     "i18next": "^26.0.8",
     "jsonwebtoken": "^9.0.3",

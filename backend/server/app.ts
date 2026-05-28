@@ -6,6 +6,7 @@ import { applySecurityHeaders } from '../middleware/securityHeaders';
 import { sanitizeInputs } from '../middleware/sanitize';
 import { createRedisSessionMiddleware } from '../middleware/redisSession';
 import analyticsRouter from './routes/analytics';
+import performanceLogger from '../middleware/performanceLogger';
 import appointmentsRouter from './routes/appointments';
 import auditLogsRouter from './routes/auditLogs';
 import backupsRouter from './routes/backups';
@@ -40,6 +41,8 @@ export function createApp(): Express {
   app.use(cors());
   app.use(express.json());
   app.use(sanitizeInputs);
+  // performance logging middleware (Sentry)
+  app.use(performanceLogger);
   app.use(createRedisSessionMiddleware());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app.use(attachAudit as any);

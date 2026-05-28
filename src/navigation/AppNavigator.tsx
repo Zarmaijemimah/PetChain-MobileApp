@@ -26,12 +26,10 @@ import PetFormScreen from '../screens/PetFormScreen';
 import PetHealthDashboardScreen from '../screens/PetHealthDashboardScreen';
 import PetHealthMetricsScreen from '../screens/PetHealthMetricsScreen';
 import PetListScreen from '../screens/PetListScreen';
-import PetProfileScreen from '../screens/PetProfileScreen';
 import PetShareScreen from '../screens/PetShareScreen';
-import TravelCertificateScreen from '../screens/TravelCertificateScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import QRScannerScreen from '../screens/QRScannerScreen';
-import VaccinationScreen from '../screens/VaccinationScreen';
+import TelemedicineScreen from '../screens/TelemedicineScreen';
 import analyticsService from '../services/analyticsService';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -60,13 +58,7 @@ function PetNavigator() {
               navigation.navigate('PetHealthDashboard', { petId, petName })
             }
             onShare={(petId, petName) => navigation.navigate('PetShare', { petId, petName })}
-            onViewProfile={(petId) => navigation.navigate('PetProfile', { petId })}
           />
-        )}
-      </PetStack.Screen>
-      <PetStack.Screen name="PetProfile" options={{ title: 'Pet Profile' }}>
-        {({ route, navigation }) => (
-          <PetProfileScreen petId={route.params.petId} onBack={() => navigation.goBack()} />
         )}
       </PetStack.Screen>
       <PetStack.Screen name="PetHealthDashboard" options={{ title: 'Health Dashboard' }}>
@@ -129,15 +121,6 @@ function PetNavigator() {
           />
         )}
       </PetStack.Screen>
-      <PetStack.Screen name="TravelCertificate" options={{ title: 'Travel Health Certificate' }}>
-        {({ route, navigation }) => (
-          <TravelCertificateScreen
-            petId={route.params.petId}
-            petName={route.params.petName}
-            onBack={() => navigation.goBack()}
-          />
-        )}
-      </PetStack.Screen>
       <PetStack.Screen name="NearbyVet" options={{ title: 'Nearby Vet Clinics' }}>
         {({ navigation }) => <NearbyVetScreen onBack={() => navigation.goBack()} />}
       </PetStack.Screen>
@@ -184,9 +167,9 @@ function MainTabs() {
         options={{ title: 'Appointments' }}
       />
       <Tab.Screen
-        name="Vaccinations"
-        component={VaccinationScreen}
-        options={{ title: 'Vaccinations' }}
+        name="Telemedicine"
+        component={TelemedicineScreen}
+        options={{ title: 'Telemedicine' }}
       />
       <Tab.Screen name="Community" component={CommunityScreen} options={{ title: 'Community' }} />
       <Tab.Screen
@@ -212,7 +195,6 @@ const linking: LinkingOptions<RootStackParamList> = {
             screens: {
               PetListScreen: 'pets',
               PetDetail: 'pets/:petId',
-              PetProfile: 'pets/:petId/profile',
               PetHealthDashboard: 'pets/:petId/dashboard',
               PetHealthMetrics: 'pets/:petId/health',
               PetForm: 'pets/form/:petId?',
@@ -222,7 +204,6 @@ const linking: LinkingOptions<RootStackParamList> = {
           },
           Medications: 'medications',
           Appointments: 'appointments',
-          Vaccinations: 'vaccinations',
           Community: 'community',
           Emergency: 'emergency',
           Profile: 'profile',

@@ -12,6 +12,7 @@ interface Props {
   onEdit: (pet: Pet) => void;
   onHealthDashboard: (petId: string, petName: string) => void;
   onShare?: (petId: string, petName: string) => void;
+  onAuditHistory?: (petId: string, petName: string) => void;
 }
 
 const PetDetailScreen: React.FC<Props> = ({
@@ -20,6 +21,7 @@ const PetDetailScreen: React.FC<Props> = ({
   onEdit,
   onHealthDashboard,
   onShare,
+  onAuditHistory,
 }) => {
   useSecureScreen();
 
@@ -133,6 +135,18 @@ const PetDetailScreen: React.FC<Props> = ({
           <Text style={styles.healthBtnText}>Health Dashboard</Text>
         </TouchableOpacity>
 
+        {onAuditHistory && (
+          <TouchableOpacity
+            style={styles.auditBtn}
+            onPress={() => onAuditHistory(petId, pet.name)}
+            accessibilityRole="button"
+            accessibilityLabel="Audit history"
+            accessibilityHint="View change history for this pet record"
+          >
+            <Text style={styles.auditBtnText}>Audit History</Text>
+          </TouchableOpacity>
+        )}
+
         {onShare && (
           <TouchableOpacity
             style={styles.shareBtn}
@@ -223,6 +237,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   healthBtnText: { color: '#1565c0', fontWeight: '700', fontSize: 15 },
+  auditBtn: {
+    backgroundColor: '#fff3e0',
+    borderRadius: 10,
+    padding: 14,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  auditBtnText: { color: '#ef6c00', fontWeight: '700', fontSize: 15 },
   deleteBtn: {
     backgroundColor: '#fdecea',
     borderRadius: 10,

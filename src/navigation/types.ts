@@ -30,6 +30,7 @@ export type MainTabParamList = {
 export type PetStackParamList = {
   PetListScreen: undefined;
   PetDetail: { petId: string };
+  AuditHistory: { entityType: 'pet' | 'medication' | 'appointment'; entityId: string; title?: string };
   PetHealthDashboard: { petId: string; petName?: string };
   PetHealthMetrics: { petId: string; petName?: string };
   PetForm: { pet?: Pet; ownerId?: string };

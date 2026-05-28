@@ -10,6 +10,7 @@ import { DEEP_LINK_PREFIX } from './types';
 import type { Pet } from '../models/Pet';
 import AppointmentScreen from '../screens/AppointmentScreen';
 import AuthNavigator from '../screens/AuthNavigator';
+import AuditHistoryScreen from '../screens/AuditHistoryScreen';
 import CommunityScreen from '../screens/CommunityScreen';
 import DeleteAccountScreen from '../screens/DeleteAccountScreen';
 import EmergencyContactsScreen from '../screens/EmergencyContactsScreen';
@@ -57,6 +58,23 @@ function PetNavigator() {
               navigation.navigate('PetHealthDashboard', { petId, petName })
             }
             onShare={(petId, petName) => navigation.navigate('PetShare', { petId, petName })}
+            onAuditHistory={(petId, petName) =>
+              navigation.navigate('AuditHistory', {
+                entityType: 'pet',
+                entityId: petId,
+                title: `${petName} • Audit`,
+              })
+            }
+          />
+        )}
+      </PetStack.Screen>
+      <PetStack.Screen name="AuditHistory" options={{ title: 'Audit History' }}>
+        {({ route, navigation }) => (
+          <AuditHistoryScreen
+            entityType={route.params.entityType}
+            entityId={route.params.entityId}
+            title={route.params.title}
+            onBack={() => navigation.goBack()}
           />
         )}
       </PetStack.Screen>

@@ -8,6 +8,7 @@ import { UserRole } from '../../models/UserRole';
 import { petRepository } from '../../src/repositories/petRepository';
 import { type DBPet } from '../../src/repositories/petRepository';
 import { userRepository } from '../../src/repositories/userRepository';
+import { logAuditTrail } from '../../middleware/auditLogger';
 import { ok, sendError } from '../response';
 import { type StoredMedicalRecord, type StoredPet, store } from '../store';
 
@@ -285,6 +286,15 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
     owner_id: ownerId.trim(),
   });
 
+  void logAuditTrail({
+    req,
+    entityType: 'pet',
+    entityId: pet.id,
+    action: 'CREATE',
+    before: null,
+    after: await toPetResponse(pet),
+  });
+
   return res.status(201).json(ok(await toPetResponse(pet), 'Pet created'));
 });
 
@@ -331,6 +341,14 @@ router.put('/:id', (req: AuthenticatedRequest, res) => {
     if (previous) store.petQrIdentities.set(previous.token, { ...previous, revokedAt: t });
   }
   store.pets.set(pet.id, next);
+  void logAuditTrail({
+    req,
+    entityType: 'pet',
+    entityId: pet.id,
+    action: 'UPDATE',
+    before: pet,
+    after: next,
+  });
   return res.json(ok(toPetResponse(next), 'Pet updated'));
 });
 
@@ -347,6 +365,14 @@ router.delete('/:id', (req: AuthenticatedRequest, res) => {
   for (const u of store.users.values()) {
     u.pets = u.pets.filter((p) => p.id !== req.params.id);
   }
+  void logAuditTrail({
+    req,
+    entityType: 'pet',
+    entityId: pet.id,
+    action: 'DELETE',
+    before: pet,
+    after: null,
+  });
   return res.json(ok(null, 'Pet deleted'));
 });
 

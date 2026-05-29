@@ -15,6 +15,13 @@ export interface StoredUser {
   isEmailVerified: boolean;
   lastLoginAt?: string;
   passwordHash?: string;
+  // 2FA fields
+  twoFactorEnabled: boolean;
+  twoFactorSecret?: string; // encrypted TOTP secret (never exposed in API)
+  twoFactorBackupCodes?: string[]; // bcrypt-hashed backup codes
+  twoFactorPendingSecret?: string; // secret during setup (before confirmation)
+  recoveryToken?: string; // bcrypt-hashed recovery token
+  recoveryTokenExpiresAt?: number; // epoch ms
 }
 
 export interface StoredPet {
@@ -23,6 +30,7 @@ export interface StoredPet {
   species: string;
   breed?: string;
   dateOfBirth?: string;
+  weightKg?: number;
   microchipId?: string;
   photoUrl?: string;
   thumbnailUrl?: string;
@@ -49,6 +57,12 @@ export interface StoredMedicalRecord {
   blockchainHash?: string; // Hash stored on-chain
   isBlockchainVerified?: boolean; // Verified flag (backend-computed)
   blockchainVerifiedAt?: string; // When verification was last performed
+
+  // Federated vet signature fields
+  vetSignature?: string; // Ed25519 signature over record hash
+  vetFederatedAddress?: string; // e.g. dr.smith*petchain.app
+  vetPublicKey?: string; // Stellar public key of signing vet
+  vetSignedAt?: string; // When the vet signed this record
 }
 
 export interface StoredAppointment {
@@ -65,6 +79,16 @@ export interface StoredAppointment {
   updatedAt: string;
   cancelledAt?: string;
   cancellationReason?: string;
+  isTelemedicine?: boolean;
+  videoCallUrl?: string;
+  videoProvider?: 'jitsi' | 'zoom';
+  timeZone?: string;
+  questionnaireDueAt?: string;
+  questionnaireSentAt?: string;
+  questionnaireRespondedAt?: string;
+  questionnaireResponses?: Record<string, string>;
+  noShowReportedAt?: string;
+  rescheduledFrom?: string;
 }
 
 export interface StoredBackup {
@@ -127,6 +151,7 @@ function seed() {
     updatedAt: t,
     isEmailVerified: true,
     lastLoginAt: t,
+    twoFactorEnabled: false,
   });
 
   const pets = new Map<string, StoredPet>();
@@ -200,6 +225,37 @@ const backups = new Map<string, StoredBackup>();
 const petQrIdentities = new Map<string, StoredPetQrIdentity>();
 const emergencySessions = new Map<string, StoredEmergencySession>();
 
+// ─── Travel Certificates ──────────────────────────────────────────────────────
+
+export interface StoredTravelCertificate {
+  id: string;
+  petId: string;
+  petName: string;
+  destinationCountryCode: string;
+  destinationCountryName: string;
+  travelDate: string;
+  generatedAt: string;
+  status: 'draft' | 'ready' | 'incomplete' | 'anchored' | 'anchor_failed';
+  requirementChecks: Array<{
+    requirementType: 'vaccination' | 'health_check' | 'document';
+    requirementName: string;
+    met: boolean;
+    details?: string;
+    satisfiedAt?: string;
+    actionRequired?: string;
+  }>;
+  complianceScore: number;
+  pdfUrl?: string;
+  blockchainTxHash?: string;
+  blockchainHash?: string;
+  isBlockchainAnchored: boolean;
+  blockchainAnchoredAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const travelCertificates = new Map<string, StoredTravelCertificate>();
+
 export function newId(): string {
   return randomUUID();
 }
@@ -209,5 +265,6 @@ export const store = {
   backups,
   petQrIdentities,
   emergencySessions,
+  travelCertificates,
   newId,
 };

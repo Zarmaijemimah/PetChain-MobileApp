@@ -2,6 +2,7 @@
 import express from 'express';
 
 import { authenticateJWT, type AuthenticatedRequest } from '../../middleware/auth';
+import { logAuditTrail } from '../../middleware/auditLogger';
 import { AppointmentStatus, AppointmentType } from '../../models/Appointment';
 import { UserRole } from '../../models/UserRole';
 import { ok, sendError } from '../response';
@@ -111,6 +112,14 @@ router.post('/', (req: AuthenticatedRequest, res) => {
     updatedAt: t,
   };
   store.appointments.set(id, row);
+  void logAuditTrail({
+    req,
+    entityType: 'appointment',
+    entityId: id,
+    action: 'CREATE',
+    before: null,
+    after: row,
+  });
   return res.status(201).json(toResponse(row));
 });
 
@@ -151,6 +160,14 @@ router.put('/:id', (req: AuthenticatedRequest, res) => {
       : {}),
   };
   store.appointments.set(row.id, next);
+  void logAuditTrail({
+    req,
+    entityType: 'appointment',
+    entityId: row.id,
+    action: 'UPDATE',
+    before: row,
+    after: next,
+  });
   return res.json(toResponse(next));
 });
 
@@ -172,6 +189,14 @@ router.delete('/:id', (req: AuthenticatedRequest, res) => {
   }
 
   store.appointments.delete(req.params.id);
+  void logAuditTrail({
+    req,
+    entityType: 'appointment',
+    entityId: row.id,
+    action: 'DELETE',
+    before: row,
+    after: null,
+  });
   return res.json(ok(null, 'Appointment deleted'));
 });
 

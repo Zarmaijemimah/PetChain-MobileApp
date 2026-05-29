@@ -2,10 +2,7 @@ import cors from 'cors';
 import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 
 import { errBody } from './response';
-import { applySecurityHeaders } from '../middleware/securityHeaders';
-import { sanitizeInputs } from '../middleware/sanitize';
 import { createRedisSessionMiddleware } from '../middleware/redisSession';
-import authRouter from './routes/auth';
 import analyticsRouter from './routes/analytics';
 import appointmentsRouter from './routes/appointments';
 import auditLogsRouter from './routes/auditLogs';
@@ -21,6 +18,7 @@ import paymentsRouter from './routes/payments';
 import petsRouter from './routes/pets';
 import photosRouter from './routes/photos';
 import privacyRouter from './routes/privacy';
+import reportsRouter from './routes/reports';
 import searchRouter from './routes/search';
 import syncRouter from './routes/sync';
 import usersRouter from './routes/users';
@@ -82,6 +80,7 @@ export function createApp(): Express {
   api.use('/emergency', emergencyRouter);
   api.use('/community', communityRouter);
   api.use('/photos', photosRouter);
+  api.use('/reports', reportsRouter);
   api.use('/sync', syncRouter);
   api.use('/vets', vetsRouter);
   api.use('/privacy', privacyRouter);

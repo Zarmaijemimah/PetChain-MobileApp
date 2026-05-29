@@ -9,11 +9,13 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Auth: undefined;
   Main: undefined;
+  Forum: undefined;
   // Modals
   QRScanner: undefined;
   ManualEntry: undefined;
   // Future: Payment / Subscription
   Payment: { planId?: string };
+  FiatOnRamp: undefined;
 };
 
 // ─── Main Tab ─────────────────────────────────────────────────────────────────
@@ -21,6 +23,8 @@ export type MainTabParamList = {
   PetList: undefined;
   Medications: undefined;
   Appointments: undefined;
+  Vaccinations: undefined;
+  Telemedicine: undefined;
   Community: undefined;
   Emergency: undefined;
   Profile: undefined;
@@ -30,13 +34,21 @@ export type MainTabParamList = {
 export type PetStackParamList = {
   PetListScreen: undefined;
   PetDetail: { petId: string };
+  AuditHistory: {
+    entityType: 'pet' | 'medication' | 'appointment';
+    entityId: string;
+    title?: string;
+  };
+  PetProfile: { petId: string };
   PetHealthDashboard: { petId: string; petName?: string };
   PetHealthMetrics: { petId: string; petName?: string };
   PetForm: { pet?: Pet; ownerId?: string };
   MedicalRecordSearch: { petId: string };
   MedicalRecordViewer: { petId: string; petName?: string };
   PetShare: { petId: string; petName: string };
+  TravelCertificate: { petId: string; petName?: string };
   DosageCalculator: { petId?: string; species?: string; weightKg?: number };
+  ReconciliationReport: { reportId?: string };
   NearbyVet: undefined;
   VetDirectory: undefined;
   PrivacyDashboard: undefined;

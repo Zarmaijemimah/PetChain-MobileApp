@@ -5,6 +5,8 @@ import { errBody } from './response';
 import { applySecurityHeaders } from '../middleware/securityHeaders';
 import { sanitizeInputs } from '../middleware/sanitize';
 import { createRedisSessionMiddleware } from '../middleware/redisSession';
+import { requestLogger } from '../middleware/requestLogger';
+import logger from '../utils/logger';
 import analyticsRouter from './routes/analytics';
 import appointmentsRouter from './routes/appointments';
 import auditLogsRouter from './routes/auditLogs';
@@ -39,6 +41,7 @@ export function createApp(): Express {
 
   app.use(cors());
   app.use(express.json());
+  app.use(requestLogger);
   app.use(sanitizeInputs);
   app.use(createRedisSessionMiddleware());
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -88,7 +91,7 @@ export function createApp(): Express {
   app.use('/api', api);
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    console.error('Unhandled Error:', err);
+    logger.error('Unhandled error', { error: err.message, stack: err.stack });
     res.status(500).json(errBody('INTERNAL_ERROR', err.message || 'An unexpected error occurred'));
   });
 

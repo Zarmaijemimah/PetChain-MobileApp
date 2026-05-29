@@ -44,7 +44,7 @@ export default function AppNavigator() {
         {/* Auth — critical, loaded first */}
         <Stack.Screen name="Login">
           {(props) => (
-            <LazyScreen>
+            <LazyScreen screenName="Login">
               <LoginScreen {...props} />
             </LazyScreen>
           )}
@@ -52,7 +52,7 @@ export default function AppNavigator() {
 
         <Stack.Screen name="Register">
           {(props) => (
-            <LazyScreen>
+            <LazyScreen screenName="Register">
               <RegisterScreen {...props} />
             </LazyScreen>
           )}
@@ -61,7 +61,7 @@ export default function AppNavigator() {
         {/* Main — deferred until post-auth */}
         <Stack.Screen name="Home">
           {(props) => (
-            <LazyScreen>
+            <LazyScreen screenName="Home">
               <HomeScreen {...props} />
             </LazyScreen>
           )}
@@ -69,7 +69,7 @@ export default function AppNavigator() {
 
         <Stack.Screen name="PetProfile">
           {(props) => (
-            <LazyScreen>
+            <LazyScreen screenName="PetProfile" petId={props.route.params?.petId}>
               <PetProfileScreen {...props} />
             </LazyScreen>
           )}
@@ -77,7 +77,7 @@ export default function AppNavigator() {
 
         <Stack.Screen name="MedicalRecords">
           {(props) => (
-            <LazyScreen>
+            <LazyScreen screenName="MedicalRecords" petId={props.route.params?.petId}>
               <MedicalRecordsScreen {...props} />
             </LazyScreen>
           )}
@@ -85,7 +85,7 @@ export default function AppNavigator() {
 
         <Stack.Screen name="Appointments">
           {(props) => (
-            <LazyScreen>
+            <LazyScreen screenName="Appointments" petId={props.route.params?.petId}>
               <AppointmentsScreen {...props} />
             </LazyScreen>
           )}
@@ -94,7 +94,7 @@ export default function AppNavigator() {
         {/* Heavy / non-critical — only loaded when navigated to */}
         <Stack.Screen name="QRScanner">
           {(props) => (
-            <LazyScreen>
+            <LazyScreen screenName="QRScanner">
               <QRScannerScreen {...props} />
             </LazyScreen>
           )}
@@ -102,7 +102,7 @@ export default function AppNavigator() {
 
         <Stack.Screen name="Emergency">
           {(props) => (
-            <LazyScreen>
+            <LazyScreen screenName="Emergency">
               <EmergencyScreen {...props} />
             </LazyScreen>
           )}
@@ -110,7 +110,7 @@ export default function AppNavigator() {
 
         <Stack.Screen name="Medication">
           {(props) => (
-            <LazyScreen>
+            <LazyScreen screenName="Medication" petId={props.route.params?.petId}>
               <MedicationScreen {...props} />
             </LazyScreen>
           )}

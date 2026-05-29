@@ -3,6 +3,9 @@ import { View, StyleSheet } from 'react-native';
 import { useSplashGuard } from './src/components/SplashGuard';
 import AppNavigator from './src/navigation';
 
+// Initialize i18n before the navigator mounts
+import './src/i18n';
+
 export default function App() {
   const { appReady } = useSplashGuard();
 

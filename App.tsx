@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react-native';
+import * as Notifications from 'expo-notifications';
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, AppState, type AppStateStatus } from 'react-native';
 
@@ -8,7 +9,7 @@ import OfflineIndicator from './src/components/OfflineIndicator';
 import { useSplashGuard } from './src/components/SplashGuard';
 import UpdatePrompt from './src/components/UpdatePrompt';
 import { PetProvider } from './src/context/PetContext';
-import AppNavigator from './src/navigation/AppNavigator';
+import AppNavigator, { handleNotificationDeepLink } from './src/navigation/AppNavigator';
 import LockScreen from './src/screens/LockScreen';
 import {
   enableScreenCapturePrevention,
@@ -88,6 +89,19 @@ function App() {
     const subscription = watchNotificationActions();
     return () => subscription.remove();
   }, []);
+
+  // Handle initial notification if app was launched from a notification tap
+  // (cold-start or background)
+  useEffect(() => {
+    const checkInitialNotification = async () => {
+      const notification = await Notifications.getLastNotificationResponseAsync();
+      if (notification) {
+        const data = notification.notification.request.content.data;
+        handleNotificationDeepLink(data);
+      }
+    };
+    void checkInitialNotification();
+  }, [appReady]);
 
   if (!appReady) return <View style={styles.root} />;
 

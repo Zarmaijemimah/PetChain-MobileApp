@@ -115,6 +115,8 @@
     "@urql/core": "^5.0.0",
     "axios": "^1.15.2",
     "bcryptjs": "^2.4.3",
+    "@stellar/stellar-sdk": "^13.1.0",
+    "axios": "^1.13.5",
     "crypto-js": "^4.2.0",
     "bip39": "^3.0.4",
     "secrets.js-grempe": "^1.1.0",
@@ -151,6 +153,7 @@
     "swagger-ui-express": "^5.0.1"
     "winston": "3.17.0",
     "winston-daily-rotate-file": "5.0.0"
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.29.7",
@@ -181,6 +184,7 @@
     "axios-mock-adapter": "^2.1.0",
     "babel-plugin-react-native-web": "^0.19.13",
     "babel-preset-expo": "^56.0.13",
+    "@types/ws": "^8.5.14",
     "eslint": "9.26.0",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-prettier": "5.4.0",

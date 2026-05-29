@@ -40,6 +40,7 @@ import usersRouter from './routes/users';
 import vaccinationsRouter from './routes/vaccinations';
 import vetsRouter from './routes/vets';
 import vitalsRouter from './routes/vitals';
+import appRouter from './routes/app';
 import { attachAudit } from '../middleware/auditLog';
 import federationRouter from '../src/routes/federation';
 import { authRateLimiter, dataRateLimiter } from '../middleware/rateLimiter';
@@ -129,6 +130,7 @@ export function createApp(): Express {
   api.use('/insurance', dataRateLimiter, insuranceRouter);
   api.use('/search', dataRateLimiter, searchRouter);
   api.use('/vitals', vitalsRouter);
+  api.use('/app', appRouter);
 
   app.use('/api', api);
 

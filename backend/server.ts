@@ -1,5 +1,5 @@
 import express from 'express';
-import analyticsRouter from './routes/analytics';
+import adminRouter from './src/routes/admin';
 
 export function createApp(db: unknown) {
   const app = express();
@@ -9,7 +9,7 @@ export function createApp(db: unknown) {
   app.locals.db = db;
 
   // Routes
-  app.use('/admin/analytics', analyticsRouter);
+  app.use('/admin', adminRouter);
 
   return app;
 }

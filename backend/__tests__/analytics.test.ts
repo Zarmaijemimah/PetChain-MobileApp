@@ -6,6 +6,7 @@
  */
 import { createApp } from '../server';
 import { UserRole } from '../models/UserRole';
+import { store } from '../server/store';
 
 // ---------------------------------------------------------------------------
 // Minimal supertest shim — avoids adding a new dependency for the test runner.
@@ -108,6 +109,19 @@ describe('GET /admin/analytics', () => {
   let app: ReturnType<typeof createApp>;
 
   beforeEach(() => {
+    store.users.clear();
+    store.users.set('u1', {
+      id: 'u1',
+      email: 'admin@test.com',
+      name: 'Admin User',
+      role: UserRole.ADMIN,
+      pets: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isEmailVerified: true,
+      twoFactorEnabled: true,
+    });
+
     app = createApp(mockDb());
   });
 
@@ -122,6 +136,27 @@ describe('GET /admin/analytics', () => {
     const { status } = await makeRequest(app)
       .get('/admin/analytics')
       .set({ Authorization: `Bearer ${ownerToken}` });
+    expect(status).toBe(403);
+  });
+
+  it('returns 403 when admin MFA is not enabled', async () => {
+    store.users.set('u3', {
+      id: 'u3',
+      email: 'no-mfa@test.com',
+      name: 'No MFA Admin',
+      role: UserRole.ADMIN,
+      pets: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isEmailVerified: true,
+      twoFactorEnabled: false,
+    });
+
+    const token = makeToken({ id: 'u3', email: 'no-mfa@test.com', role: UserRole.ADMIN });
+    const { status } = await makeRequest(app)
+      .get('/admin/analytics')
+      .set({ Authorization: `Bearer ${token}` });
+
     expect(status).toBe(403);
   });
 

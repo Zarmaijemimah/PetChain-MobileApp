@@ -80,6 +80,11 @@
       "json"
     ],
     "moduleNameMapper": {
+      "^react-native$": "<rootDir>/src/__mocks__/react-native.ts",
+      "^react-native-keychain$": "<rootDir>/src/__mocks__/react-native-keychain.ts",
+      "^react-native-image-picker$": "<rootDir>/src/__mocks__/react-native-image-picker.ts",
+      "^expo-constants$": "<rootDir>/src/__mocks__/expo-constants.ts",
+      "^@stellar/stellar-sdk$": "<rootDir>/src/__mocks__/stellar-sdk.ts"
       "^@sentry/react-native$": "<rootDir>/src/__mocks__/@sentry/react-native.ts",
       "^react-native$": "<rootDir>/src/__mocks__/react-native.ts",
       "^react-native-keychain$": "<rootDir>/src/__mocks__/react-native-keychain.ts",
@@ -100,6 +105,9 @@
       "^sharp$": "<rootDir>/src/__mocks__/sharp.js",
       "^multer$": "<rootDir>/src/__mocks__/multer.js"
     },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@stellar/stellar-sdk|@stellar/stellar-base|@stellarX)/)"
+    ],
     "collectCoverageFrom": [
       "src/**/*.ts",
       "backend/**/*.ts",

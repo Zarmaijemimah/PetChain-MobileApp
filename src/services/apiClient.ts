@@ -146,6 +146,14 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
+apiClient.interceptors.request.use(async (requestConfig) => {
+  const token = await getToken();
+  if (token) {
+    requestConfig.headers = requestConfig.headers ?? {} as typeof requestConfig.headers;
+    (requestConfig.headers as Record<string, string>).Authorization = `Bearer ${token}`;
+  }
+  return requestConfig;
+});
 setupInterceptors(apiClient);
 
 // --- Resilient request wrapper ---

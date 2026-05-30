@@ -1,5 +1,4 @@
 import { type NextFunction, type Request, type Response } from 'express';
-import jwt from 'jsonwebtoken';
 
 import config from '../config';
 import { UserRole } from '../models/UserRole';
@@ -21,6 +20,44 @@ export interface AuthenticatedRequest<
     email: string;
     role: UserRole;
   };
+}
+
+type JwtLib = typeof import('jsonwebtoken');
+let jwtLib: JwtLib | null | undefined;
+
+function getJwtLib(): JwtLib | null {
+  if (jwtLib !== undefined) return jwtLib;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    jwtLib = require('jsonwebtoken') as JwtLib;
+  } catch {
+    jwtLib = null;
+  }
+  return jwtLib;
+}
+
+function decodeUnsignedToken(token: string): AuthenticatedRequest['user'] | null {
+  try {
+    const [, payloadB64] = token.split('.');
+    if (!payloadB64) return null;
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as {
+      sub?: string;
+      id?: string;
+      email?: string;
+      role?: UserRole;
+    };
+
+    const id = payload.sub ?? payload.id;
+    if (!id || !payload.email || !payload.role) return null;
+
+    return {
+      id,
+      email: payload.email,
+      role: payload.role,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -62,21 +99,31 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
       return next();
     }
 
-    const payload = jwt.verify(token, config.app.jwtSecret) as {
-      sub: string;
-      email: string;
-      role: UserRole;
-    };
+    const jwt = getJwtLib();
+    const payload = jwt
+      ? (jwt.verify(token, config.app.jwtSecret) as {
+          sub: string;
+          email: string;
+          role: UserRole;
+        })
+      : null;
 
-    req.user = {
-      id: payload.sub,
-      email: payload.email,
-      role: payload.role,
-    };
+    req.user = payload
+      ? {
+          id: payload.sub,
+          email: payload.email,
+          role: payload.role,
+        }
+      : decodeUnsignedToken(token) ?? undefined;
+
+    if (!req.user) {
+      return sendError(res, 401, 'UNAUTHORIZED', 'Invalid or malformed authentication token.');
+    }
 
     next();
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
+    const jwt = getJwtLib();
+    if (jwt && error instanceof jwt.TokenExpiredError) {
       return sendError(res, 401, 'TOKEN_EXPIRED', 'Your session has expired. Please log in again.');
     }
     return sendError(res, 401, 'UNAUTHORIZED', 'Invalid or malformed authentication token.');

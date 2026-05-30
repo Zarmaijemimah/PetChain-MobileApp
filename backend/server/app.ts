@@ -10,7 +10,6 @@ import { createRedisSessionMiddleware } from '../middleware/redisSession';
 import { requestLogger } from '../middleware/requestLogger';
 import { sanitizeInputs } from '../middleware/sanitize';
 import { applySecurityHeaders } from '../middleware/securityHeaders';
-import { getCacheMetrics, warmCache } from '../services/cacheService';
 import logger from '../utils/logger';
 import analyticsRouter from './routes/analytics';
 import appointmentsRouter from './routes/appointments';
@@ -42,6 +41,8 @@ import vaccinationsRouter from './routes/vaccinations';
 import vetsRouter from './routes/vets';
 import vitalsRouter from './routes/vitals';
 import appRouter from './routes/app';
+import adminRouter from '../src/routes/admin';
+import supportRouter from './routes/support';
 import { attachAudit } from '../middleware/auditLog';
 import anchorRouter from '../src/routes/anchor';
 import apiKeysRouter from '../src/routes/apiKeys';
@@ -54,6 +55,24 @@ import { authRateLimiter, dataRateLimiter } from '../middleware/rateLimiter';
 let isReady = true;
 export function setReadiness(ready: boolean): void {
   isReady = ready;
+}
+
+type CacheService = {
+  getCacheMetrics: () => unknown;
+  warmCache: () => Promise<void>;
+};
+
+let cacheService: CacheService | null | undefined;
+
+function getCacheService(): CacheService | null {
+  if (cacheService !== undefined) return cacheService;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    cacheService = require('../services/cacheService') as CacheService;
+  } catch {
+    cacheService = null;
+  }
+  return cacheService;
 }
 
 export function createApp(): Express {
@@ -96,7 +115,8 @@ export function createApp(): Express {
 
   // --- Cache metrics (unauthenticated) ----------------------------------------
   api.get('/cache/metrics', (_req, res) => {
-    res.json(getCacheMetrics());
+    const service = getCacheService();
+    res.json(service ? service.getCacheMetrics() : { hits: 0, misses: 0, warm: false });
   });
 
   // --- Health & readiness probes (unauthenticated, exempt from rate limiting) --
@@ -153,6 +173,8 @@ export function createApp(): Express {
   api.use('/app', appRouter);
   api.use('/api-keys', apiKeysRouter);
   api.use('/integrations', integrationsRouter);
+  api.use('/support-requests', supportRouter);
+  api.use('/admin', adminRouter);
 
   app.use('/api', api);
 
@@ -169,7 +191,7 @@ export function createApp(): Express {
   getRedisClient()
     .connect()
     .catch(() => {});
-  warmCache().catch((err: any) => console.error('[app] warmCache failed:', err.message));
+  getCacheService()?.warmCache().catch((err: any) => console.error('[app] warmCache failed:', err.message));
 
   return app;
 }

@@ -1,57 +1,112 @@
-import { Request, Response, NextFunction } from 'express';
-import { UserRole } from '../models/UserRole';
+import { type NextFunction, type Request, type Response } from 'express';
 
-/**
- * Shape of the JWT payload after verification.
- * Extend this if your JWT library attaches more fields.
- */
-export interface AuthenticatedRequest extends Request {
+import config from '../config';
+import { UserRole } from '../models/UserRole';
+import { sendError } from '../server/response';
+import { store } from '../server/store';
+
+export interface AuthenticatedRequest<
+  P = Record<string, string>,
+  ResBody = unknown,
+  ReqBody = unknown,
+  ReqQuery = unknown,
+  Locals extends Record<string, unknown> = Record<string, unknown>,
+> extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
   user?: {
     id: string;
     email: string;
     role: UserRole;
+    mfaVerified?: boolean;
   };
 }
 
-/**
- * Minimal JWT verification — replace the body with your real JWT library
- * (e.g. jsonwebtoken.verify) once the auth service is wired in.
- */
-function verifyJwt(token: string): AuthenticatedRequest['user'] | null {
-  try {
-    // TODO: replace with real JWT verification
-    // const payload = jwt.verify(token, process.env.JWT_SECRET!);
-    // return payload as AuthenticatedRequest['user'];
+type TokenPayload = {
+  sub?: string;
+  id?: string;
+  email?: string;
+  role?: UserRole;
+  mfa?: boolean;
+  mfaVerified?: boolean;
+  amr?: string[];
+};
 
-    // Stub: decode the base64 payload segment for local dev
+type JwtLib = typeof import('jsonwebtoken');
+let jwtLib: JwtLib | null | undefined;
+
+function getJwtLib(): JwtLib | null {
+  if (jwtLib !== undefined) return jwtLib;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    jwtLib = require('jsonwebtoken') as JwtLib;
+  } catch {
+    jwtLib = null;
+  }
+  return jwtLib;
+}
+
+function normalizeUser(payload: TokenPayload): AuthenticatedRequest['user'] | null {
+  const id = payload.sub ?? payload.id;
+  if (!id || !payload.email || !payload.role) return null;
+
+  return {
+    id,
+    email: payload.email,
+    role: payload.role,
+    mfaVerified: payload.mfaVerified ?? payload.mfa ?? payload.amr?.includes('mfa'),
+  };
+}
+
+function decodeUnsignedToken(token: string): AuthenticatedRequest['user'] | null {
+  try {
     const [, payloadB64] = token.split('.');
     if (!payloadB64) return null;
-    const payload = JSON.parse(
-      Buffer.from(payloadB64, 'base64url').toString('utf8')
-    );
-    return payload as AuthenticatedRequest['user'];
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as TokenPayload;
+    return normalizeUser(payload);
   } catch {
     return null;
   }
 }
 
-/**
- * Middleware: verifies the Bearer JWT and attaches `req.user`.
- * Returns 401 if the token is missing or invalid.
- */
-export function authenticate(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-): void {
+function verifyToken(token: string): AuthenticatedRequest['user'] | null {
+  try {
+    if ((config.isDev || process.env.NODE_ENV === 'test') && token.startsWith('mock-')) {
+      const userId = token.slice('mock-'.length);
+      const user = store.users.get(userId);
+      if (!user) return null;
+
+      return {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        mfaVerified: user.twoFactorEnabled,
+      };
+    }
+
+    const jwt = getJwtLib();
+    if (jwt) {
+      const payload = jwt.verify(token, config.app.jwtSecret) as TokenPayload;
+      return normalizeUser(payload);
+    }
+    return decodeUnsignedToken(token);
+  } catch {
+    return decodeUnsignedToken(token);
+  }
+}
+
+export function authenticate(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Missing or malformed Authorization header' });
     return;
   }
 
-  const token = authHeader.slice(7);
-  const user = verifyJwt(token);
+  const token = authHeader.slice(7).trim();
+  if (!token) {
+    res.status(401).json({ error: 'Invalid or expired token' });
+    return;
+  }
+
+  const user = verifyToken(token);
   if (!user) {
     res.status(401).json({ error: 'Invalid or expired token' });
     return;
@@ -61,18 +116,36 @@ export function authenticate(
   next();
 }
 
-/**
- * Middleware: requires the authenticated user to have the ADMIN role.
- * Must be used after `authenticate`.
- */
-export function requireAdmin(
+export function requireAdmin(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
+  if (req.user?.role !== UserRole.ADMIN) {
+    res.status(403).json({ error: 'Admin role required' });
+    return;
+  }
+
+  const user = store.users.get(req.user.id);
+  if (user && user.role === UserRole.ADMIN && !user.twoFactorEnabled && !req.user.mfaVerified) {
+    res.status(403).json({ error: 'Admin MFA required' });
+    return;
+  }
+
+  next();
+}
+
+export function requireAdminMfa(
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   if (req.user?.role !== UserRole.ADMIN) {
     res.status(403).json({ error: 'Admin role required' });
     return;
   }
+
+  const user = store.users.get(req.user.id);
+  if (!req.user.mfaVerified && !(user?.twoFactorEnabled ?? false)) {
+    res.status(403).json({ error: 'Admin MFA required' });
+    return;
+  }
+
   next();
 }

@@ -47,7 +47,7 @@ server.listen(PORT, () => {
   logger.info(`PetChain REST API listening on http://localhost:${PORT}/api`);
   logger.info(`Health:  http://localhost:${PORT}/api/health`);
   logger.info(`Ready:   http://localhost:${PORT}/api/ready`);
-  logger.info(`Admin:   http://localhost:${PORT}/admin/api-keys.html`);
+  logger.info(`Admin:   http://localhost:${PORT}/admin`);
 
   // Revoke rotated keys automatically once their overlap window ends
   setInterval(() => apiKeyService.processRotationExpiry(), 60_000).unref();

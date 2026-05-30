@@ -13,6 +13,7 @@ export interface StoredUser {
   pets: Array<{ id: string; name?: string }>;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string;
   isEmailVerified: boolean;
   lastLoginAt?: string;
   passwordHash?: string;
@@ -150,6 +151,7 @@ function seed() {
     pets: [{ id: petId, name: 'Buddy' }],
     createdAt: t,
     updatedAt: t,
+    deletedAt: undefined,
     isEmailVerified: true,
     lastLoginAt: t,
     twoFactorEnabled: false,

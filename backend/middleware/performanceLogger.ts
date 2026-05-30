@@ -1,8 +1,26 @@
 import type { NextFunction, Request, Response } from 'express';
-import * as Sentry from '@sentry/node';
+
+type SentryLib = typeof import('@sentry/node');
+let sentryLib: SentryLib | null | undefined;
+
+function getSentry(): SentryLib | null {
+  if (sentryLib !== undefined) return sentryLib;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    sentryLib = require('@sentry/node') as SentryLib;
+  } catch {
+    sentryLib = null;
+  }
+  return sentryLib;
+}
 
 export function performanceLogger(req: Request, res: Response, next: NextFunction) {
   const start = Date.now();
+  const Sentry = getSentry();
+  if (!Sentry) {
+    next();
+    return;
+  }
   // start a Sentry transaction for server-side request
   const transaction = Sentry.startTransaction({ name: `${req.method} ${req.path}` });
   // attach to current scope

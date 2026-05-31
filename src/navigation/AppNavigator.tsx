@@ -35,12 +35,14 @@ import PetProfileScreen from '../screens/PetProfileScreen';
 import PetShareScreen from '../screens/PetShareScreen';
 import TravelCertificateScreen from '../screens/TravelCertificateScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import ReferralScreen from '../screens/ReferralScreen';
 import ReconciliationScreen from '../screens/ReconciliationScreen';
 import QRScannerScreen from '../screens/QRScannerScreen';
 import VaccinationScreen from '../screens/VaccinationScreen';
 import TelemedicineScreen from '../screens/TelemedicineScreen';
 import ForumScreen from '../screens/ForumScreen';
 import FiatOnRampScreen from '../screens/FiatOnRampScreen';
+import HealthAlertsScreen from '../screens/HealthAlertsScreen';
 import analyticsService from '../services/analyticsService';
 import performance from '../utils/performance';
 
@@ -228,11 +230,17 @@ function MainTabs() {
         options={{ title: 'Vaccinations' }}
       />
       <Tab.Screen
+        name="HealthAlerts"
+        component={HealthAlertsScreen}
+        options={{ title: 'Alerts' }}
+      />
+      <Tab.Screen
         name="Telemedicine"
         component={TelemedicineScreen}
         options={{ title: 'Telemedicine' }}
       />
       <Tab.Screen name="Community" component={CommunityScreen} options={{ title: 'Community' }} />
+      <Tab.Screen name="Referrals" component={ReferralScreen} options={{ title: 'Referrals' }} />
       <Tab.Screen
         name="Emergency"
         component={EmergencyContactsScreen}
@@ -285,7 +293,9 @@ const linking: LinkingOptions<RootStackParamList> = {
           Medications: 'medications/:medicationId?',
           Appointments: 'appointments/:appointmentId?',
           Vaccinations: 'vaccinations/:vaccinationId?',
+          HealthAlerts: 'health-alerts',
           Community: 'community',
+          Referrals: 'referrals',
           Emergency: 'emergency/:sosId?',
           Notifications: 'notifications',
           Profile: 'profile',

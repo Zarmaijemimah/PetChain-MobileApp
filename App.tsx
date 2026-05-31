@@ -7,8 +7,10 @@ import './src/i18n';
 import StorybookUIRoot from './.storybook';
 import OfflineIndicator from './src/components/OfflineIndicator';
 import { useSplashGuard } from './src/components/SplashGuard';
+import ThemeTransitionView from './src/components/ThemeTransitionView';
 import UpdatePrompt from './src/components/UpdatePrompt';
 import { PetProvider } from './src/context/PetContext';
+import { ThemeProvider } from './src/context/ThemeContext';
 import i18n, { isRTL } from './src/i18n';
 import AppNavigator, { handleNotificationDeepLink } from './src/navigation/AppNavigator';
 import LockScreen from './src/screens/LockScreen';
@@ -27,6 +29,7 @@ import {
 import updateService from './src/services/updateService';
 import { registerBackgroundMedicationTask } from './src/services/backgroundTaskService';
 import { checkAppVersion } from './src/services/versionCheckService';
+import { initializeWidgetService, refreshWidgetData } from './src/services/widgetService';
 
 const isStorybookEnabled = process.env.STORYBOOK_ENABLED === 'true';
 
@@ -110,7 +113,14 @@ function App() {
     void registerNotificationActions();
     const subscription = watchNotificationActions();
     void registerBackgroundMedicationTask();
-    return () => subscription.remove();
+    
+    // Initialize widget service and update widgets
+    const unsubscribeWidget = initializeWidgetService();
+    
+    return () => {
+      subscription.remove();
+      unsubscribeWidget();
+    };
   }, []);
 
   // Handle initial notification if app was launched from a notification tap
@@ -133,21 +143,25 @@ function App() {
   }
 
   return (
-    <PetProvider>
-      <ErrorBoundary>
-        <View style={styles.root}>
-          <OfflineIndicator />
-          <AppNavigator />
-          <UpdatePrompt
-            visible={updateStatus.visible}
-            variant={updateStatus.visible ? updateStatus.variant : 'optional'}
-            storeUrl={updateStatus.visible ? updateStatus.storeUrl : undefined}
-            onUpdate={handleUpdate}
-            onDismiss={handleDismiss}
-          />
-        </View>
-      </ErrorBoundary>
-    </PetProvider>
+    <ThemeProvider>
+      <PetProvider>
+        <ErrorBoundary>
+          <ThemeTransitionView>
+            <View style={styles.root}>
+              <OfflineIndicator />
+              <AppNavigator />
+              <UpdatePrompt
+                visible={updateStatus.visible}
+                variant={updateStatus.visible ? updateStatus.variant : 'optional'}
+                storeUrl={updateStatus.visible ? updateStatus.storeUrl : undefined}
+                onUpdate={handleUpdate}
+                onDismiss={handleDismiss}
+              />
+            </View>
+          </ThemeTransitionView>
+        </ErrorBoundary>
+      </PetProvider>
+    </ThemeProvider>
   );
 }
 

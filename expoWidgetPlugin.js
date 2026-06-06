@@ -1,6 +1,6 @@
 /**
  * Expo Plugin for PetChain Widgets
- * 
+ *
  * Integrates iOS WidgetKit and Android App Widget support
  * - iOS: Creates app groups for shared data
  * - Android: Registers widget provider and native module

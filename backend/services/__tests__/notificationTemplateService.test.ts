@@ -93,7 +93,15 @@ describe('resolveTemplate', () => {
   });
 
   it('returns rendered template for exact locale match', async () => {
-    mockQuery.mockResolvedValue({ rows: [makeRow({ locale: 'es', title: 'Recordatorio: {{medicationName}}', body: 'Dale {{medicationName}} a {{petName}}.' })] });
+    mockQuery.mockResolvedValue({
+      rows: [
+        makeRow({
+          locale: 'es',
+          title: 'Recordatorio: {{medicationName}}',
+          body: 'Dale {{medicationName}} a {{petName}}.',
+        }),
+      ],
+    });
 
     const result = await resolveTemplate(
       'medication_reminder',
@@ -108,9 +116,7 @@ describe('resolveTemplate', () => {
 
   it('falls back to English when requested locale is missing', async () => {
     // First call (fr) returns nothing, second call (en) returns template
-    mockQuery
-      .mockResolvedValueOnce({ rows: [] })
-      .mockResolvedValueOnce({ rows: [makeRow()] });
+    mockQuery.mockResolvedValueOnce({ rows: [] }).mockResolvedValueOnce({ rows: [makeRow()] });
 
     const result = await resolveTemplate(
       'medication_reminder',
@@ -151,24 +157,30 @@ describe('resolveTemplate', () => {
   it('throws when no template exists for key', async () => {
     mockQuery.mockResolvedValue({ rows: [] });
 
-    await expect(
-      resolveTemplate('nonexistent_key', {}, 'en'),
-    ).rejects.toThrow('No notification template found for key: "nonexistent_key"');
+    await expect(resolveTemplate('nonexistent_key', {}, 'en')).rejects.toThrow(
+      'No notification template found for key: "nonexistent_key"',
+    );
   });
 
   it('throws when required variables are missing', async () => {
     mockQuery.mockResolvedValue({ rows: [makeRow()] });
 
-    await expect(
-      resolveTemplate('medication_reminder', { petName: 'Rex' }, 'en'),
-    ).rejects.toThrow('Missing template variables: medicationName');
+    await expect(resolveTemplate('medication_reminder', { petName: 'Rex' }, 'en')).rejects.toThrow(
+      'Missing template variables: medicationName',
+    );
   });
 
   it('returns cached template without hitting DB', async () => {
     const cached = {
-      id: 'tmpl-1', key: 'medication_reminder', locale: 'en',
-      title: 'Reminder: {{medicationName}}', body: 'Give {{petName}} {{medicationName}}.',
-      isActive: true, createdBy: null, createdAt: '', updatedAt: '',
+      id: 'tmpl-1',
+      key: 'medication_reminder',
+      locale: 'en',
+      title: 'Reminder: {{medicationName}}',
+      body: 'Give {{petName}} {{medicationName}}.',
+      isActive: true,
+      createdBy: null,
+      createdAt: '',
+      updatedAt: '',
     };
     mockCacheGet.mockResolvedValue(cached);
 
@@ -192,12 +204,12 @@ describe('createTemplate', () => {
   it('inserts and returns the new template', async () => {
     mockQuery.mockResolvedValue({ rows: [makeRow()] });
 
-    const result = await createTemplate({
+    const result = (await createTemplate({
       key: 'medication_reminder',
       locale: 'en',
       title: 'Reminder: {{medicationName}}',
       body: 'Time to give {{petName}} their {{medicationName}}.',
-    }) as { key: string; locale: string };
+    })) as { key: string; locale: string };
 
     expect(result.key).toBe('medication_reminder');
     expect(result.locale).toBe('en');
@@ -220,12 +232,12 @@ describe('updateTemplate', () => {
   it('updates and invalidates cache', async () => {
     mockQuery.mockResolvedValue({ rows: [makeRow({ title: 'Updated Title' })] });
 
-    const result = await updateTemplate('tmpl-1', { title: 'Updated Title' }) as { title: string };
+    const result = (await updateTemplate('tmpl-1', { title: 'Updated Title' })) as {
+      title: string;
+    };
 
     expect(result.title).toBe('Updated Title');
-    expect(mockInvalidate).toHaveBeenCalledWith(
-      expect.stringContaining('medication_reminder'),
-    );
+    expect(mockInvalidate).toHaveBeenCalledWith(expect.stringContaining('medication_reminder'));
   });
 
   it('returns null when template not found', async () => {
@@ -240,16 +252,16 @@ describe('deleteTemplate', () => {
   let getTemplateById: (id: string) => Promise<unknown>;
 
   beforeAll(async () => {
-    ({ deleteTemplate, getTemplateById } = await import('../../services/notificationTemplateService'));
+    ({ deleteTemplate, getTemplateById } = await import(
+      '../../services/notificationTemplateService'
+    ));
   });
 
   beforeEach(() => jest.clearAllMocks());
 
   it('deletes and invalidates cache', async () => {
     // getTemplateById → found; DELETE → ok
-    mockQuery
-      .mockResolvedValueOnce({ rows: [makeRow()] })
-      .mockResolvedValueOnce({ rows: [] });
+    mockQuery.mockResolvedValueOnce({ rows: [makeRow()] }).mockResolvedValueOnce({ rows: [] });
 
     const result = await deleteTemplate('tmpl-1');
 

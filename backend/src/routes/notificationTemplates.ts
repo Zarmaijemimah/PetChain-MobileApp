@@ -70,7 +70,12 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Failed to create template';
     if (msg.includes('unique') || msg.includes('duplicate')) {
-      return sendError(res, 409, 'CONFLICT', `Template already exists for key "${key}" and locale "${locale ?? 'en'}"`);
+      return sendError(
+        res,
+        409,
+        'CONFLICT',
+        `Template already exists for key "${key}" and locale "${locale ?? 'en'}"`,
+      );
     }
     return sendError(res, 500, 'INTERNAL_ERROR', msg);
   }
@@ -122,9 +127,11 @@ router.post('/preview', async (req, res) => {
     return res.json(ok(rendered));
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Preview failed';
-    const code = msg.startsWith('Missing template variables') ? 'MISSING_VARIABLES'
-      : msg.startsWith('No notification template') ? 'NOT_FOUND'
-      : 'INTERNAL_ERROR';
+    const code = msg.startsWith('Missing template variables')
+      ? 'MISSING_VARIABLES'
+      : msg.startsWith('No notification template')
+        ? 'NOT_FOUND'
+        : 'INTERNAL_ERROR';
     return sendError(res, code === 'NOT_FOUND' ? 404 : 400, code, msg);
   }
 });

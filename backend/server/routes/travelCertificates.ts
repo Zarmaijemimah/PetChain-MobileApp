@@ -16,8 +16,8 @@ import express from 'express';
 import { authenticateJWT, type AuthenticatedRequest } from '../../middleware/auth';
 import { UserRole } from '../../models/UserRole';
 import travelCertificateService from '../../services/travelCertificateService';
-import { store } from '../store';
 import { ok, sendError } from '../response';
+import { store } from '../store';
 
 const router = express.Router();
 
@@ -38,7 +38,12 @@ router.post('/generate', async (req: AuthenticatedRequest, res) => {
   };
 
   if (!petId?.trim() || !destinationCountryCode?.trim() || !travelDate?.trim()) {
-    return sendError(res, 400, 'VALIDATION_ERROR', 'petId, destinationCountryCode, and travelDate are required');
+    return sendError(
+      res,
+      400,
+      'VALIDATION_ERROR',
+      'petId, destinationCountryCode, and travelDate are required',
+    );
   }
 
   // Owners can only generate certificates for their own pets
@@ -46,7 +51,12 @@ router.post('/generate', async (req: AuthenticatedRequest, res) => {
   if (!pet) return sendError(res, 404, 'NOT_FOUND', 'Pet not found');
 
   if (req.user!.role === UserRole.OWNER && req.user!.id !== pet.ownerId) {
-    return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to generate a certificate for this pet');
+    return sendError(
+      res,
+      403,
+      'FORBIDDEN',
+      'You do not have permission to generate a certificate for this pet',
+    );
   }
 
   try {
@@ -58,9 +68,9 @@ router.post('/generate', async (req: AuthenticatedRequest, res) => {
 
     const missingRequirements = certificate.requirementChecks.filter((c) => !c.met);
 
-    return res.status(201).json(
-      ok({ certificate, missingRequirements }, 'Travel health certificate generated'),
-    );
+    return res
+      .status(201)
+      .json(ok({ certificate, missingRequirements }, 'Travel health certificate generated'));
   } catch (error) {
     return sendError(
       res,
@@ -78,7 +88,12 @@ router.get('/pet/:petId', (req: AuthenticatedRequest, res) => {
   if (!pet) return sendError(res, 404, 'NOT_FOUND', 'Pet not found');
 
   if (req.user!.role === UserRole.OWNER && req.user!.id !== pet.ownerId) {
-    return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to view these certificates');
+    return sendError(
+      res,
+      403,
+      'FORBIDDEN',
+      'You do not have permission to view these certificates',
+    );
   }
 
   const certs = [...store.travelCertificates.values()]
@@ -108,7 +123,12 @@ router.post('/:id/anchor', async (req: AuthenticatedRequest, res) => {
 
   const pet = store.pets.get(cert.petId);
   if (pet && req.user!.role === UserRole.OWNER && req.user!.id !== pet.ownerId) {
-    return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to anchor this certificate');
+    return sendError(
+      res,
+      403,
+      'FORBIDDEN',
+      'You do not have permission to anchor this certificate',
+    );
   }
 
   try {
@@ -131,15 +151,17 @@ router.get('/:id/pdf', (req: AuthenticatedRequest, res) => {
 
   const pet = store.pets.get(cert.petId);
   if (pet && req.user!.role === UserRole.OWNER && req.user!.id !== pet.ownerId) {
-    return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to download this certificate');
+    return sendError(
+      res,
+      403,
+      'FORBIDDEN',
+      'You do not have permission to download this certificate',
+    );
   }
 
   const html = travelCertificateService.generateCertificateHtml(cert);
   res.setHeader('Content-Type', 'text/html');
-  res.setHeader(
-    'Content-Disposition',
-    `attachment; filename="travel-certificate-${cert.id}.html"`,
-  );
+  res.setHeader('Content-Disposition', `attachment; filename="travel-certificate-${cert.id}.html"`);
   return res.send(html);
 });
 

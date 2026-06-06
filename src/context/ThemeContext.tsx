@@ -19,7 +19,10 @@ export interface ThemeState {
 
 const ThemeContext = createContext<ThemeState | null>(null);
 
-export function resolveThemeMode(mode: ThemeMode, systemScheme: 'light' | 'dark' | null): ResolvedTheme {
+export function resolveThemeMode(
+  mode: ThemeMode,
+  systemScheme: 'light' | 'dark' | null,
+): ResolvedTheme {
   if (mode === 'system') return systemScheme === 'dark' ? 'dark' : 'light';
   return mode;
 }

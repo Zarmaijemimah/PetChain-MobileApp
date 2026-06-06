@@ -12,8 +12,8 @@ import pkceChallenge from 'pkce-challenge';
 import backendConfig from '../../config';
 import { authenticateJWT, type AuthenticatedRequest } from '../../middleware/auth';
 import { UserRole } from '../../models/UserRole';
-import { ok, sendError } from '../response';
-import { store } from '../store';
+import { ok, sendError } from '../../server/response';
+import { store } from '../../server/store';
 import logger from '../../utils/logger';
 
 const router = express.Router();
@@ -41,12 +41,15 @@ interface OAuthStoredUser {
 const pkceStore = new Map<string, { codeVerifier: string; expiresAt: number }>();
 
 // Clean up expired entries every 5 min
-setInterval(() => {
-  const now = Date.now();
-  for (const [k, v] of pkceStore) {
-    if (v.expiresAt < now) pkceStore.delete(k);
-  }
-}, 5 * 60 * 1000);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [k, v] of pkceStore) {
+      if (v.expiresAt < now) pkceStore.delete(k);
+    }
+  },
+  5 * 60 * 1000,
+);
 
 // ─── Config (secrets from env — never sent to client) ────────────────────────
 
@@ -92,7 +95,7 @@ function issueRefreshToken(userId: string): string {
 }
 
 function getUserOAuth(userId: string): OAuthStoredUser {
-  return (store.users.get(userId) as unknown as OAuthStoredUser & typeof store.users extends Map<string, infer V> ? V : never) ?? {};
+  return (store.users.get(userId) as OAuthStoredUser | undefined) ?? ({} as OAuthStoredUser);
 }
 
 function patchUser(userId: string, patch: Partial<OAuthStoredUser>): void {
@@ -200,9 +203,12 @@ async function exchangeCode(
   codeVerifier: string,
 ): Promise<{ providerUserId: string; email?: string; name?: string }> {
   switch (provider) {
-    case 'google': return exchangeGoogleCode(code, codeVerifier);
-    case 'apple': return exchangeAppleCode(code, codeVerifier);
-    case 'facebook': return exchangeFacebookCode(code, codeVerifier);
+    case 'google':
+      return exchangeGoogleCode(code, codeVerifier);
+    case 'apple':
+      return exchangeAppleCode(code, codeVerifier);
+    case 'facebook':
+      return exchangeFacebookCode(code, codeVerifier);
   }
 }
 
@@ -217,9 +223,7 @@ function findByOAuthIdentity(provider: OAuthProvider, providerUserId: string) {
 }
 
 function findByEmail(email: string) {
-  return [...store.users.values()].find(
-    (u) => u.email.toLowerCase() === email.toLowerCase(),
-  );
+  return [...store.users.values()].find((u) => u.email.toLowerCase() === email.toLowerCase());
 }
 
 // ─── POST /api/auth/oauth/pkce-init ──────────────────────────────────────────
@@ -240,7 +244,11 @@ router.post('/oauth/:provider', async (req, res) => {
     return sendError(res, 400, 'VALIDATION_ERROR', 'Unknown provider');
   }
 
-  const { code, state, name: clientName } = req.body as {
+  const {
+    code,
+    state,
+    name: clientName,
+  } = req.body as {
     code?: string;
     state?: string;
     name?: string; // Apple sends name only on first login
@@ -259,7 +267,10 @@ router.post('/oauth/:provider', async (req, res) => {
   try {
     providerInfo = await exchangeCode(provider, code, pkceEntry.codeVerifier);
   } catch (err) {
-    logger.warn('oauth_exchange_failed', { provider, error: err instanceof Error ? err.message : 'unknown' });
+    logger.warn('oauth_exchange_failed', {
+      provider,
+      error: err instanceof Error ? err.message : 'unknown',
+    });
     return sendError(res, 401, 'OAUTH_EXCHANGE_FAILED', 'Authorization code exchange failed');
   }
 
@@ -298,11 +309,12 @@ router.post('/oauth/:provider', async (req, res) => {
       updatedAt: t,
       isEmailVerified: !!email,
       twoFactorEnabled: false,
-      oauthIdentities: [
-        { provider, providerUserId, email, linkedAt: t },
-      ] as OAuthIdentity[],
+      oauthIdentities: [{ provider, providerUserId, email, linkedAt: t }] as OAuthIdentity[],
     };
-    store.users.set(newUser.id, newUser as unknown as typeof store.users extends Map<string, infer V> ? V : never);
+    store.users.set(
+      newUser.id,
+      newUser as unknown as typeof store.users extends Map<string, infer V> ? V : never,
+    );
     user = store.users.get(newUser.id)!;
     logger.info('oauth_account_created', { userId: user.id, provider });
   }
@@ -311,12 +323,14 @@ router.post('/oauth/:provider', async (req, res) => {
   const refreshToken = issueRefreshToken(user.id);
   patchUser(user.id, { refreshTokenHash: refreshToken });
 
-  return res.json(ok({
-    user: { id: user.id, email: user.email, name: user.name, role: user.role },
-    token: accessToken,
-    refreshToken,
-    expiresIn: 3600,
-  }));
+  return res.json(
+    ok({
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      token: accessToken,
+      refreshToken,
+      expiresIn: 3600,
+    }),
+  );
 });
 
 // ─── POST /api/auth/oauth/refresh ─────────────────────────────────────────────
@@ -334,7 +348,8 @@ router.post('/oauth/refresh', (req, res) => {
     return sendError(res, 401, 'INVALID_TOKEN', 'Invalid refresh token');
   }
 
-  if (payload.type !== 'refresh') return sendError(res, 401, 'INVALID_TOKEN', 'Not a refresh token');
+  if (payload.type !== 'refresh')
+    return sendError(res, 401, 'INVALID_TOKEN', 'Not a refresh token');
 
   const user = store.users.get(payload.sub);
   if (!user) return sendError(res, 401, 'INVALID_TOKEN', 'User not found');
@@ -350,11 +365,13 @@ router.post('/oauth/refresh', (req, res) => {
   const newRefresh = issueRefreshToken(user.id);
   patchUser(user.id, { refreshTokenHash: newRefresh, revokedTokens });
 
-  return res.json(ok({
-    token: issueAccessToken(user.id, user.email, user.role),
-    refreshToken: newRefresh,
-    expiresIn: 3600,
-  }));
+  return res.json(
+    ok({
+      token: issueAccessToken(user.id, user.email, user.role),
+      refreshToken: newRefresh,
+      expiresIn: 3600,
+    }),
+  );
 });
 
 // ─── POST /api/auth/oauth/revoke ──────────────────────────────────────────────
@@ -367,11 +384,15 @@ router.post('/oauth/revoke', authenticateJWT, (req: AuthenticatedRequest, res) =
     payload = jwt.verify(refreshToken, JWT_SECRET) as typeof payload;
   } catch {
     // Even if expired, we accept revocation
-    try { payload = jwt.decode(refreshToken) as typeof payload ?? {}; } catch { payload = {}; }
+    try {
+      payload = (jwt.decode(refreshToken) as typeof payload) ?? {};
+    } catch {
+      payload = {};
+    }
   }
 
   if (payload.sub && payload.sub !== req.user!.id) {
-    return sendError(res, 403, 'FORBIDDEN', 'Cannot revoke another user\'s token');
+    return sendError(res, 403, 'FORBIDDEN', "Cannot revoke another user's token");
   }
 
   if (payload.jti) {
@@ -423,7 +444,12 @@ router.post('/oauth/link', authenticateJWT, async (req: AuthenticatedRequest, re
   // Prevent takeover: ensure this provider identity isn't already linked to another account
   const existing = findByOAuthIdentity(provider, providerInfo.providerUserId);
   if (existing && existing.id !== req.user!.id) {
-    return sendError(res, 409, 'CONFLICT', 'This provider account is already linked to another user');
+    return sendError(
+      res,
+      409,
+      'CONFLICT',
+      'This provider account is already linked to another user',
+    );
   }
 
   const user = store.users.get(req.user!.id) as unknown as OAuthStoredUser;
@@ -435,7 +461,12 @@ router.post('/oauth/link', authenticateJWT, async (req: AuthenticatedRequest, re
   patchUser(req.user!.id, {
     oauthIdentities: [
       ...identities,
-      { provider, providerUserId: providerInfo.providerUserId, email: providerInfo.email, linkedAt: new Date().toISOString() },
+      {
+        provider,
+        providerUserId: providerInfo.providerUserId,
+        email: providerInfo.email,
+        linkedAt: new Date().toISOString(),
+      },
     ],
   });
 

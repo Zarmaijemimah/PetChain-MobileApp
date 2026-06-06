@@ -16,8 +16,7 @@ import {
   View,
 } from 'react-native';
 
-import multisigService from '../services/multisigService';
-import { notifyCoSignRequest } from '../services/multisigService';
+import multisigService, { notifyCoSignRequest } from '../services/multisigService';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -45,8 +44,7 @@ const CoOwnerInviteScreen: React.FC<Props> = ({
   const [weight, setWeight] = useState('1');
   const [submitting, setSubmitting] = useState(false);
 
-  const isValidStellarKey = (key: string) =>
-    /^G[A-Z2-7]{55}$/.test(key.trim());
+  const isValidStellarKey = (key: string) => /^G[A-Z2-7]{55}$/.test(key.trim());
 
   const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 
@@ -162,8 +160,8 @@ const CoOwnerInviteScreen: React.FC<Props> = ({
             placeholderTextColor="#bbb"
           />
           <Text style={styles.hint}>
-            Weight determines voting power. Current total weight: {totalWeight}. Higher weight = more
-            influence on M-of-N threshold.
+            Weight determines voting power. Current total weight: {totalWeight}. Higher weight =
+            more influence on M-of-N threshold.
           </Text>
         </View>
 
@@ -173,11 +171,9 @@ const CoOwnerInviteScreen: React.FC<Props> = ({
           <Text style={styles.explainText}>
             • <Text style={styles.bold}>Ownership transfers</Text> and{' '}
             <Text style={styles.bold}>record deletions</Text> require the high threshold — all
-            co-owners must agree.{'\n'}
-            • <Text style={styles.bold}>Adding/removing signers</Text> requires the medium
-            threshold.{'\n'}
-            • Each co-owner signs with their Stellar keypair. Once enough weight accumulates, the
-            transaction is submitted to the Stellar testnet.
+            co-owners must agree.{'\n'}• <Text style={styles.bold}>Adding/removing signers</Text>{' '}
+            requires the medium threshold.{'\n'}• Each co-owner signs with their Stellar keypair.
+            Once enough weight accumulates, the transaction is submitted to the Stellar testnet.
           </Text>
         </View>
 

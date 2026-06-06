@@ -1,5 +1,5 @@
 import analyticsService from './analyticsService';
-import encryptedAsyncStorage from '../utils/encryptedAsyncStorage';
+import { encryptedAsyncStorage } from '../utils/encryptedAsyncStorage';
 
 export type OnboardingVariant = 'A' | 'B';
 

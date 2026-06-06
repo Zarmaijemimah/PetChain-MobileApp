@@ -2,9 +2,7 @@ import * as StellarSdk from '@stellar/stellar-sdk';
 
 import { UserRole } from '../../models/UserRole';
 import { store } from '../../server/store';
-import stellarPathPaymentService, {
-  StellarPathPaymentService,
-} from '../stellarPathPaymentService';
+import stellarPathPaymentService, { StellarPathPaymentService } from '../stellarPathPaymentService';
 
 function buildServer(overrides: Partial<Record<string, unknown>> = {}) {
   return {
@@ -82,10 +80,7 @@ describe('stellarPathPaymentService', () => {
     expect(prepared.quote.pathCount).toBe(1);
     expect(prepared.quote.exchangeRate).toBe('1.2512513');
 
-    const tx = new StellarSdk.Transaction(
-      prepared.transactionXdr,
-      StellarSdk.Networks.TESTNET,
-    );
+    const tx = new StellarSdk.Transaction(prepared.transactionXdr, StellarSdk.Networks.TESTNET);
     tx.sign(sourceKeypair);
 
     const submitted = await service.submitPayment({
@@ -145,10 +140,7 @@ describe('stellarPathPaymentService', () => {
     expect(prepared.quote.mode).toBe('direct-xlm');
     expect(prepared.quote.fallbackReason).toContain('No conversion path');
 
-    const tx = new StellarSdk.Transaction(
-      prepared.transactionXdr,
-      StellarSdk.Networks.TESTNET,
-    );
+    const tx = new StellarSdk.Transaction(prepared.transactionXdr, StellarSdk.Networks.TESTNET);
     tx.sign(sourceKeypair);
 
     const submitted = await service.submitPayment({

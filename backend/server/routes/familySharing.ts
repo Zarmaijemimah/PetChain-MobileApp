@@ -216,7 +216,11 @@ router.put('/:id/members/:userId', (req: AuthenticatedRequest, res) => {
  * Remove family member
  */
 router.delete('/:id/members/:userId', (req: AuthenticatedRequest, res) => {
-  const removed = familySharingService.removeFamilyMember(req.params.id, req.params.userId, req.user!.id);
+  const removed = familySharingService.removeFamilyMember(
+    req.params.id,
+    req.params.userId,
+    req.user!.id,
+  );
 
   if (!removed) {
     return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to remove this member');
@@ -236,7 +240,11 @@ router.delete('/:id/members/:userId', (req: AuthenticatedRequest, res) => {
  * Accept family invitation
  */
 router.post('/invitations/:token/accept', (req: AuthenticatedRequest, res) => {
-  const member = familySharingService.acceptFamilyInvitation(req.params.token, req.user!.id, req.user!.email);
+  const member = familySharingService.acceptFamilyInvitation(
+    req.params.token,
+    req.user!.id,
+    req.user!.email,
+  );
 
   if (!member) {
     return sendError(res, 400, 'INVALID_INVITATION', 'Invalid or expired invitation');
@@ -359,7 +367,11 @@ router.delete('/pets/:petId/access/:userId', (req: AuthenticatedRequest, res) =>
     return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to revoke pet access');
   }
 
-  const revoked = familySharingService.revokePetAccess(req.params.petId, req.params.userId, req.user!.id);
+  const revoked = familySharingService.revokePetAccess(
+    req.params.petId,
+    req.params.userId,
+    req.user!.id,
+  );
 
   if (!revoked) {
     return sendError(res, 404, 'NOT_FOUND', 'Pet access not found');
@@ -431,7 +443,7 @@ router.post('/pets/:petId/transfer-ownership', (req: AuthenticatedRequest, res) 
     req.params.petId,
     toUserId.trim(),
     req.user!.id,
-    { reason: reason?.trim() },
+    { toUserId: toUserId.trim(), reason: reason?.trim() },
   );
 
   (req as AuditableRequest).audit?.('pet_ownership.transferred', 'pet_ownership', transfer.id, {

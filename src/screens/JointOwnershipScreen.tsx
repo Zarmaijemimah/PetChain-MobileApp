@@ -100,7 +100,9 @@ const PendingTxCard: React.FC<{
         <Text style={styles.txIcon}>{OP_ICONS[tx.operationType]}</Text>
         <View style={styles.txHeaderText}>
           <Text style={styles.txOpType}>{OP_LABELS[tx.operationType]}</Text>
-          <Text style={styles.txDescription} numberOfLines={2}>{tx.description}</Text>
+          <Text style={styles.txDescription} numberOfLines={2}>
+            {tx.description}
+          </Text>
         </View>
         <StatusBadge status={tx.status} />
       </View>
@@ -133,9 +135,7 @@ const PendingTxCard: React.FC<{
               {s.hasSigned ? '✅' : '⏳'} {s.name ?? `${s.publicKey.substring(0, 8)}…`}
             </Text>
             {s.signedAt && (
-              <Text style={styles.signerTime}>
-                {new Date(s.signedAt).toLocaleDateString()}
-              </Text>
+              <Text style={styles.signerTime}>{new Date(s.signedAt).toLocaleDateString()}</Text>
             )}
           </View>
         ))}
@@ -181,22 +181,25 @@ const JointOwnershipScreen: React.FC<Props> = ({
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'pending'>('overview');
 
-  const load = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    try {
-      const jo = await multisigService.getJointOwnershipByPet(petId);
-      setJointOwnership(jo);
-      if (jo) {
-        const txs = await multisigService.getPendingTransactions(jo.multisigAccountId);
-        setPendingTxs(txs);
+  const load = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
+      try {
+        const jo = await multisigService.getJointOwnershipByPet(petId);
+        setJointOwnership(jo);
+        if (jo) {
+          const txs = await multisigService.getPendingTransactions(jo.multisigAccountId);
+          setPendingTxs(txs);
+        }
+      } catch {
+        Alert.alert('Error', 'Failed to load joint ownership details.');
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-    } catch {
-      Alert.alert('Error', 'Failed to load joint ownership details.');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [petId]);
+    },
+    [petId],
+  );
 
   useEffect(() => {
     void load();
@@ -210,25 +213,21 @@ const JointOwnershipScreen: React.FC<Props> = ({
   const handleRejectTx = useCallback(
     (tx: PendingTransactionResponse) => {
       if (!currentUserPublicKey) return;
-      Alert.alert(
-        'Reject Transaction',
-        `Are you sure you want to reject "${tx.description}"?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Reject',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                await multisigService.rejectTransaction(tx.id, currentUserPublicKey);
-                void load(true);
-              } catch {
-                Alert.alert('Error', 'Failed to reject transaction.');
-              }
-            },
+      Alert.alert('Reject Transaction', `Are you sure you want to reject "${tx.description}"?`, [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reject',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await multisigService.rejectTransaction(tx.id, currentUserPublicKey);
+              void load(true);
+            } catch {
+              Alert.alert('Error', 'Failed to reject transaction.');
+            }
           },
-        ],
-      );
+        },
+      ]);
     },
     [currentUserPublicKey, load],
   );
@@ -351,8 +350,8 @@ const OverviewTab: React.FC<{
       <View style={styles.row}>
         <Text style={styles.rowLabel}>Thresholds</Text>
         <Text style={styles.rowValue}>
-          L:{jointOwnership.thresholds.low} M:{jointOwnership.thresholds.medium}{' '}
-          H:{jointOwnership.thresholds.high}
+          L:{jointOwnership.thresholds.low} M:{jointOwnership.thresholds.medium} H:
+          {jointOwnership.thresholds.high}
         </Text>
       </View>
     </View>
@@ -494,7 +493,13 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
   },
   rowLabel: { fontSize: 13, color: '#666' },
-  rowValue: { fontSize: 13, fontWeight: '600', color: '#1a1a1a', maxWidth: '55%', textAlign: 'right' },
+  rowValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    maxWidth: '55%',
+    textAlign: 'right',
+  },
   badge: { borderRadius: 10, paddingHorizontal: 7, paddingVertical: 2 },
   badgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
   coOwnerRow: {

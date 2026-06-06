@@ -6,7 +6,7 @@ import {
   requireAdminMfa,
   type AuthenticatedRequest,
 } from '../../middleware/adminAuth';
-import { UserRole } from '../../models/UserRole';
+import { type UserRole } from '../../models/UserRole';
 import { ok, sendError } from '../../server/response';
 import { store } from '../../server/store';
 import {
@@ -202,7 +202,8 @@ async function collectAnalytics(req: AuthenticatedRequest): Promise<DashboardAna
   const blockchain = {
     transactionVolume:
       Number(blockchainRow?.transaction_volume) ||
-      [...store.medicalRecords.values()].filter((record) => Boolean(record.blockchainTxHash)).length,
+      [...store.medicalRecords.values()].filter((record) => Boolean(record.blockchainTxHash))
+        .length,
     verifiedRecords:
       Number(blockchainRow?.verified_records) ||
       [...store.medicalRecords.values()].filter((record) => Boolean(record.isBlockchainVerified))
@@ -212,7 +213,12 @@ async function collectAnalytics(req: AuthenticatedRequest): Promise<DashboardAna
   const errorsLast24h = Number(errorRow?.error_count) || 0;
   const errorRateLast24h =
     recordCounts.medicalRecords + recordCounts.appointments > 0
-      ? Number(((errorsLast24h / (recordCounts.medicalRecords + recordCounts.appointments)) * 100).toFixed(2))
+      ? Number(
+          (
+            (errorsLast24h / (recordCounts.medicalRecords + recordCounts.appointments)) *
+            100
+          ).toFixed(2),
+        )
       : 0;
 
   return {
@@ -257,7 +263,7 @@ function buildDashboardCsv(analytics: DashboardAnalytics, users: AdminUserView[]
 router.use(authenticate, requireAdmin, requireAdminMfa);
 
 router.get('/dashboard', async (req, res) => {
-  const analytics = await collectAnalytics(req);
+  const analytics = await collectAnalytics(req as AuthenticatedRequest);
   const users = getStoredUsers(false);
 
   return res.json(
@@ -268,17 +274,17 @@ router.get('/dashboard', async (req, res) => {
         deleted: getStoredUsers(true).filter((user) => Boolean(user.deletedAt)).length,
       },
       supportRequests: getSupportSummary(),
-      serverMetrics: getServerMetrics(req),
+      serverMetrics: getServerMetrics(req as AuthenticatedRequest),
     }),
   );
 });
 
 router.get('/analytics', async (req, res) => {
-  return res.json(ok(await collectAnalytics(req)));
+  return res.json(ok(await collectAnalytics(req as AuthenticatedRequest)));
 });
 
 router.get('/analytics/export.csv', async (req, res) => {
-  const analytics = await collectAnalytics(req);
+  const analytics = await collectAnalytics(req as AuthenticatedRequest);
   const users = getStoredUsers(true);
   const csv = buildDashboardCsv(analytics, users);
 
@@ -288,16 +294,11 @@ router.get('/analytics/export.csv', async (req, res) => {
 });
 
 router.get('/metrics', (req, res) => {
-  return res.json(ok(getServerMetrics(req)));
+  return res.json(ok(getServerMetrics(req as AuthenticatedRequest)));
 });
 
 router.get('/support-requests', (_req, res) => {
-  return res.json(
-    ok(
-      getSupportView(),
-      'Support requests loaded',
-    ),
-  );
+  return res.json(ok(getSupportView(), 'Support requests loaded'));
 });
 
 router.get('/support-requests/:id', (req, res) => {

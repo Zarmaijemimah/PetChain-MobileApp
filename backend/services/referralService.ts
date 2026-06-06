@@ -47,7 +47,10 @@ function generateCode(): string {
 }
 
 function normalizeCode(code: string): string {
-  return code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return code
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '');
 }
 
 function userByReferralCode(code: string) {

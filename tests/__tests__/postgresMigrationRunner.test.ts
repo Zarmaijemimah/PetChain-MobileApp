@@ -1,7 +1,9 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+
 import { Client } from 'pg';
+
 import { runMigrations, rollbackMigrations } from '../../backend/config/database';
 
 const BASE_DATABASE_URL =
@@ -45,7 +47,9 @@ async function dropDatabase(dbName: string): Promise<void> {
   }
 }
 
-async function withTestDb<T>(callback: (databaseUrl: string, migrationsDir: string) => Promise<T>): Promise<T> {
+async function withTestDb<T>(
+  callback: (databaseUrl: string, migrationsDir: string) => Promise<T>,
+): Promise<T> {
   const migrationsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'petchain-postgres-migrations-'));
   const dbName = `petchain_migration_test_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
 
@@ -82,7 +86,9 @@ describe('PostgreSQL migration runner', () => {
 
       const client = new Client({ connectionString: databaseUrl });
       await client.connect();
-      const result = await client.query('SELECT version FROM schema_migrations ORDER BY version ASC');
+      const result = await client.query(
+        'SELECT version FROM schema_migrations ORDER BY version ASC',
+      );
       await client.end();
 
       expect(result.rows.map((row) => row.version)).toEqual([
@@ -112,7 +118,9 @@ describe('PostgreSQL migration runner', () => {
 
       const client = new Client({ connectionString: databaseUrl });
       await client.connect();
-      const history = await client.query('SELECT version FROM schema_migrations ORDER BY version ASC');
+      const history = await client.query(
+        'SELECT version FROM schema_migrations ORDER BY version ASC',
+      );
       const columnInfo = await client.query(
         "SELECT column_name FROM information_schema.columns WHERE table_name = 'test_migration_table' AND column_name = 'name';",
       );
@@ -147,7 +155,9 @@ describe('PostgreSQL migration runner', () => {
 
       const client = new Client({ connectionString: databaseUrl });
       await client.connect();
-      const history = await client.query('SELECT version FROM schema_migrations ORDER BY version ASC');
+      const history = await client.query(
+        'SELECT version FROM schema_migrations ORDER BY version ASC',
+      );
       await client.end();
 
       expect(history.rows.map((row) => row.version)).toEqual([
@@ -176,7 +186,9 @@ describe('PostgreSQL migration runner', () => {
 
       const client = new Client({ connectionString: databaseUrl });
       await client.connect();
-      const history = await client.query('SELECT version FROM schema_migrations ORDER BY version ASC');
+      const history = await client.query(
+        'SELECT version FROM schema_migrations ORDER BY version ASC',
+      );
       await client.end();
 
       expect(history.rows.map((row) => row.version)).toEqual(['20260101000001000']);

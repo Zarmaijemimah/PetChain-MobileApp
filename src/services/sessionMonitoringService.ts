@@ -485,9 +485,7 @@ class SessionMonitoringService {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  private async _trackEvent(
-    partial: Pick<SessionEvent, 'type' | 'flow' | 'data'>,
-  ): Promise<void> {
+  private async _trackEvent(partial: Pick<SessionEvent, 'type' | 'flow' | 'data'>): Promise<void> {
     const event: SessionEvent = {
       id: generateId(),
       sessionId: this.currentSession?.id ?? 'unknown',
@@ -571,10 +569,7 @@ class SessionMonitoringService {
   private async _persistCurrentSession(): Promise<void> {
     if (!this.currentSession) return;
     try {
-      await AsyncStorage.setItem(
-        STORAGE_KEYS.CURRENT_SESSION,
-        JSON.stringify(this.currentSession),
-      );
+      await AsyncStorage.setItem(STORAGE_KEYS.CURRENT_SESSION, JSON.stringify(this.currentSession));
     } catch {
       // Non-fatal
     }

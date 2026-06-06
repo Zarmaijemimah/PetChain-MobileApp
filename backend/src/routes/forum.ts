@@ -1,7 +1,8 @@
 import express from 'express';
 import type { Request, Response } from 'express';
-import moderationService from '../services/moderationService';
+
 import { query } from '../db';
+import moderationService from '../services/moderationService';
 
 const router = express.Router();
 

@@ -117,8 +117,16 @@ export const appointmentSchemas = {
       type: {
         type: 'string',
         enum: [
-          'ROUTINE_CHECKUP', 'VACCINATION', 'SURGERY', 'DENTAL', 'GROOMING',
-          'EMERGENCY', 'FOLLOW_UP', 'DIAGNOSTIC', 'SPECIALIST_REFERRAL', 'NUTRITION_CONSULTATION',
+          'ROUTINE_CHECKUP',
+          'VACCINATION',
+          'SURGERY',
+          'DENTAL',
+          'GROOMING',
+          'EMERGENCY',
+          'FOLLOW_UP',
+          'DIAGNOSTIC',
+          'SPECIALIST_REFERRAL',
+          'NUTRITION_CONSULTATION',
         ],
         example: 'VACCINATION',
       },
@@ -142,8 +150,16 @@ export const appointmentSchemas = {
       type: {
         type: 'string',
         enum: [
-          'ROUTINE_CHECKUP', 'VACCINATION', 'SURGERY', 'DENTAL', 'GROOMING',
-          'EMERGENCY', 'FOLLOW_UP', 'DIAGNOSTIC', 'SPECIALIST_REFERRAL', 'NUTRITION_CONSULTATION',
+          'ROUTINE_CHECKUP',
+          'VACCINATION',
+          'SURGERY',
+          'DENTAL',
+          'GROOMING',
+          'EMERGENCY',
+          'FOLLOW_UP',
+          'DIAGNOSTIC',
+          'SPECIALIST_REFERRAL',
+          'NUTRITION_CONSULTATION',
         ],
       },
       status: {

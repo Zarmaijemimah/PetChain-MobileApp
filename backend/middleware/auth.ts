@@ -1,5 +1,6 @@
 import { type NextFunction, type Request, type Response } from 'express';
 import * as jwt from 'jsonwebtoken';
+import type { ParsedQs } from 'qs';
 
 import config from '../config';
 import { UserRole } from '../models/UserRole';
@@ -12,8 +13,8 @@ import { store } from '../server/store';
 export interface AuthenticatedRequest<
   P = Record<string, string>,
   ResBody = unknown,
-  ReqBody = unknown,
-  ReqQuery = unknown,
+  ReqBody = any,
+  ReqQuery = ParsedQs,
   Locals extends Record<string, unknown> = Record<string, unknown>,
 > extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
   user?: {
@@ -21,20 +22,14 @@ export interface AuthenticatedRequest<
     email: string;
     role: UserRole;
   };
-}
-
-type JwtLib = typeof import('jsonwebtoken');
-let jwtLib: JwtLib | null | undefined;
-
-function getJwtLib(): JwtLib | null {
-  if (jwtLib !== undefined) return jwtLib;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    jwtLib = require('jsonwebtoken') as JwtLib;
-  } catch {
-    jwtLib = null;
-  }
-  return jwtLib;
+  file?: {
+    fieldname: string;
+    originalname: string;
+    encoding: string;
+    mimetype: string;
+    size: number;
+    buffer: Buffer;
+  };
 }
 
 function decodeUnsignedToken(token: string): AuthenticatedRequest['user'] | null {
@@ -100,14 +95,11 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
       return next();
     }
 
-    const jwt = getJwtLib();
-    const payload = jwt
-      ? (jwt.verify(token, config.app.jwtSecret) as {
-          sub: string;
-          email: string;
-          role: UserRole;
-        })
-      : null;
+    const payload = jwt.verify(token, config.app.jwtSecret) as {
+      sub: string;
+      email: string;
+      role: UserRole;
+    };
 
     req.user = payload
       ? {
@@ -115,7 +107,7 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
           email: payload.email,
           role: payload.role,
         }
-      : decodeUnsignedToken(token) ?? undefined;
+      : (decodeUnsignedToken(token) ?? undefined);
 
     if (!req.user) {
       return sendError(res, 401, 'UNAUTHORIZED', 'Invalid or malformed authentication token.');
@@ -123,8 +115,7 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
 
     next();
   } catch (error) {
-    const jwt = getJwtLib();
-    if (jwt && error instanceof jwt.TokenExpiredError) {
+    if (error instanceof jwt.TokenExpiredError) {
       return sendError(res, 401, 'TOKEN_EXPIRED', 'Your session has expired. Please log in again.');
     }
     return sendError(res, 401, 'UNAUTHORIZED', 'Invalid or malformed authentication token.');

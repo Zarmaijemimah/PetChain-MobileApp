@@ -1,9 +1,8 @@
 import { randomUUID } from 'crypto';
 
-import type { Request } from 'express';
-
-import { query } from '../src/db';
+import type { AuthenticatedRequest } from './auth';
 import type { AuditTrailAction, AuditTrailEntityType } from '../models/AuditTrail';
+import { query } from '../src/db';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -51,10 +50,8 @@ export function buildAuditDiff(
   };
 }
 
-function actorIdFromReq(req: Request): string | null {
-  // `authenticateJWT` attaches `user` but Request typing doesn't know about it
-  const u = (req as Request & { user?: { id: string } }).user;
-  return u?.id ?? null;
+function actorIdFromReq(req: AuthenticatedRequest): string | null {
+  return req.user?.id ?? null;
 }
 
 /**
@@ -62,7 +59,7 @@ function actorIdFromReq(req: Request): string | null {
  * This function must never throw (audit should not break the request flow).
  */
 export async function logAuditTrail(params: {
-  req: Request;
+  req: AuthenticatedRequest;
   entityType: AuditTrailEntityType | string;
   entityId: string;
   action: AuditTrailAction;
@@ -96,4 +93,3 @@ export async function logAuditTrail(params: {
     // Swallow errors: audit logging must never break the request flow
   }
 }
-

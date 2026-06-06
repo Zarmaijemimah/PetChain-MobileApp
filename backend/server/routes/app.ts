@@ -13,8 +13,7 @@ router.get('/version-check', (_req, res) => {
   res.json({
     minimumVersion: process.env.APP_MINIMUM_VERSION ?? '1.0.0',
     recommendedVersion: process.env.APP_RECOMMENDED_VERSION ?? '1.0.0',
-    iosStoreUrl:
-      process.env.IOS_STORE_URL ?? 'https://apps.apple.com/app/petchain/id000000000',
+    iosStoreUrl: process.env.IOS_STORE_URL ?? 'https://apps.apple.com/app/petchain/id000000000',
     androidStoreUrl:
       process.env.ANDROID_STORE_URL ??
       'https://play.google.com/store/apps/details?id=app.petchain.mobile',

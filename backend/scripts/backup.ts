@@ -15,13 +15,14 @@
  */
 
 import { execFile } from 'child_process';
+import { createHash } from 'crypto';
 import { createReadStream, createWriteStream, statSync } from 'fs';
 import { unlink, readdir, stat } from 'fs/promises';
-import { createGzip } from 'zlib';
-import { createHash } from 'crypto';
-import { promisify } from 'util';
-import path from 'path';
 import https from 'https';
+import path from 'path';
+import { promisify } from 'util';
+import { createGzip } from 'zlib';
+
 import logger from '../utils/logger';
 
 const execFileAsync = promisify(execFile);
@@ -67,13 +68,19 @@ function getS3Client(): S3Client {
   return new Client({ region: S3_REGION });
 }
 
-async function s3PutObject(key: string, body: Buffer, contentType = 'application/octet-stream'): Promise<void> {
+async function s3PutObject(
+  key: string,
+  body: Buffer,
+  contentType = 'application/octet-stream',
+): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { PutObjectCommand } = require('@aws-sdk/client-s3') as {
     PutObjectCommand: new (input: object) => unknown;
   };
   const client = getS3Client();
-  await client.send(new PutObjectCommand({ Bucket: S3_BUCKET, Key: key, Body: body, ContentType: contentType }));
+  await client.send(
+    new PutObjectCommand({ Bucket: S3_BUCKET, Key: key, Body: body, ContentType: contentType }),
+  );
 }
 
 async function s3GetObject(key: string): Promise<Buffer> {
@@ -82,7 +89,9 @@ async function s3GetObject(key: string): Promise<Buffer> {
     GetObjectCommand: new (input: object) => unknown;
   };
   const client = getS3Client();
-  const resp = (await client.send(new GetObjectCommand({ Bucket: S3_BUCKET, Key: key }))) as S3GetObjectOutput;
+  const resp = (await client.send(
+    new GetObjectCommand({ Bucket: S3_BUCKET, Key: key }),
+  )) as S3GetObjectOutput;
   if (!resp.Body) throw new Error(`Empty S3 response for key: ${key}`);
   const bytes = await resp.Body.transformToByteArray();
   return Buffer.from(bytes);
@@ -94,7 +103,9 @@ async function s3ListObjects(prefix: string): Promise<Array<{ Key: string; LastM
     ListObjectsV2Command: new (input: object) => unknown;
   };
   const client = getS3Client();
-  const resp = (await client.send(new ListObjectsV2Command({ Bucket: S3_BUCKET, Prefix: prefix }))) as {
+  const resp = (await client.send(
+    new ListObjectsV2Command({ Bucket: S3_BUCKET, Prefix: prefix }),
+  )) as {
     Contents?: Array<{ Key: string; LastModified: Date }>;
   };
   return resp.Contents ?? [];
@@ -199,7 +210,9 @@ export async function backupFiles(filesDir: string, s3Prefix: string): Promise<n
         HeadObjectCommand: new (input: object) => unknown;
       };
       const client = getS3Client();
-      const head = (await client.send(new HeadObjectCommand({ Bucket: S3_BUCKET, Key: s3Key }))) as {
+      const head = (await client.send(
+        new HeadObjectCommand({ Bucket: S3_BUCKET, Key: s3Key }),
+      )) as {
         Metadata?: Record<string, string>;
       };
       remoteChecksum = head.Metadata?.['sha256'] ?? '';
@@ -279,7 +292,10 @@ export async function sendAlert(summary: string, details: Record<string, unknown
         hostname: 'events.pagerduty.com',
         path: '/v2/enqueue',
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) },
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload),
+        },
       },
       (res) => {
         res.resume();
@@ -336,7 +352,11 @@ export async function runBackup(): Promise<BackupResult> {
 
     // 5. Upload checksum manifest
     const manifest = JSON.stringify({ key: dbKey, sha256: checksum, sizeBytes, timestamp });
-    await s3PutObject(`${S3_PREFIX}/db/${timestamp}.manifest.json`, Buffer.from(manifest), 'application/json');
+    await s3PutObject(
+      `${S3_PREFIX}/db/${timestamp}.manifest.json`,
+      Buffer.from(manifest),
+      'application/json',
+    );
 
     // 6. Verify
     logger.info('[backup] Verifying backup integrity');
@@ -358,7 +378,14 @@ export async function runBackup(): Promise<BackupResult> {
     // 9. Cleanup temp
     await unlink(gzPath);
 
-    const result: BackupResult = { timestamp, dbKey, dbChecksum: checksum, dbSizeBytes: sizeBytes, filesBackedUp, verified };
+    const result: BackupResult = {
+      timestamp,
+      dbKey,
+      dbChecksum: checksum,
+      dbSizeBytes: sizeBytes,
+      filesBackedUp,
+      verified,
+    };
     logger.info('[backup] Backup completed successfully', result);
     return result;
   } catch (err) {
@@ -369,7 +396,11 @@ export async function runBackup(): Promise<BackupResult> {
 
     // Cleanup temp files on failure
     for (const p of [dumpPath, gzPath]) {
-      try { await unlink(p); } catch { /* ignore */ }
+      try {
+        await unlink(p);
+      } catch {
+        /* ignore */
+      }
     }
 
     throw err;

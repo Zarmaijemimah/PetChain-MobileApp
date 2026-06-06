@@ -67,12 +67,15 @@ describe('BlockchainIntegrationService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Reset mock implementations
-    mockAsyncStorage.multiGet.mockResolvedValue([['', null], ['', null]]);
+    mockAsyncStorage.multiGet.mockResolvedValue([
+      ['', null],
+      ['', null],
+    ]);
     mockAsyncStorage.multiSet.mockResolvedValue(undefined);
     mockAsyncStorage.multiRemove.mockResolvedValue(undefined);
-    
+
     mockBlockchainEventService.connect.mockResolvedValue(undefined);
     mockBlockchainEventService.getStatus.mockReturnValue({
       connected: true,
@@ -103,13 +106,13 @@ describe('BlockchainIntegrationService', () => {
   describe('initialize()', () => {
     it('initializes successfully with auto-connect', async () => {
       const accounts = ['ACCOUNT1', 'ACCOUNT2'];
-      
+
       await service.initialize(accounts);
-      
+
       expect(mockBlockchainEventService.connect).toHaveBeenCalledWith(accounts);
       expect(mockLogger.info).toHaveBeenCalledWith(
         'Initializing blockchain integration',
-        expect.objectContaining({ accounts })
+        expect.objectContaining({ accounts }),
       );
     });
 
@@ -123,51 +126,48 @@ describe('BlockchainIntegrationService', () => {
           autoVerified: true,
         },
       ];
-      
+
       const mockPending = ['record2', 'record3'];
-      
+
       mockAsyncStorage.multiGet.mockResolvedValue([
         ['@blockchain_verification_status', JSON.stringify(mockStatuses)],
         ['@pending_verifications', JSON.stringify(mockPending)],
       ]);
-      
+
       await service.initialize(['ACCOUNT1']);
-      
+
       const status = service.getRecordVerificationStatus('record1');
       expect(status).toMatchObject({
         recordId: 'record1',
         verified: true,
         transactionHash: 'tx123',
       });
-      
+
       const allStatuses = service.getAllVerificationStatuses();
       expect(allStatuses).toHaveLength(1);
     });
 
     it('handles initialization errors gracefully', async () => {
       mockBlockchainEventService.connect.mockRejectedValue(new Error('Connection failed'));
-      
-      await expect(service.initialize(['ACCOUNT1']))
-        .rejects.toThrow('Connection failed');
-      
+
+      await expect(service.initialize(['ACCOUNT1'])).rejects.toThrow('Connection failed');
+
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Failed to initialize blockchain integration',
-        expect.objectContaining({ error: 'Connection failed' })
+        expect.objectContaining({ error: 'Connection failed' }),
       );
     });
 
     it('skips initialization if already initialized', async () => {
       await service.initialize(['ACCOUNT1']);
-      
+
       // Clear mock calls
       mockBlockchainEventService.connect.mockClear();
-      
+
       await service.initialize(['ACCOUNT2']);
-      
+
       expect(mockBlockchainEventService.connect).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        'Blockchain integration already initialized'
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith('Blockchain integration already initialized');
     });
   });
 
@@ -180,7 +180,7 @@ describe('BlockchainIntegrationService', () => {
 
     it('adds new record for verification', async () => {
       await service.addRecordForVerification('record1', 'hash123', 'tx456');
-      
+
       const status = service.getRecordVerificationStatus('record1');
       expect(status).toMatchObject({
         recordId: 'record1',
@@ -188,14 +188,14 @@ describe('BlockchainIntegrationService', () => {
         transactionHash: 'tx456',
         autoVerified: false,
       });
-      
+
       expect(mockAsyncStorage.multiSet).toHaveBeenCalled();
     });
 
     it('skips already verified records', async () => {
       // Add and verify a record first
       await service.addRecordForVerification('record1');
-      
+
       // Simulate verification
       const mockVerification = {
         verified: true,
@@ -204,13 +204,13 @@ describe('BlockchainIntegrationService', () => {
         txHash: 'tx456',
       };
       mockVerifyRecordOnChain.mockResolvedValue(mockVerification);
-      
+
       await service.checkRecordVerification('record1', 'hash123');
-      
+
       // Try to add the same record again
       const addSpy = jest.spyOn(service, 'emit');
       await service.addRecordForVerification('record1');
-      
+
       expect(addSpy).not.toHaveBeenCalledWith('recordAdded', expect.anything());
     });
 
@@ -222,9 +222,9 @@ describe('BlockchainIntegrationService', () => {
         txHash: 'tx456',
       };
       mockVerifyRecordOnChain.mockResolvedValue(mockVerification);
-      
+
       await service.addRecordForVerification('record1', 'hash123');
-      
+
       expect(mockVerifyRecordOnChain).toHaveBeenCalledWith('record1', 'hash123');
     });
   });
@@ -246,12 +246,12 @@ describe('BlockchainIntegrationService', () => {
         ledger: 12345,
       };
       mockVerifyRecordOnChain.mockResolvedValue(mockVerification);
-      
+
       const result = await service.checkRecordVerification('record1', 'hash123');
-      
+
       expect(result).toBe(true);
       expect(mockVerifyRecordOnChain).toHaveBeenCalledWith('record1', 'hash123');
-      
+
       const status = service.getRecordVerificationStatus('record1');
       expect(status?.verified).toBe(true);
       expect(status?.transactionHash).toBe('tx456');
@@ -260,16 +260,16 @@ describe('BlockchainIntegrationService', () => {
 
     it('handles verification failures', async () => {
       mockVerifyRecordOnChain.mockRejectedValue(new Error('Verification failed'));
-      
+
       const result = await service.checkRecordVerification('record1', 'hash123');
-      
+
       expect(result).toBe(false);
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Failed to check record verification',
         expect.objectContaining({
           recordId: 'record1',
           error: 'Verification failed',
-        })
+        }),
       );
     });
   });
@@ -292,18 +292,18 @@ describe('BlockchainIntegrationService', () => {
         operations: [],
         recordIds: ['record1'],
       };
-      
+
       // Trigger transaction event
       eventHandlers.transaction({ data: transactionEvent });
-      
+
       // Wait for async processing
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       const status = service.getRecordVerificationStatus('record1');
       expect(status?.verified).toBe(true);
       expect(status?.autoVerified).toBe(true);
       expect(status?.transactionHash).toBe('tx123');
-      
+
       expect(mockInvalidateBlockchainCacheKey).toHaveBeenCalledWith('verify:record1');
     });
 
@@ -315,13 +315,13 @@ describe('BlockchainIntegrationService', () => {
         ledger: 12346,
         timestamp: '2023-01-01T00:00:00Z',
       };
-      
+
       // Trigger verification update event
       eventHandlers.verificationUpdate({ data: verificationEvent });
-      
+
       // Wait for async processing
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       const status = service.getRecordVerificationStatus('record1');
       expect(status?.verified).toBe(true);
       expect(status?.autoVerified).toBe(true);
@@ -333,12 +333,12 @@ describe('BlockchainIntegrationService', () => {
         connected: false,
         error: 'Connection lost',
       };
-      
+
       service.on('connectionStatus', (data) => {
         expect(data).toEqual(connectionEvent);
         done();
       });
-      
+
       eventHandlers.connectionStatus({ data: connectionEvent });
     });
   });
@@ -350,9 +350,9 @@ describe('BlockchainIntegrationService', () => {
       await service.initialize(['ACCOUNT1', 'ACCOUNT2']);
       await service.addRecordForVerification('record1');
       await service.addRecordForVerification('record2');
-      
+
       const status = service.getStatus();
-      
+
       expect(status).toMatchObject({
         connected: true,
         activeAccounts: ['ACCOUNT1'],
@@ -373,11 +373,11 @@ describe('BlockchainIntegrationService', () => {
     it('clears verification data', async () => {
       await service.addRecordForVerification('record1');
       await service.addRecordForVerification('record2');
-      
+
       expect(service.getAllVerificationStatuses()).toHaveLength(2);
-      
+
       await service.clearVerificationData();
-      
+
       expect(service.getAllVerificationStatuses()).toHaveLength(0);
       expect(mockAsyncStorage.multiRemove).toHaveBeenCalledWith([
         '@blockchain_verification_status',
@@ -387,9 +387,9 @@ describe('BlockchainIntegrationService', () => {
 
     it('persists data on disconnect', async () => {
       await service.addRecordForVerification('record1');
-      
+
       await service.disconnect();
-      
+
       expect(mockAsyncStorage.multiSet).toHaveBeenCalled();
       expect(mockBlockchainEventService.disconnect).toHaveBeenCalled();
     });
@@ -400,27 +400,27 @@ describe('BlockchainIntegrationService', () => {
   describe('error handling', () => {
     it('handles storage errors gracefully', async () => {
       mockAsyncStorage.multiGet.mockRejectedValue(new Error('Storage error'));
-      
+
       // Should not throw
       await service.initialize(['ACCOUNT1']);
-      
+
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'Failed to load persisted verification data',
-        expect.objectContaining({ error: 'Storage error' })
+        expect.objectContaining({ error: 'Storage error' }),
       );
     });
 
     it('handles persistence errors gracefully', async () => {
       await service.initialize(['ACCOUNT1']);
-      
+
       mockAsyncStorage.multiSet.mockRejectedValue(new Error('Persistence error'));
-      
+
       // Should not throw
       await service.addRecordForVerification('record1');
-      
+
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'Failed to persist verification data',
-        expect.objectContaining({ error: 'Persistence error' })
+        expect.objectContaining({ error: 'Persistence error' }),
       );
     });
   });

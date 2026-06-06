@@ -1,7 +1,7 @@
 import * as StellarSdk from '@stellar/stellar-sdk';
 
 import { query } from '../../src/db';
-import { StellarMigrationService, TestnetRecord } from '../stellarMigrationService';
+import { StellarMigrationService, type TestnetRecord } from '../stellarMigrationService';
 
 // ---------------------------------------------------------------------------
 // Mocks

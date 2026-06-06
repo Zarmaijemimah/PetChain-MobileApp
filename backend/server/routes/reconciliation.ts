@@ -10,7 +10,6 @@
  * POST  /reconciliation/scheduler/stop   — stop the background scheduler
  */
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import express from 'express';
 
 import { authenticateJWT, authorizeRoles, type AuthenticatedRequest } from '../../middleware/auth';

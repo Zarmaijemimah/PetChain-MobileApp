@@ -4,6 +4,7 @@ module.exports = {
   transform: {
     '^.+\\.[jt]sx?$': 'babel-jest',
   },
+  transformIgnorePatterns: ['/node_modules/(?!(otplib|@otplib)/)'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: {
     '^react-native$': '<rootDir>/src/__mocks__/react-native.ts',
@@ -29,6 +30,7 @@ module.exports = {
     '^expo-image-manipulator$': '<rootDir>/src/__mocks__/expo-image-manipulator.ts',
     '^expo-image-picker$': '<rootDir>/src/__mocks__/expo-image-picker.ts',
     '^node-fetch$': '<rootDir>/src/__mocks__/node-fetch.js',
+    '^otplib$': '<rootDir>/src/__mocks__/otplib.ts',
   },
   collectCoverageFrom: [
     'src/**/*.ts',

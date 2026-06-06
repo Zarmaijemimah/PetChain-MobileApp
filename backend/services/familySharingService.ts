@@ -22,7 +22,12 @@ import type {
   TransferPetOwnershipInput,
   UpdateFamilyMemberInput,
 } from '../models/FamilySharing';
-import { FamilyMemberRole, FamilyMemberStatus, InvitationStatus as InvStatus, PetAccessLevel } from '../models/FamilySharing';
+import {
+  FamilyMemberRole,
+  FamilyMemberStatus,
+  InvitationStatus as InvStatus,
+  PetAccessLevel,
+} from '../models/FamilySharing';
 
 // In-memory stores (replace with DB repositories in production)
 const familyGroups = new Map<string, FamilyGroup>();
@@ -48,10 +53,7 @@ function getInvitationExpiresAt(daysFromNow: number = 7): string {
 
 // ─── Family Group Operations ───────────────────────────────────────────────────
 
-export function createFamilyGroup(
-  ownerId: string,
-  input: CreateFamilyGroupInput,
-): FamilyGroup {
+export function createFamilyGroup(ownerId: string, input: CreateFamilyGroupInput): FamilyGroup {
   const id = randomUUID();
   const t = now();
 
@@ -81,7 +83,14 @@ export function createFamilyGroup(
   familyMembers.set(memberId, member);
 
   // Log activity
-  logActivity(id, ownerId, 'family_group.created', 'family_group', id, `Created family group "${input.name}"`);
+  logActivity(
+    id,
+    ownerId,
+    'family_group.created',
+    'family_group',
+    id,
+    `Created family group "${input.name}"`,
+  );
 
   return group;
 }
@@ -119,7 +128,14 @@ export function updateFamilyGroup(
   };
 
   familyGroups.set(familyGroupId, updated);
-  logActivity(familyGroupId, updatedBy, 'family_group.updated', 'family_group', familyGroupId, 'Updated family group');
+  logActivity(
+    familyGroupId,
+    updatedBy,
+    'family_group.updated',
+    'family_group',
+    familyGroupId,
+    'Updated family group',
+  );
 
   return updated;
 }
@@ -139,7 +155,14 @@ export function deleteFamilyGroup(familyGroupId: string, deletedBy: string): boo
     .filter((i) => i.familyGroupId === familyGroupId)
     .forEach((i) => familyInvitations.delete(i.id));
 
-  logActivity(familyGroupId, deletedBy, 'family_group.deleted', 'family_group', familyGroupId, 'Deleted family group');
+  logActivity(
+    familyGroupId,
+    deletedBy,
+    'family_group.deleted',
+    'family_group',
+    familyGroupId,
+    'Deleted family group',
+  );
 
   return true;
 }
@@ -152,7 +175,10 @@ export function getFamilyMembers(familyGroupId: string): FamilyMember[] {
 
 export function getFamilyMember(familyGroupId: string, userId: string): FamilyMember | undefined {
   return [...familyMembers.values()].find(
-    (m) => m.familyGroupId === familyGroupId && m.userId === userId && m.status === FamilyMemberStatus.ACCEPTED,
+    (m) =>
+      m.familyGroupId === familyGroupId &&
+      m.userId === userId &&
+      m.status === FamilyMemberStatus.ACCEPTED,
   );
 }
 
@@ -191,7 +217,11 @@ export function inviteFamilyMember(
   return invitation;
 }
 
-export function acceptFamilyInvitation(invitationToken: string, userId: string, userEmail: string): FamilyMember | null {
+export function acceptFamilyInvitation(
+  invitationToken: string,
+  userId: string,
+  userEmail: string,
+): FamilyMember | null {
   const invitation = [...familyInvitations.values()].find((i) => i.token === invitationToken);
   if (!invitation) return null;
 
@@ -258,7 +288,10 @@ export function updateFamilyMemberRole(
 
   // Only owner/admin can update roles
   const updater = getFamilyMember(familyGroupId, updatedBy);
-  if (!updater || (updater.role !== FamilyMemberRole.OWNER && updater.role !== FamilyMemberRole.ADMIN)) {
+  if (
+    !updater ||
+    (updater.role !== FamilyMemberRole.OWNER && updater.role !== FamilyMemberRole.ADMIN)
+  ) {
     return null;
   }
 
@@ -294,7 +327,10 @@ export function removeFamilyMember(
 
   // Only owner/admin can remove members
   const remover = getFamilyMember(familyGroupId, removedBy);
-  if (!remover || (remover.role !== FamilyMemberRole.OWNER && remover.role !== FamilyMemberRole.ADMIN)) {
+  if (
+    !remover ||
+    (remover.role !== FamilyMemberRole.OWNER && remover.role !== FamilyMemberRole.ADMIN)
+  ) {
     return false;
   }
 
@@ -302,7 +338,14 @@ export function removeFamilyMember(
   if (member.role === FamilyMemberRole.OWNER) return false;
 
   familyMembers.delete(member.id);
-  logActivity(familyGroupId, removedBy, 'family_member.removed', 'family_member', member.id, `Removed ${userId}`);
+  logActivity(
+    familyGroupId,
+    removedBy,
+    'family_member.removed',
+    'family_member',
+    member.id,
+    `Removed ${userId}`,
+  );
 
   return true;
 }
@@ -434,7 +477,10 @@ export function canEditPet(petId: string, userId: string): boolean {
   const permission = getPetAccess(petId, userId);
   if (!permission) return false;
 
-  return permission.permissionLevel === PetAccessLevel.ADMIN || permission.permissionLevel === PetAccessLevel.CAREGIVER;
+  return (
+    permission.permissionLevel === PetAccessLevel.ADMIN ||
+    permission.permissionLevel === PetAccessLevel.CAREGIVER
+  );
 }
 
 export function canManagePetAccess(petId: string, userId: string): boolean {
@@ -523,7 +569,11 @@ export function getFamilyActivityFeed(
     .slice(offset, offset + limit);
 }
 
-export function getPetActivityFeed(petId: string, limit: number = 50, offset: number = 0): FamilyActivityFeed[] {
+export function getPetActivityFeed(
+  petId: string,
+  limit: number = 50,
+  offset: number = 0,
+): FamilyActivityFeed[] {
   return [...activityFeed.values()]
     .filter((a) => a.petId === petId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())

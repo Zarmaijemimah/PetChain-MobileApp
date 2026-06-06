@@ -1,5 +1,5 @@
-import React from 'react';
 import { render } from '@testing-library/react-native';
+import React from 'react';
 
 // Mock screen component
 const MedicalRecordViewerScreen = ({ recordId }: { recordId: string }) => (

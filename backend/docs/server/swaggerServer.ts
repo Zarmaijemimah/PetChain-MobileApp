@@ -14,6 +14,7 @@
 
 import express, { type Request, type Response, type NextFunction } from 'express';
 import swaggerUi from 'swagger-ui-express';
+
 import { openApiSpec } from '../openapi/spec';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -42,16 +43,15 @@ function createDocsAuthMiddleware(apiKey?: string) {
       return;
     }
 
-    const providedKey =
-      req.headers['x-docs-api-key'] ||
-      req.query['api_key'];
+    const providedKey = req.headers['x-docs-api-key'] || req.query['api_key'];
 
     if (providedKey !== apiKey) {
       res.status(401).json({
         success: false,
         error: {
           code: 'DOCS_UNAUTHORIZED',
-          message: 'API key required to access documentation. Provide X-Docs-Api-Key header or ?api_key= query param.',
+          message:
+            'API key required to access documentation. Provide X-Docs-Api-Key header or ?api_key= query param.',
         },
         timestamp: new Date().toISOString(),
       });
@@ -108,15 +108,8 @@ const swaggerUiOptions: swaggerUi.SwaggerUiOptions = {
  * app.listen(3000);
  * ```
  */
-export function mountSwaggerUI(
-  app: express.Application,
-  options: SwaggerServerOptions = {},
-): void {
-  const {
-    docsPath = '/api/docs',
-    apiKey = process.env.DOCS_API_KEY,
-    enableCors = true,
-  } = options;
+export function mountSwaggerUI(app: express.Application, options: SwaggerServerOptions = {}): void {
+  const { docsPath = '/api/docs', apiKey = process.env.DOCS_API_KEY, enableCors = true } = options;
 
   const authMiddleware = createDocsAuthMiddleware(apiKey);
 
@@ -124,7 +117,10 @@ export function mountSwaggerUI(
   if (enableCors) {
     app.use(docsPath, (_req: Request, res: Response, next: NextFunction) => {
       res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, X-Docs-Api-Key');
+      res.header(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept, X-Docs-Api-Key',
+      );
       next();
     });
   }
@@ -157,7 +153,9 @@ export function mountSwaggerUI(
  * Standalone Express server for serving docs independently.
  * Run with: npx ts-node backend/docs/server/swaggerServer.ts
  */
-export function createStandaloneDocsServer(options: SwaggerServerOptions = {}): express.Application {
+export function createStandaloneDocsServer(
+  options: SwaggerServerOptions = {},
+): express.Application {
   const app = express();
   const { port = 3001, docsPath = '/api/docs' } = options;
 

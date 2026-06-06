@@ -35,9 +35,7 @@ export const getNutritionLogsByDate = async (
   return data;
 };
 
-export const createNutritionLog = async (
-  input: CreateNutritionLogInput,
-): Promise<NutritionLog> => {
+export const createNutritionLog = async (input: CreateNutritionLogInput): Promise<NutritionLog> => {
   const { data } = await axios.post(`${API_URL}/nutrition/logs`, input);
   return data;
 };
@@ -154,7 +152,9 @@ export const getDietaryRecommendations = (
     tips.push('Reduce calorie intake by 20% and increase exercise. Use weight-management food.');
   }
   if (healthConditions.includes('diabetes')) {
-    tips.push('Feed consistent portions at regular times. Low-glycemic, high-fiber diets help regulate blood sugar.');
+    tips.push(
+      'Feed consistent portions at regular times. Low-glycemic, high-fiber diets help regulate blood sugar.',
+    );
   }
   if (healthConditions.includes('kidney_disease')) {
     tips.push('Low-phosphorus, low-protein diets are recommended. Consult your vet.');
@@ -167,7 +167,7 @@ export const getDietaryRecommendations = (
   }
 
   if (tips.length === 0) {
-    tips.push('Maintain a balanced diet appropriate for your pet\'s age and size.');
+    tips.push("Maintain a balanced diet appropriate for your pet's age and size.");
   }
 
   return tips;

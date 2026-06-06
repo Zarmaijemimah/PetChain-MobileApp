@@ -200,7 +200,9 @@ export default function FiatOnRampScreen() {
                 accessibilityRole="radio"
                 accessibilityState={{ checked: currency === c }}
               >
-                <Text style={[styles.currencyBtnText, currency === c && styles.currencyBtnTextActive]}>
+                <Text
+                  style={[styles.currencyBtnText, currency === c && styles.currencyBtnTextActive]}
+                >
                   {c}
                 </Text>
               </TouchableOpacity>
@@ -226,11 +228,11 @@ export default function FiatOnRampScreen() {
       {(step === 'polling' || step === 'webview') && deposit && (
         <View style={styles.statusCard}>
           <ActivityIndicator size="large" color="#4A90A4" style={styles.spinner} />
-          <Text style={styles.statusText}>
-            {STATUS_LABELS[deposit.status] ?? 'Processing…'}
-          </Text>
+          <Text style={styles.statusText}>{STATUS_LABELS[deposit.status] ?? 'Processing…'}</Text>
           {deposit.amountIn && (
-            <Text style={styles.detail}>Amount sent: {deposit.amountIn} {deposit.currency}</Text>
+            <Text style={styles.detail}>
+              Amount sent: {deposit.amountIn} {deposit.currency}
+            </Text>
           )}
           {deposit.amountOut && (
             <Text style={styles.detail}>

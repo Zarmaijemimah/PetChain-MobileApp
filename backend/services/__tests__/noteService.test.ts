@@ -1,11 +1,7 @@
 import * as StellarSdk from '@stellar/stellar-sdk';
 
+import { NoteValidationError, noteService, type ClinicalNotePayload } from '../noteService';
 import { query } from '../src/db';
-import {
-  NoteValidationError,
-  noteService,
-  type ClinicalNotePayload,
-} from '../noteService';
 
 jest.mock('../src/db', () => ({
   query: jest.fn(),

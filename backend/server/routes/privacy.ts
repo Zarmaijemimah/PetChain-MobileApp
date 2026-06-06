@@ -1,7 +1,6 @@
 import express from 'express';
 
 import { authenticateJWT, type AuthenticatedRequest } from '../../middleware/auth';
-import { ok, sendError } from '../response';
 import {
   eraseUserData,
   exportUserData,
@@ -11,6 +10,7 @@ import {
   getExportRequest,
   getUserExportRequests,
 } from '../../services/dataExportService';
+import { ok, sendError } from '../response';
 
 const router = express.Router();
 router.use(authenticateJWT);

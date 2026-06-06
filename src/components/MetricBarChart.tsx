@@ -58,7 +58,9 @@ const MetricBarChart: React.FC<Props> = ({ points, color, unit = '', height = 16
           </Text>
         ))}
       </View>
-      {unit ? <Text style={[styles.unitHint, { color: colors.placeholder }]}>Unit: {unit}</Text> : null}
+      {unit ? (
+        <Text style={[styles.unitHint, { color: colors.placeholder }]}>Unit: {unit}</Text>
+      ) : null}
     </View>
   );
 };

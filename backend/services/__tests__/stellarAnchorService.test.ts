@@ -7,8 +7,7 @@ TRANSFER_SERVER_SEP0024="https://testanchor.stellar.org/sep24"
 WEB_AUTH_ENDPOINT="https://testanchor.stellar.org/auth"
 `;
 
-const mockChallengeXdr =
-  'AAAAAgAAAABSomeBase64EncodedTransactionXDRHere==';
+const mockChallengeXdr = 'AAAAAgAAAABSomeBase64EncodedTransactionXDRHere==';
 
 function makeFetchMock(overrides: Record<string, unknown> = {}) {
   return jest.fn().mockImplementation((url: string) => {
@@ -73,11 +72,7 @@ describe('StellarAnchorService', () => {
     it('returns a depositId and interactiveUrl on success', async () => {
       global.fetch = makeFetchMock() as typeof fetch;
 
-      const result = await service.initiateDeposit(
-        'user-1',
-        'GABC123',
-        'USD',
-      );
+      const result = await service.initiateDeposit('user-1', 'GABC123', 'USD');
 
       expect(result.depositId).toMatch(/^dep_/);
       expect(result.interactiveUrl).toContain('testanchor.stellar.org');
@@ -102,9 +97,9 @@ describe('StellarAnchorService', () => {
         text: () => Promise.resolve('# no transfer server'),
       }) as typeof fetch;
 
-      await expect(
-        service.initiateDeposit('user-3', 'GABC', 'USD'),
-      ).rejects.toThrow('does not support SEP-24');
+      await expect(service.initiateDeposit('user-3', 'GABC', 'USD')).rejects.toThrow(
+        'does not support SEP-24',
+      );
     });
 
     it('throws when the anchor deposit endpoint returns an error', async () => {
@@ -121,9 +116,9 @@ describe('StellarAnchorService', () => {
         return Promise.resolve({ ok: false, text: () => Promise.resolve('Unauthorized') });
       }) as typeof fetch;
 
-      await expect(
-        service.initiateDeposit('user-4', 'GABC', 'USD'),
-      ).rejects.toThrow('SEP-24 deposit initiation failed');
+      await expect(service.initiateDeposit('user-4', 'GABC', 'USD')).rejects.toThrow(
+        'SEP-24 deposit initiation failed',
+      );
     });
   });
 

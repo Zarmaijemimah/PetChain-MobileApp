@@ -1,5 +1,5 @@
-import * as SecureStore from 'expo-secure-store';
 import * as StellarSdk from '@stellar/stellar-sdk';
+import * as SecureStore from 'expo-secure-store';
 
 jest.mock('expo-secure-store');
 jest.mock('@stellar/stellar-sdk');

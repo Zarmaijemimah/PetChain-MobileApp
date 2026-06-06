@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import express from 'express';
 
-import { authenticateJWT, type AuthenticatedRequest } from '../../middleware/auth';
 import { logAuditTrail } from '../../middleware/auditLogger';
+import { authenticateJWT, type AuthenticatedRequest } from '../../middleware/auth';
 import { AppointmentStatus, AppointmentType } from '../../models/Appointment';
 import { UserRole } from '../../models/UserRole';
 import logger from '../../utils/logger';
@@ -17,7 +17,9 @@ const vetLocks = new Map<string, Promise<void>>();
 async function withVetLock<T>(vetId: string, fn: () => Promise<T>): Promise<T> {
   const prev = vetLocks.get(vetId) ?? Promise.resolve();
   let resolve!: () => void;
-  const next = new Promise<void>((r) => { resolve = r; });
+  const next = new Promise<void>((r) => {
+    resolve = r;
+  });
   vetLocks.set(vetId, next);
   try {
     await prev;
@@ -40,7 +42,8 @@ function overlaps(a: StoredAppointment, startMs: number, endMs: number): boolean
     a.status === AppointmentStatus.CANCELLED ||
     a.status === AppointmentStatus.COMPLETED ||
     a.status === AppointmentStatus.NO_SHOW
-  ) return false;
+  )
+    return false;
 
   const aStart = new Date(`${a.date}T${a.time}:00Z`).getTime();
   const aEnd = aStart + (a.durationMinutes ?? 30) * 60_000;
@@ -107,7 +110,12 @@ router.get('/', (req: AuthenticatedRequest, res) => {
   if (petId) {
     const pet = store.pets.get(petId);
     if (pet && req.user!.role === UserRole.OWNER && req.user!.id !== pet.ownerId) {
-      return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to view these appointments');
+      return sendError(
+        res,
+        403,
+        'FORBIDDEN',
+        'You do not have permission to view these appointments',
+      );
     }
   }
 
@@ -119,7 +127,12 @@ router.get('/', (req: AuthenticatedRequest, res) => {
   }
 
   list.sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));
-  return res.json({ success: true, data: list, total: list.length, timestamp: new Date().toISOString() });
+  return res.json({
+    success: true,
+    data: list,
+    total: list.length,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // ─── GET /appointments/:id ────────────────────────────────────────────────────
@@ -204,8 +217,19 @@ router.post('/', async (req: AuthenticatedRequest, res) => {
       return sendError(res, 409, 'CONFLICT', 'The requested time slot is not available');
     }
 
-    void logAuditTrail({ req, entityType: 'appointment', entityId: row.id, action: 'CREATE', before: null, after: row });
-    logger.info('appointment_created', { appointmentId: row.id, vetId: row.vetId, petId: row.petId });
+    void logAuditTrail({
+      req,
+      entityType: 'appointment',
+      entityId: row.id,
+      action: 'CREATE',
+      before: null,
+      after: row,
+    });
+    logger.info('appointment_created', {
+      appointmentId: row.id,
+      vetId: row.vetId,
+      petId: row.petId,
+    });
     return res.status(201).json(toResponse(row));
   } catch (err) {
     logger.error('appointment_create_error', { error: (err as Error).message });
@@ -225,19 +249,25 @@ router.put('/:id', async (req: AuthenticatedRequest, res) => {
   const isAdmin = req.user!.role === UserRole.ADMIN;
 
   if (!isOwner && !isAssignedVet && !isAdmin) {
-    return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to update this appointment');
+    return sendError(
+      res,
+      403,
+      'FORBIDDEN',
+      'You do not have permission to update this appointment',
+    );
   }
 
   const b = req.body as Partial<StoredAppointment>;
   const t = new Date().toISOString();
 
   // Detect reschedule (date or time changing)
-  const isReschedule = (b.date !== undefined && b.date !== row.date) ||
-                       (b.time !== undefined && b.time !== row.time);
+  const isReschedule =
+    (b.date !== undefined && b.date !== row.date) || (b.time !== undefined && b.time !== row.time);
 
   const newDate = b.date !== undefined ? String(b.date) : row.date;
   const newTime = b.time !== undefined ? String(b.time) : row.time;
-  const newDuration = b.durationMinutes !== undefined ? b.durationMinutes : (row.durationMinutes ?? 30);
+  const newDuration =
+    b.durationMinutes !== undefined ? b.durationMinutes : (row.durationMinutes ?? 30);
   const vetId = row.vetId;
 
   try {
@@ -285,7 +315,14 @@ router.put('/:id', async (req: AuthenticatedRequest, res) => {
       return sendError(res, 409, 'CONFLICT', 'The requested time slot is not available');
     }
 
-    void logAuditTrail({ req, entityType: 'appointment', entityId: row.id, action: 'UPDATE', before: row, after: next });
+    void logAuditTrail({
+      req,
+      entityType: 'appointment',
+      entityId: row.id,
+      action: 'UPDATE',
+      before: row,
+      after: next,
+    });
     logger.info('appointment_updated', { appointmentId: row.id, isReschedule });
     return res.json(toResponse(next as StoredAppointment));
   } catch (err) {
@@ -310,7 +347,12 @@ router.post('/:id/cancel', async (req: AuthenticatedRequest, res) => {
   const isAdmin = req.user!.role === UserRole.ADMIN;
 
   if (!isOwner && !isAssignedVet && !isAdmin) {
-    return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to cancel this appointment');
+    return sendError(
+      res,
+      403,
+      'FORBIDDEN',
+      'You do not have permission to cancel this appointment',
+    );
   }
 
   const t = new Date().toISOString();
@@ -324,7 +366,14 @@ router.post('/:id/cancel', async (req: AuthenticatedRequest, res) => {
   };
   store.appointments.set(row.id, cancelled);
 
-  void logAuditTrail({ req, entityType: 'appointment', entityId: row.id, action: 'UPDATE', before: row, after: cancelled });
+  void logAuditTrail({
+    req,
+    entityType: 'appointment',
+    entityId: row.id,
+    action: 'UPDATE',
+    before: row,
+    after: cancelled,
+  });
   logger.info('appointment_cancelled', { appointmentId: row.id });
   return res.json(toResponse(cancelled));
 });
@@ -336,7 +385,12 @@ router.post('/:id/reschedule', async (req: AuthenticatedRequest, res) => {
   if (!row) return sendError(res, 404, 'NOT_FOUND', 'Appointment not found');
 
   if (row.status === AppointmentStatus.CANCELLED || row.status === AppointmentStatus.COMPLETED) {
-    return sendError(res, 400, 'VALIDATION_ERROR', 'Cannot reschedule a cancelled or completed appointment');
+    return sendError(
+      res,
+      400,
+      'VALIDATION_ERROR',
+      'Cannot reschedule a cancelled or completed appointment',
+    );
   }
 
   const pet = store.pets.get(row.petId);
@@ -345,10 +399,19 @@ router.post('/:id/reschedule', async (req: AuthenticatedRequest, res) => {
   const isAdmin = req.user!.role === UserRole.ADMIN;
 
   if (!isOwner && !isAssignedVet && !isAdmin) {
-    return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to reschedule this appointment');
+    return sendError(
+      res,
+      403,
+      'FORBIDDEN',
+      'You do not have permission to reschedule this appointment',
+    );
   }
 
-  const { date, time, durationMinutes } = req.body as { date?: string; time?: string; durationMinutes?: number };
+  const { date, time, durationMinutes } = req.body as {
+    date?: string;
+    time?: string;
+    durationMinutes?: number;
+  };
   if (!date?.trim() || !time?.trim()) {
     return sendError(res, 400, 'VALIDATION_ERROR', 'date and time are required');
   }
@@ -390,7 +453,14 @@ router.post('/:id/reschedule', async (req: AuthenticatedRequest, res) => {
       return sendError(res, 409, 'CONFLICT', 'The requested time slot is not available');
     }
 
-    void logAuditTrail({ req, entityType: 'appointment', entityId: row.id, action: 'UPDATE', before: row, after: result });
+    void logAuditTrail({
+      req,
+      entityType: 'appointment',
+      entityId: row.id,
+      action: 'UPDATE',
+      before: row,
+      after: result,
+    });
     logger.info('appointment_rescheduled', { appointmentId: row.id, newDate: date, newTime: time });
     return res.json(toResponse(result as StoredAppointment));
   } catch (err) {
@@ -410,11 +480,23 @@ router.delete('/:id', (req: AuthenticatedRequest, res) => {
   const isAdmin = req.user!.role === UserRole.ADMIN;
 
   if (!isOwner && !isAdmin) {
-    return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to delete this appointment');
+    return sendError(
+      res,
+      403,
+      'FORBIDDEN',
+      'You do not have permission to delete this appointment',
+    );
   }
 
   store.appointments.delete(req.params.id);
-  void logAuditTrail({ req, entityType: 'appointment', entityId: row.id, action: 'DELETE', before: row, after: null });
+  void logAuditTrail({
+    req,
+    entityType: 'appointment',
+    entityId: row.id,
+    action: 'DELETE',
+    before: row,
+    after: null,
+  });
   logger.info('appointment_deleted', { appointmentId: row.id });
   return res.json(ok(null, 'Appointment deleted'));
 });

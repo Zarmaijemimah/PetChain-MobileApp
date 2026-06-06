@@ -23,6 +23,7 @@ import {
   View,
 } from 'react-native';
 
+import { WaitlistStatus, type WaitlistEntry } from '../../backend/models/WaitlistEntry';
 import {
   joinWaitlist,
   leaveWaitlist,
@@ -31,7 +32,6 @@ import {
   processExpiredNotifications,
   ACCEPTANCE_WINDOW_MS,
 } from '../../backend/services/waitlistService';
-import { WaitlistStatus, type WaitlistEntry } from '../../backend/models/WaitlistEntry';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -211,64 +211,56 @@ const WaitlistScreen: React.FC<Props> = ({ userId, onSlotAccepted, onBack }) => 
   // ── Leave waitlist ──────────────────────────────────────────────────────────
 
   const handleLeave = (entry: WaitlistEntry) => {
-    Alert.alert(
-      'Leave Waitlist',
-      'Are you sure you want to remove yourself from this waitlist?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Leave',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const result = await leaveWaitlist(entry.id);
-              if (!result.success) {
-                Alert.alert('Error', result.message ?? 'Could not leave the waitlist.');
-                return;
-              }
-              void load();
-            } catch {
-              Alert.alert('Error', 'Failed to leave the waitlist.');
+    Alert.alert('Leave Waitlist', 'Are you sure you want to remove yourself from this waitlist?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Leave',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const result = await leaveWaitlist(entry.id);
+            if (!result.success) {
+              Alert.alert('Error', result.message ?? 'Could not leave the waitlist.');
+              return;
             }
-          },
+            void load();
+          } catch {
+            Alert.alert('Error', 'Failed to leave the waitlist.');
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
 
   // ── Accept slot ─────────────────────────────────────────────────────────────
 
   const handleAccept = (entry: WaitlistEntry) => {
-    Alert.alert(
-      'Accept Slot',
-      'Confirm you want to book this appointment slot.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Accept',
-          onPress: async () => {
-            try {
-              // In a real integration the appointmentId would come from the server
-              // after creating the appointment. Here we generate a placeholder that
-              // the caller (onSlotAccepted) can replace with the real ID.
-              const placeholderAppointmentId = `apt_${Date.now()}`;
-              const result = await acceptSlot(entry.id, placeholderAppointmentId);
+    Alert.alert('Accept Slot', 'Confirm you want to book this appointment slot.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Accept',
+        onPress: async () => {
+          try {
+            // In a real integration the appointmentId would come from the server
+            // after creating the appointment. Here we generate a placeholder that
+            // the caller (onSlotAccepted) can replace with the real ID.
+            const placeholderAppointmentId = `apt_${Date.now()}`;
+            const result = await acceptSlot(entry.id, placeholderAppointmentId);
 
-              if (!result.success) {
-                Alert.alert('Could not accept', result.message ?? 'Unknown error.');
-                void load(); // refresh — entry may have expired
-                return;
-              }
-
-              void load();
-              onSlotAccepted?.(result.data, placeholderAppointmentId);
-            } catch {
-              Alert.alert('Error', 'Failed to accept the slot.');
+            if (!result.success) {
+              Alert.alert('Could not accept', result.message ?? 'Unknown error.');
+              void load(); // refresh — entry may have expired
+              return;
             }
-          },
+
+            void load();
+            onSlotAccepted?.(result.data, placeholderAppointmentId);
+          } catch {
+            Alert.alert('Error', 'Failed to accept the slot.');
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
 
   // ── Render entry card ───────────────────────────────────────────────────────
@@ -304,7 +296,8 @@ const WaitlistScreen: React.FC<Props> = ({ userId, onSlotAccepted, onBack }) => 
               Position: <Text style={styles.cardValue}>#{item.position}</Text>
             </Text>
             <Text style={styles.cardLabel}>
-              Est. wait: <Text style={styles.cardValue}>{formatEta(item.estimatedWaitMinutes)}</Text>
+              Est. wait:{' '}
+              <Text style={styles.cardValue}>{formatEta(item.estimatedWaitMinutes)}</Text>
             </Text>
           </>
         )}
@@ -455,8 +448,8 @@ const WaitlistScreen: React.FC<Props> = ({ userId, onSlotAccepted, onBack }) => 
       {/* Info banner */}
       <View style={styles.infoBanner}>
         <Text style={styles.infoText}>
-          When a slot opens you'll get a notification. You have{' '}
-          {ACCEPTANCE_WINDOW_MS / 60000} minutes to accept before it's offered to the next person.
+          When a slot opens you'll get a notification. You have {ACCEPTANCE_WINDOW_MS / 60000}{' '}
+          minutes to accept before it's offered to the next person.
         </Text>
       </View>
 

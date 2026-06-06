@@ -10,6 +10,7 @@
  *  - getAppointments / deleteAppointment: local CRUD fallback
  */
 
+import type { Medication } from '../../models/Medication';
 import {
   detectConflicts,
   isVetSupervised,
@@ -64,7 +65,6 @@ import {
   getAllLocalAppointments,
 } from '../localDB';
 import { getScheduleForRange } from '../medicationService';
-import type { Medication } from '../../models/Medication';
 
 const mockGetInWindow = getAppointmentsInWindow as jest.MockedFunction<
   typeof getAppointmentsInWindow
@@ -129,9 +129,9 @@ describe('isVetSupervised', () => {
   });
 
   it('returns true when notes contain "administered by"', () => {
-    expect(
-      isVetSupervised(makeMed({ notes: 'Must be administered by a vet technician' })),
-    ).toBe(true);
+    expect(isVetSupervised(makeMed({ notes: 'Must be administered by a vet technician' }))).toBe(
+      true,
+    );
   });
 
   it('is case-insensitive', () => {
@@ -324,9 +324,7 @@ describe('saveAppointment — conflict resolution note', () => {
     const appt = makeAppt({ notes: 'Original note' });
     await saveAppointment(appt);
 
-    expect(mockUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({ notes: 'Original note' }),
-    );
+    expect(mockUpsert).toHaveBeenCalledWith(expect.objectContaining({ notes: 'Original note' }));
   });
 });
 
@@ -359,8 +357,16 @@ describe('getUpcoming', () => {
 
   it('returns only future non-cancelled appointments', () => {
     const future = makeAppt({ id: 'f1', date: tomorrow });
-    const past = makeAppt({ id: 'p1', date: yesterday, status: 'COMPLETED' as Appointment['status'] });
-    const cancelled = makeAppt({ id: 'c1', date: tomorrow, status: 'CANCELLED' as Appointment['status'] });
+    const past = makeAppt({
+      id: 'p1',
+      date: yesterday,
+      status: 'COMPLETED' as Appointment['status'],
+    });
+    const cancelled = makeAppt({
+      id: 'c1',
+      date: tomorrow,
+      status: 'CANCELLED' as Appointment['status'],
+    });
 
     const result = getUpcoming([future, past, cancelled]);
     expect(result).toHaveLength(1);
@@ -379,8 +385,16 @@ describe('getPast', () => {
   const tomorrow = new Date(Date.now() + 86_400_000).toISOString();
 
   it('returns past and cancelled appointments', () => {
-    const past = makeAppt({ id: 'p1', date: yesterday, status: 'COMPLETED' as Appointment['status'] });
-    const cancelled = makeAppt({ id: 'c1', date: tomorrow, status: 'CANCELLED' as Appointment['status'] });
+    const past = makeAppt({
+      id: 'p1',
+      date: yesterday,
+      status: 'COMPLETED' as Appointment['status'],
+    });
+    const cancelled = makeAppt({
+      id: 'c1',
+      date: tomorrow,
+      status: 'CANCELLED' as Appointment['status'],
+    });
     const upcoming = makeAppt({ id: 'u1', date: tomorrow });
 
     const result = getPast([past, cancelled, upcoming]);

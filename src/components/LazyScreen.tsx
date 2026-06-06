@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+
 import ErrorBoundary from './ErrorBoundary';
 
 interface Props {
@@ -22,12 +23,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
 
-export default function LazyScreen({
-  children,
-  screenName = 'Unknown',
-  petId,
-  userId,
-}: Props) {
+export default function LazyScreen({ children, screenName = 'Unknown', petId, userId }: Props) {
   return (
     <ErrorBoundary context={{ screenName, petId, userId }}>
       <Suspense fallback={<Fallback />}>{children}</Suspense>

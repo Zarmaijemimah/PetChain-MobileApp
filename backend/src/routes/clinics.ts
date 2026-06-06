@@ -146,8 +146,7 @@ function validateCreateInput(body: unknown): { valid: boolean; errors: string[] 
     errors.push('latitude must be a number between -90 and 90');
   if (typeof b.longitude !== 'number' || b.longitude < -180 || b.longitude > 180)
     errors.push('longitude must be a number between -180 and 180');
-  if (!isValidClinicType(b.type))
-    errors.push(`type must be one of: ${VALID_TYPES.join(', ')}`);
+  if (!isValidClinicType(b.type)) errors.push(`type must be one of: ${VALID_TYPES.join(', ')}`);
 
   return { valid: errors.length === 0, errors };
 }
@@ -177,7 +176,10 @@ router.get('/', (_req: Request, res: Response, next: NextFunction) => {
       if (!isValidClinicType(type)) {
         res.status(400).json({
           success: false,
-          error: { code: 'INVALID_TYPE', message: `type must be one of: ${VALID_TYPES.join(', ')}` },
+          error: {
+            code: 'INVALID_TYPE',
+            message: `type must be one of: ${VALID_TYPES.join(', ')}`,
+          },
         });
         return;
       }

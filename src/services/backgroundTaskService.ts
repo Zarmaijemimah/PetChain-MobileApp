@@ -9,8 +9,8 @@ import * as BackgroundFetch from 'expo-background-fetch';
 import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 
-import { logError } from '../utils/errorLogger';
 import { getMedications, getScheduleForRange, type Medication } from './medicationService';
+import { logError } from '../utils/errorLogger';
 
 export const BACKGROUND_MEDICATION_TASK = 'BACKGROUND_MEDICATION_REMINDER_TASK';
 
@@ -110,7 +110,9 @@ export async function cancelMedicationNotifications(): Promise<void> {
     (n) => (n.content.data as Record<string, unknown>)?.type === 'medication_reminder',
   );
   await Promise.all(
-    medicationNotifications.map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+    medicationNotifications.map((n) =>
+      Notifications.cancelScheduledNotificationAsync(n.identifier),
+    ),
   );
 }
 

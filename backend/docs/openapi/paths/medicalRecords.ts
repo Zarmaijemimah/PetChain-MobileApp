@@ -33,7 +33,10 @@ export const medicalRecordPaths = {
         {
           name: 'type',
           in: 'query',
-          schema: { type: 'string', enum: ['checkup', 'vaccination', 'surgery', 'treatment', 'other'] },
+          schema: {
+            type: 'string',
+            enum: ['checkup', 'vaccination', 'surgery', 'treatment', 'other'],
+          },
           description: 'Filter by record type',
         },
         {
@@ -59,7 +62,14 @@ export const medicalRecordPaths = {
               schema: {
                 allOf: [
                   { $ref: '#/components/schemas/PaginatedResponse' },
-                  { properties: { data: { type: 'array', items: { $ref: '#/components/schemas/MedicalRecord' } } } },
+                  {
+                    properties: {
+                      data: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/MedicalRecord' },
+                      },
+                    },
+                  },
                 ],
               },
             },
@@ -135,7 +145,8 @@ export const medicalRecordPaths = {
     get: {
       tags: ['Medical Records'],
       summary: 'Get medical record by ID',
-      description: 'Returns a single medical record with full details including blockchain verification status.',
+      description:
+        'Returns a single medical record with full details including blockchain verification status.',
       operationId: 'getMedicalRecordById',
       security: [{ BearerAuth: [] }],
       parameters: [{ $ref: '#/components/parameters/RecordIdParam' }],
@@ -201,7 +212,10 @@ export const medicalRecordPaths = {
               schema: { $ref: '#/components/schemas/ApiError' },
               example: {
                 success: false,
-                error: { code: 'RECORD_IMMUTABLE', message: 'This record has been anchored on the blockchain and cannot be modified' },
+                error: {
+                  code: 'RECORD_IMMUTABLE',
+                  message: 'This record has been anchored on the blockchain and cannot be modified',
+                },
                 timestamp: '2024-01-15T10:30:00Z',
               },
             },
@@ -236,7 +250,8 @@ export const medicalRecordPaths = {
     get: {
       tags: ['Medical Records'],
       summary: 'Get all medical records for a pet',
-      description: 'Returns all medical records for a specific pet, ordered by visit date descending.',
+      description:
+        'Returns all medical records for a specific pet, ordered by visit date descending.',
       operationId: 'getMedicalRecordsByPet',
       security: [{ BearerAuth: [] }],
       parameters: [
@@ -244,7 +259,10 @@ export const medicalRecordPaths = {
         {
           name: 'type',
           in: 'query',
-          schema: { type: 'string', enum: ['checkup', 'vaccination', 'surgery', 'treatment', 'other'] },
+          schema: {
+            type: 'string',
+            enum: ['checkup', 'vaccination', 'surgery', 'treatment', 'other'],
+          },
         },
         {
           name: 'startDate',
@@ -269,7 +287,14 @@ export const medicalRecordPaths = {
               schema: {
                 allOf: [
                   { $ref: '#/components/schemas/PaginatedResponse' },
-                  { properties: { data: { type: 'array', items: { $ref: '#/components/schemas/MedicalRecord' } } } },
+                  {
+                    properties: {
+                      data: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/MedicalRecord' },
+                      },
+                    },
+                  },
                 ],
               },
             },
@@ -287,7 +312,8 @@ export const medicalRecordPaths = {
     get: {
       tags: ['Medical Records'],
       summary: 'Get medical records for a pet (nested route)',
-      description: 'Alias for GET /medical-records/pet/{petId}. Supports the same query parameters.',
+      description:
+        'Alias for GET /medical-records/pet/{petId}. Supports the same query parameters.',
       operationId: 'getPetMedicalRecords',
       security: [{ BearerAuth: [] }],
       parameters: [
@@ -295,7 +321,10 @@ export const medicalRecordPaths = {
         {
           name: 'type',
           in: 'query',
-          schema: { type: 'string', enum: ['checkup', 'vaccination', 'surgery', 'treatment', 'other'] },
+          schema: {
+            type: 'string',
+            enum: ['checkup', 'vaccination', 'surgery', 'treatment', 'other'],
+          },
         },
         {
           name: 'startDate',
@@ -318,7 +347,14 @@ export const medicalRecordPaths = {
               schema: {
                 allOf: [
                   { $ref: '#/components/schemas/PaginatedResponse' },
-                  { properties: { data: { type: 'array', items: { $ref: '#/components/schemas/MedicalRecord' } } } },
+                  {
+                    properties: {
+                      data: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/MedicalRecord' },
+                      },
+                    },
+                  },
                 ],
               },
             },

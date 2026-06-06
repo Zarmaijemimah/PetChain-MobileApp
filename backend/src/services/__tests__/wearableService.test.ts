@@ -8,8 +8,8 @@ jest.mock('../../../src/services/notificationService', () => ({
   sendAlertNotification: jest.fn(),
 }));
 
-const { query } = require('../../src/db');
 const { sendAlertNotification } = require('../../../src/services/notificationService');
+const { query } = require('../../src/db');
 
 describe('wearableService', () => {
   beforeEach(() => {
@@ -19,7 +19,9 @@ describe('wearableService', () => {
   it('syncProviderForPet imports normalized metrics', async () => {
     // First query returns token record
     (query as jest.Mock)
-      .mockResolvedValueOnce({ rows: [{ access_token: 'tok', pet_id: 'pet1', provider_key: 'mockfit' }] })
+      .mockResolvedValueOnce({
+        rows: [{ access_token: 'tok', pet_id: 'pet1', provider_key: 'mockfit' }],
+      })
       // subsequent inserts resolve to empty
       .mockResolvedValue({ rows: [] });
 

@@ -81,10 +81,8 @@ export async function checkAppVersion(): Promise<VersionCheckResult> {
   try {
     const { data } = await apiClient.get<VersionCheckResponse>('/app/version-check');
 
-    const currentVersion =
-      Application.nativeApplicationVersion ?? Application.applicationVersion ?? '1.0.0';
-    const storeUrl =
-      Platform.OS === 'ios' ? data.iosStoreUrl : data.androidStoreUrl;
+    const currentVersion = Application.nativeApplicationVersion ?? '1.0.0';
+    const storeUrl = Platform.OS === 'ios' ? data.iosStoreUrl : data.androidStoreUrl;
 
     let result: VersionCheckResult;
 

@@ -12,6 +12,7 @@ import { sanitizeInputs } from '../middleware/sanitize';
 import { applySecurityHeaders } from '../middleware/securityHeaders';
 import logger from '../utils/logger';
 import analyticsRouter from './routes/analytics';
+import appRouter from './routes/app';
 import appointmentsRouter from './routes/appointments';
 import auditLogsRouter from './routes/auditLogs';
 import auditTrailRouter from './routes/auditTrail';
@@ -21,10 +22,10 @@ import breedsRouter from './routes/breeds';
 import communityRouter from './routes/community';
 import docsRouter from './routes/docs';
 import emergencyRouter from './routes/emergency';
-import forumRouter from './routes/forum';
+import familySharingRouter from './routes/familySharing';
+import healthAlertsRouter from './routes/healthAlerts';
 import importRouter from './routes/import';
 import insuranceRouter from './routes/insurance';
-import healthAlertsRouter from './routes/healthAlerts';
 import medicalRecordsRouter from './routes/medicalRecords';
 import medicationsRouter from './routes/medications';
 import paymentsRouter from './routes/payments';
@@ -35,29 +36,29 @@ import reconciliationRouter from './routes/reconciliation';
 import referralsRouter from './routes/referrals';
 import reportsRouter from './routes/reports';
 import searchRouter from './routes/search';
+import supportRouter from './routes/support';
 import syncRouter from './routes/sync';
-import shelterRouter from '../src/routes/shelter';
 import telemedicineRouter from './routes/telemedicine';
 import travelCertificatesRouter from './routes/travelCertificates';
 import usersRouter from './routes/users';
 import vaccinationsRouter from './routes/vaccinations';
 import vetsRouter from './routes/vets';
 import vitalsRouter from './routes/vitals';
-import appRouter from './routes/app';
-import adminRouter from '../src/routes/admin';
-import supportRouter from './routes/support';
 import { attachAudit } from '../middleware/auditLog';
+import { authRateLimiter, dataRateLimiter, publicRateLimiter } from '../middleware/rateLimiter';
+import adminRouter from '../src/routes/admin';
 import anchorRouter from '../src/routes/anchor';
-import notesRouter from '../src/routes/notes';
 import apiKeysRouter from '../src/routes/apiKeys';
 import documentsRouter from '../src/routes/documents';
+import federationRouter from '../src/routes/federation';
+import forumRouter from '../src/routes/forum';
+import integrationsRouter from '../src/routes/integrations';
+import lostFoundRouter from '../src/routes/lostFound';
+import notesRouter from '../src/routes/notes';
 import notificationsRouter from '../src/routes/notifications';
 import notificationTemplatesRouter from '../src/routes/notificationTemplates';
 import oauthRouter from '../src/routes/oauth';
-import familySharingRouter from './routes/familySharing';
-import federationRouter from '../src/routes/federation';
-import integrationsRouter from '../src/routes/integrations';
-import { authRateLimiter, dataRateLimiter } from '../middleware/rateLimiter';
+import shelterRouter from '../src/routes/shelter';
 
 // Readiness probe state — set to false while the process is draining
 let isReady = true;
@@ -75,7 +76,6 @@ let cacheService: CacheService | null | undefined;
 function getCacheService(): CacheService | null {
   if (cacheService !== undefined) return cacheService;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     cacheService = require('../services/cacheService') as CacheService;
   } catch {
     cacheService = null;
@@ -186,6 +186,7 @@ export function createApp(): Express {
   api.use('/app', appRouter);
   api.use('/api-keys', apiKeysRouter);
   api.use('/integrations', integrationsRouter);
+  api.use('/lost-found', dataRateLimiter, lostFoundRouter);
   api.use('/support-requests', supportRouter);
   api.use('/admin', adminRouter);
   api.use('/documents', dataRateLimiter, documentsRouter);
@@ -207,7 +208,9 @@ export function createApp(): Express {
   getRedisClient()
     .connect()
     .catch(() => {});
-  getCacheService()?.warmCache().catch((err: any) => console.error('[app] warmCache failed:', err.message));
+  getCacheService()
+    ?.warmCache()
+    .catch((err: any) => console.error('[app] warmCache failed:', err.message));
 
   return app;
 }

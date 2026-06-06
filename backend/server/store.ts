@@ -149,6 +149,54 @@ export interface StoredMedication {
   active: boolean;
 }
 
+export interface StoredReferralCode {
+  userId: string;
+  code: string;
+  createdAt: string;
+}
+
+export interface StoredReferral {
+  id: string;
+  referrerUserId: string;
+  referredUserId: string;
+  referralCode: string;
+  status: 'pending' | 'converted' | 'blocked';
+  signupAt: string;
+  convertedAt?: string;
+  firstRecordId?: string;
+  blockedAt?: string;
+  blockReason?: string;
+  deviceFingerprint?: string;
+  ipHash?: string;
+  userAgentHash?: string;
+}
+
+export interface StoredReferralCredit {
+  id: string;
+  userId: string;
+  referralId: string;
+  creditType: 'premium_days';
+  amount: number;
+  status: 'active' | 'redeemed';
+  awardedAt: string;
+}
+
+export interface StoredPayment {
+  id: string;
+  userId: string;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface StoredFamilySharing {
+  id: string;
+  ownerId: string;
+  sharedWithUserId: string;
+  createdAt: string;
+}
+
 const now = () => new Date().toISOString();
 
 function seed() {
@@ -278,6 +326,11 @@ const travelCertificates = new Map<string, StoredTravelCertificate>();
 
 const apiKeys = new Map<string, ApiKey>();
 const apiKeyUsage: ApiKeyUsageRecord[] = [];
+const referralCodes = new Map<string, StoredReferralCode>();
+const referrals = new Map<string, StoredReferral>();
+const referralCredits = new Map<string, StoredReferralCredit>();
+const payments = new Map<string, StoredPayment>();
+const familySharing = new Map<string, StoredFamilySharing>();
 
 export function newId(): string {
   return randomUUID();
@@ -292,5 +345,10 @@ export const store = {
   travelCertificates,
   apiKeys,
   apiKeyUsage,
+  referralCodes,
+  referrals,
+  referralCredits,
+  payments,
+  familySharing,
   newId,
 };

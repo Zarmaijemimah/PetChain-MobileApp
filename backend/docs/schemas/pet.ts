@@ -56,7 +56,11 @@ export const petSchemas = {
         description: 'Pet date of birth in YYYY-MM-DD format',
       },
       microchipId: { type: 'string', example: '985141002512345' },
-      photoUrl: { type: 'string', format: 'uri', example: 'https://storage.petchain.app/pets/buddy.jpg' },
+      photoUrl: {
+        type: 'string',
+        format: 'uri',
+        example: 'https://storage.petchain.app/pets/buddy.jpg',
+      },
       ownerId: { $ref: '#/components/schemas/UUID' },
     },
   },

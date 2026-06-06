@@ -12,8 +12,8 @@
  *   npx ts-node backend/docs/validate/validateSpec.ts
  */
 
-import { openApiSpec } from '../openapi/spec';
 import { API_ENDPOINTS } from '../../types/api';
+import { openApiSpec } from '../openapi/spec';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -60,7 +60,11 @@ function collectRefs(obj: unknown, refs: string[]): void {
 
 // ─── Validation checks ────────────────────────────────────────────────────────
 
-function validateOperationIds(spec: typeof openApiSpec, errors: string[], warnings: string[]): number {
+function validateOperationIds(
+  spec: typeof openApiSpec,
+  errors: string[],
+  warnings: string[],
+): number {
   let count = 0;
   const paths = spec.paths as Record<string, Record<string, unknown>>;
   const seenIds = new Set<string>();
@@ -98,7 +102,10 @@ function validateOperationIds(spec: typeof openApiSpec, errors: string[], warnin
   return count;
 }
 
-function validateRefs(spec: typeof openApiSpec, errors: string[]): { total: number; broken: number } {
+function validateRefs(
+  spec: typeof openApiSpec,
+  errors: string[],
+): { total: number; broken: number } {
   const refs: string[] = [];
   collectRefs(spec, refs);
 
@@ -113,16 +120,11 @@ function validateRefs(spec: typeof openApiSpec, errors: string[]): { total: numb
   return { total: refs.length, broken };
 }
 
-function validateAgainstApiEndpoints(
-  spec: typeof openApiSpec,
-  warnings: string[],
-): void {
+function validateAgainstApiEndpoints(spec: typeof openApiSpec, warnings: string[]): void {
   const documentedPaths = new Set(Object.keys(spec.paths));
 
   // Normalize API_ENDPOINTS paths (replace :param with {param})
-  const expectedPaths = Object.values(API_ENDPOINTS).map((p) =>
-    p.replace(/:([a-zA-Z]+)/g, '{$1}'),
-  );
+  const expectedPaths = Object.values(API_ENDPOINTS).map((p) => p.replace(/:([a-zA-Z]+)/g, '{$1}'));
 
   for (const expected of expectedPaths) {
     if (!documentedPaths.has(expected)) {
@@ -143,7 +145,9 @@ function validateAgainstApiEndpoints(
 }
 
 function validateSchemas(spec: typeof openApiSpec, errors: string[], warnings: string[]): number {
-  const schemas = (spec.components as Record<string, unknown>)?.schemas as Record<string, unknown> | undefined;
+  const schemas = (spec.components as Record<string, unknown>)?.schemas as
+    | Record<string, unknown>
+    | undefined;
   if (!schemas) {
     errors.push('No schemas defined in components.schemas');
     return 0;

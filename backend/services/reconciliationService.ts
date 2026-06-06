@@ -7,17 +7,16 @@
  * alerts users/admins, and re-anchors records with valid local copies.
  */
 
-import crypto from 'crypto';
-import { randomUUID } from 'crypto';
+import crypto, { randomUUID } from 'crypto';
 
 import stellarAnchorService from './stellarService';
-import { store, type StoredMedicalRecord } from '../server/store';
 import type {
   RecordReconciliationResult,
   ReconciliationReport,
   ReconciliationStatus,
   ReconciliationSummary,
 } from '../../src/models/Reconciliation';
+import { store, type StoredMedicalRecord } from '../server/store';
 
 // ─── Hashing (mirrors StellarAnchorService.hashPayload) ──────────────────────
 
@@ -109,9 +108,7 @@ export class ReconciliationService {
       if (tamperedCount > 0) {
         emitAlert('tampered', {
           tamperedCount,
-          recordIds: results
-            .filter((r) => r.status === 'tampered')
-            .map((r) => r.recordId),
+          recordIds: results.filter((r) => r.status === 'tampered').map((r) => r.recordId),
         });
       }
 

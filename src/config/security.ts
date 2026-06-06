@@ -16,9 +16,7 @@ export const SSL_PINS: Record<string, string[]> = {
     // Backup / next rotation certificate
     'sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=',
   ],
-  'staging.petchain.app': [
-    'sha256/CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=',
-  ],
+  'staging.petchain.app': ['sha256/CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC='],
 };
 
 /** Domains that require certificate pinning */

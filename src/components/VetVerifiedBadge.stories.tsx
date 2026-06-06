@@ -88,10 +88,7 @@ export const MultipleBadges: Story = {
     <View style={{ gap: 12 }}>
       <VetVerifiedBadge federatedAddress="dr.smith*vetclinic.com" verified={true} />
       <VetVerifiedBadge federatedAddress="dr.jones*animalcare.org" verified={true} compact />
-      <VetVerifiedBadge
-        federatedAddress="dr.specialist*veterinaryhospital.com"
-        verified={true}
-      />
+      <VetVerifiedBadge federatedAddress="dr.specialist*veterinaryhospital.com" verified={true} />
     </View>
   ),
 };

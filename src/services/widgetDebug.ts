@@ -5,11 +5,11 @@
  * Use in development or debug screens to test widget functionality
  */
 
-import * as widgetService from './widgetService';
-import { getMedications } from './medicationService';
 import { getUpcomingAppointments } from './appointmentService';
 import { getHealthMetrics } from './healthMetricService';
-import { getPets } from './petService';
+import { getMedications } from './medicationService';
+import petService from './petService';
+import * as widgetService from './widgetService';
 
 /**
  * Get detailed widget debug information
@@ -19,10 +19,7 @@ export async function getWidgetDebugInfo() {
     const cachedData = await widgetService.getWidgetDataFromCache();
     const available = await widgetService.isWidgetAvailable();
 
-    const [medications, pets] = await Promise.all([
-      getMedications(),
-      getPets(),
-    ]);
+    const [medications, pets] = await Promise.all([getMedications(), petService.getAllPets()]);
 
     return {
       widgetAvailable: available,

@@ -50,8 +50,7 @@ async function getPetChainCalendarId(): Promise<string | null> {
 
     // Create a new calendar
     const defaultSource =
-      calendars.find((c) => c.source?.isLocalAccount)?.source ??
-      calendars[0]?.source;
+      calendars.find((c) => c.source?.isLocalAccount)?.source ?? calendars[0]?.source;
 
     const id = await Calendar.createCalendarAsync({
       title: 'PetChain',
@@ -84,7 +83,7 @@ function buildEventDetails(appt: Appointment) {
     notes: appt.notes ?? '',
     alarms: [
       { relativeOffset: -24 * 60 }, // 24h before
-      { relativeOffset: -60 },       // 1h before
+      { relativeOffset: -60 }, // 1h before
     ],
   };
 }

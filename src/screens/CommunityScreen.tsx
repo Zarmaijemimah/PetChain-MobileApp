@@ -1,3 +1,4 @@
+import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -10,11 +11,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { v4 as uuid } from 'uuid';
-import type { RootStackParamList } from '../navigation/types';
 
 import type { CommunityPost, PostCategory } from '../models/CommunityPost';
+import type { RootStackParamList } from '../navigation/types';
 import { createPost, deletePost, getPosts, toggleLike } from '../services/communityService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────

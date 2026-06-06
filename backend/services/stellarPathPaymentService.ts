@@ -1,11 +1,12 @@
 import { randomUUID } from 'crypto';
 
 import * as StellarSdk from '@stellar/stellar-sdk';
+import type { Horizon } from '@stellar/stellar-sdk';
 
 import config from '../config';
+import paymentService from './paymentService';
 import type { Payment, SubscriptionPlan } from '../models/Payment';
 import { SUBSCRIPTION_PLANS } from '../models/Payment';
-import paymentService from './paymentService';
 
 export interface StellarAssetInput {
   code: string;
@@ -87,8 +88,8 @@ interface PathLikeRecord {
 
 interface HorizonServerLike {
   strictReceivePaths(
-    source: string | StellarSdk.Asset[],
-    destinationAsset: StellarSdk.Asset,
+    sourceAsset: StellarSdk.Asset,
+    destinationAsset: StellarSdk.Asset | StellarSdk.Asset[],
     destinationAmount: string,
   ): { call(): Promise<{ records: PathLikeRecord[] }> };
   strictSendPaths(
@@ -96,7 +97,7 @@ interface HorizonServerLike {
     sourceAmount: string,
     destination: string | StellarSdk.Asset[],
   ): { call(): Promise<{ records: PathLikeRecord[] }> };
-  loadAccount(publicKey: string): Promise<StellarSdk.AccountResponse>;
+  loadAccount(publicKey: string): Promise<Horizon.HorizonApi.AccountResponse>;
   fetchBaseFee(): Promise<number>;
   submitTransaction(
     transaction: StellarSdk.Transaction | StellarSdk.FeeBumpTransaction,
@@ -105,7 +106,9 @@ interface HorizonServerLike {
 
 const HORIZON_URL = process.env.STELLAR_HORIZON_URL || 'https://horizon-testnet.stellar.org';
 const NETWORK_PASSPHRASE =
-  process.env.STELLAR_NETWORK === 'mainnet' ? StellarSdk.Networks.PUBLIC : StellarSdk.Networks.TESTNET;
+  process.env.STELLAR_NETWORK === 'mainnet'
+    ? StellarSdk.Networks.PUBLIC
+    : StellarSdk.Networks.TESTNET;
 const DEFAULT_RECEIVING_SECRET = process.env.STELLAR_RECEIVING_SECRET || '';
 const DEFAULT_RECEIVING_PUBLIC_KEY = process.env.STELLAR_RECEIVING_PUBLIC_KEY || '';
 const DEFAULT_PATH_FEE_STROOPS = process.env.STELLAR_PATH_FEE_STROOPS || '100';
@@ -123,7 +126,7 @@ const pendingPayments = new Map<
 
 function getServer(server?: HorizonServerLike): HorizonServerLike {
   if (server) return server;
-  return new StellarSdk.Server(HORIZON_URL) as unknown as HorizonServerLike;
+  return new StellarSdk.Horizon.Server(HORIZON_URL) as unknown as HorizonServerLike;
 }
 
 function now(): string {
@@ -145,7 +148,11 @@ function assetFromInput(input: StellarAssetInput): StellarSdk.Asset {
   return new StellarSdk.Asset(code, input.issuer.trim());
 }
 
-function assetDescriptor(asset: StellarSdk.Asset): { code: string; issuer?: string; type: string } {
+function assetDescriptor(asset: StellarSdk.Asset): {
+  code: string;
+  issuer?: string;
+  type: 'native' | 'credit_alphanum4' | 'credit_alphanum12';
+} {
   if (asset.isNative()) {
     return { code: 'XLM', type: 'native' };
   }
@@ -165,11 +172,15 @@ function pathRecordToAssets(record: PathLikeRecord): StellarSdk.Asset[] {
   });
 }
 
-function pathRecordToDescriptor(record: PathLikeRecord) {
+function pathRecordToDescriptor(record: PathLikeRecord): Array<{
+  code: string;
+  issuer?: string;
+  type: 'native' | 'credit_alphanum4' | 'credit_alphanum12';
+}> {
   return record.path.map((step) => ({
     code: step.asset_code,
     issuer: step.asset_issuer,
-    type: step.asset_type,
+    type: step.asset_type as 'native' | 'credit_alphanum4' | 'credit_alphanum12',
   }));
 }
 
@@ -320,7 +331,9 @@ export class StellarPathPaymentService {
         });
       }
 
-      const best = page.records.slice().sort((a, b) => asNumber(a.source_amount) - asNumber(b.source_amount))[0];
+      const best = page.records
+        .slice()
+        .sort((a, b) => asNumber(a.source_amount) - asNumber(b.source_amount))[0];
       const path = pathRecordToDescriptor(best);
       const sourceAmount = best.source_amount;
       const fee = this.estimateFee();
@@ -333,7 +346,9 @@ export class StellarPathPaymentService {
         destinationAsset: { code: 'XLM', type: 'native' },
         destinationAmount,
         sourceAmount,
-        exchangeRate: formatXlm(asNumber(sourceAmount) / Math.max(asNumber(destinationAmount), 0.0000001)),
+        exchangeRate: formatXlm(
+          asNumber(sourceAmount) / Math.max(asNumber(destinationAmount), 0.0000001),
+        ),
         estimatedNetworkFee: fee,
         mode: 'path',
         path,
@@ -383,7 +398,9 @@ export class StellarPathPaymentService {
       destinationAsset: { code: 'XLM', type: 'native' },
       destinationAmount: input.destinationAmount,
       sourceAmount,
-      exchangeRate: formatXlm(asNumber(sourceAmount) / Math.max(asNumber(input.destinationAmount), 0.0000001)),
+      exchangeRate: formatXlm(
+        asNumber(sourceAmount) / Math.max(asNumber(input.destinationAmount), 0.0000001),
+      ),
       estimatedNetworkFee: this.estimateFee(),
       mode: 'direct-xlm',
       path: best ? pathRecordToDescriptor(best) : [],
@@ -400,10 +417,13 @@ export class StellarPathPaymentService {
     paymentId: string;
   }): Promise<string> {
     const sourceAccount = await this.server.loadAccount(input.sourceAccount);
-    const builder = new StellarSdk.TransactionBuilder(sourceAccount, {
-      fee: String(await this.server.fetchBaseFee()),
-      networkPassphrase: NETWORK_PASSPHRASE,
-    });
+    const builder = new StellarSdk.TransactionBuilder(
+      sourceAccount as unknown as StellarSdk.Account,
+      {
+        fee: String(await this.server.fetchBaseFee()),
+        networkPassphrase: NETWORK_PASSPHRASE,
+      },
+    );
 
     const destination = resolveReceivingAccount();
     if (input.quote.mode === 'direct-xlm') {
@@ -423,13 +443,18 @@ export class StellarPathPaymentService {
           destAsset: StellarSdk.Asset.native(),
           destAmount: input.quote.destinationAmount,
           path: input.quote.path.map((step) =>
-            step.type === 'native' ? StellarSdk.Asset.native() : new StellarSdk.Asset(step.code, step.issuer ?? ''),
+            step.type === 'native'
+              ? StellarSdk.Asset.native()
+              : new StellarSdk.Asset(step.code, step.issuer ?? ''),
           ),
         }),
       );
     }
 
-    const tx = builder.addMemo(StellarSdk.Memo.text(input.paymentId.slice(0, 28))).setTimeout(60).build();
+    const tx = builder
+      .addMemo(StellarSdk.Memo.text(input.paymentId.slice(0, 28)))
+      .setTimeout(60)
+      .build();
     return tx.toXDR();
   }
 

@@ -178,10 +178,7 @@ export function breadcrumbAuth(action: 'login' | 'logout' | 'login_failed'): voi
 }
 
 /** Sync: record synchronisation */
-export function breadcrumbSync(
-  event: 'start' | 'complete' | 'failed',
-  recordCount?: number,
-): void {
+export function breadcrumbSync(event: 'start' | 'complete' | 'failed', recordCount?: number): void {
   Sentry.addBreadcrumb({
     category: 'sync',
     message: `Sync ${event}`,
@@ -212,19 +209,22 @@ type TransactionOp = 'login' | 'sync' | 'sos' | 'blockchain';
  *   // ... do work ...
  *   finish('ok');
  */
-export function startTransaction(
-  op: TransactionOp,
-  name?: string,
-): (status?: Sentry.TransactionStatus) => void {
+export function startTransaction(op: TransactionOp, name?: string): (status?: string) => void {
   const txName = name ?? op;
-  const transaction = Sentry.startTransaction({ name: txName, op });
-  Sentry.getCurrentHub().configureScope((scope) => scope.setSpan(transaction));
+  const transaction = ((Sentry as any).startTransaction ?? (Sentry as any).startSpan)({
+    name: txName,
+    op,
+  });
+  (Sentry as any)
+    .getCurrentHub?.()
+    .configureScope((scope: { setSpan: (span: unknown) => void }) => scope.setSpan(transaction));
 
-  return (status: Sentry.TransactionStatus = 'ok') => {
-    transaction.setStatus(status);
-    transaction.finish();
-    // Clear the span so it doesn't leak into subsequent events
-    Sentry.getCurrentHub().configureScope((scope) => scope.setSpan(undefined));
+  return (status = 'ok') => {
+    transaction?.setStatus?.(status);
+    transaction?.finish?.();
+    (Sentry as any)
+      .getCurrentHub?.()
+      .configureScope((scope: { setSpan: (span: unknown) => void }) => scope.setSpan(undefined));
   };
 }
 

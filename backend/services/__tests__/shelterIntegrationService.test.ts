@@ -1,5 +1,5 @@
-import { store } from '../../server/store';
 import { UserRole } from '../../models/UserRole';
+import { store } from '../../server/store';
 import shelterIntegrationService from '../shelterIntegrationService';
 
 const mockAnchorRecord = jest.fn();

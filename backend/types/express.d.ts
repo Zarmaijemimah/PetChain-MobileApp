@@ -2,9 +2,15 @@ import 'express';
 
 declare module 'express-serve-static-core' {
   interface Request {
-    db?: unknown;
-    user?: unknown;
-    /** Correlation ID injected by requestLogger middleware */
+    db?: {
+      query: (sql: string, params?: unknown[]) => Promise<unknown[]>;
+    };
+    user?: {
+      id: string;
+      email?: string;
+      role?: string;
+      mfaVerified?: boolean;
+    };
     correlationId?: string;
   }
 }

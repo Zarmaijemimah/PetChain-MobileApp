@@ -7,8 +7,8 @@
  */
 import express from 'express';
 
-import { ok, sendError } from '../../server/response';
-import { store, type StoredPet } from '../../server/store';
+import { ok, sendError } from '../../../server/response';
+import { store, type StoredPet } from '../../../server/store';
 
 const router = express.Router();
 

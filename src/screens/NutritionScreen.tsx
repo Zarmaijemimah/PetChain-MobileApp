@@ -133,7 +133,10 @@ const NutritionScreen: React.FC<Props> = ({
       setGoal(petGoal);
       setLogs(summary.logs);
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to load nutrition data.');
+      Alert.alert(
+        'Error',
+        error instanceof Error ? error.message : 'Failed to load nutrition data.',
+      );
     }
   }, [petId, selectedDate]);
 
@@ -142,7 +145,10 @@ const NutritionScreen: React.FC<Props> = ({
       const report = await getWeeklyReport(petId, weekStart);
       setWeeklyReport(report);
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to load weekly report.');
+      Alert.alert(
+        'Error',
+        error instanceof Error ? error.message : 'Failed to load weekly report.',
+      );
     }
   }, [petId, weekStart]);
 
@@ -342,7 +348,10 @@ const NutritionScreen: React.FC<Props> = ({
       weight,
       petSpecies,
       goalForm.activityLevel,
-      goalForm.healthConditions.split(',').map((c) => c.trim()).filter(Boolean),
+      goalForm.healthConditions
+        .split(',')
+        .map((c) => c.trim())
+        .filter(Boolean),
     );
     setGoalForm((f) => ({ ...f, dailyCalories: String(recommended) }));
   };
@@ -369,9 +378,13 @@ const NutritionScreen: React.FC<Props> = ({
       foodName: food.name,
       brand: food.brand ?? '',
       calories: String(calories),
-      protein: food.proteinPer100g ? String(Math.round((food.proteinPer100g * amount) / 100 * 10) / 10) : '',
-      fat: food.fatPer100g ? String(Math.round((food.fatPer100g * amount) / 100 * 10) / 10) : '',
-      carbs: food.carbsPer100g ? String(Math.round((food.carbsPer100g * amount) / 100 * 10) / 10) : '',
+      protein: food.proteinPer100g
+        ? String(Math.round(((food.proteinPer100g * amount) / 100) * 10) / 10)
+        : '',
+      fat: food.fatPer100g ? String(Math.round(((food.fatPer100g * amount) / 100) * 10) / 10) : '',
+      carbs: food.carbsPer100g
+        ? String(Math.round(((food.carbsPer100g * amount) / 100) * 10) / 10)
+        : '',
     }));
     setFoodSearchVisible(false);
     setFoodQuery('');
@@ -440,7 +453,12 @@ const NutritionScreen: React.FC<Props> = ({
           {/* Progress bar */}
           {goalCals > 0 && (
             <View style={styles.progressBarBg}>
-              <View style={[styles.progressBarFill, { width: `${progress * 100}%`, backgroundColor: progressColor }]} />
+              <View
+                style={[
+                  styles.progressBarFill,
+                  { width: `${progress * 100}%`, backgroundColor: progressColor },
+                ]}
+              />
             </View>
           )}
 
@@ -454,13 +472,14 @@ const NutritionScreen: React.FC<Props> = ({
           )}
 
           {/* Macros row */}
-          {summary && (summary.totalProteinG > 0 || summary.totalFatG > 0 || summary.totalCarbsG > 0) && (
-            <View style={styles.macrosRow}>
-              <Text style={styles.macroItem}>Protein: {summary.totalProteinG.toFixed(1)}g</Text>
-              <Text style={styles.macroItem}>Fat: {summary.totalFatG.toFixed(1)}g</Text>
-              <Text style={styles.macroItem}>Carbs: {summary.totalCarbsG.toFixed(1)}g</Text>
-            </View>
-          )}
+          {summary &&
+            (summary.totalProteinG > 0 || summary.totalFatG > 0 || summary.totalCarbsG > 0) && (
+              <View style={styles.macrosRow}>
+                <Text style={styles.macroItem}>Protein: {summary.totalProteinG.toFixed(1)}g</Text>
+                <Text style={styles.macroItem}>Fat: {summary.totalFatG.toFixed(1)}g</Text>
+                <Text style={styles.macroItem}>Carbs: {summary.totalCarbsG.toFixed(1)}g</Text>
+              </View>
+            )}
         </View>
 
         {/* Meal logs */}
@@ -496,11 +515,14 @@ const NutritionScreen: React.FC<Props> = ({
               <View style={styles.logMeta}>
                 <Text style={styles.logMetaText}>{capitalize(log.mealType)}</Text>
                 <Text style={styles.logMetaDot}>·</Text>
-                <Text style={styles.logMetaText}>{log.amount}{log.unit}</Text>
+                <Text style={styles.logMetaText}>
+                  {log.amount}
+                  {log.unit}
+                </Text>
                 <Text style={styles.logMetaDot}>·</Text>
                 <Text style={[styles.logMetaText, styles.logCalories]}>{log.calories} kcal</Text>
               </View>
-              {(log.protein || log.fat || log.carbs) ? (
+              {log.protein || log.fat || log.carbs ? (
                 <Text style={styles.logMacros}>
                   {log.protein ? `P: ${log.protein}g  ` : ''}
                   {log.fat ? `F: ${log.fat}g  ` : ''}
@@ -534,9 +556,7 @@ const NutritionScreen: React.FC<Props> = ({
           >
             <Text style={styles.dateArrowText}>‹</Text>
           </TouchableOpacity>
-          <Text style={styles.dateLabel}>
-            Week of {formatDate(weekStart)}
-          </Text>
+          <Text style={styles.dateLabel}>Week of {formatDate(weekStart)}</Text>
           <TouchableOpacity
             style={styles.dateArrow}
             onPress={() => {
@@ -564,7 +584,9 @@ const NutritionScreen: React.FC<Props> = ({
                 </View>
                 <View style={styles.summaryDivider} />
                 <View style={styles.summaryItem}>
-                  <Text style={[styles.summaryValue, { color: '#4CAF50' }]}>{report.daysOnTrack}</Text>
+                  <Text style={[styles.summaryValue, { color: '#4CAF50' }]}>
+                    {report.daysOnTrack}
+                  </Text>
                   <Text style={styles.summaryLabel}>On Track</Text>
                 </View>
                 <View style={styles.summaryDivider} />
@@ -574,7 +596,9 @@ const NutritionScreen: React.FC<Props> = ({
                 </View>
                 <View style={styles.summaryDivider} />
                 <View style={styles.summaryItem}>
-                  <Text style={[styles.summaryValue, { color: '#FF9800' }]}>{report.daysUnder}</Text>
+                  <Text style={[styles.summaryValue, { color: '#FF9800' }]}>
+                    {report.daysUnder}
+                  </Text>
                   <Text style={styles.summaryLabel}>Underfed</Text>
                 </View>
               </View>
@@ -600,7 +624,9 @@ const NutritionScreen: React.FC<Props> = ({
                   <View style={[styles.dayStatusBar, { backgroundColor: color }]} />
                   <View style={styles.dayInfo}>
                     <Text style={styles.dayDate}>{formatDate(day.date)}</Text>
-                    <Text style={styles.dayMeals}>{day.mealCount} meal{day.mealCount !== 1 ? 's' : ''}</Text>
+                    <Text style={styles.dayMeals}>
+                      {day.mealCount} meal{day.mealCount !== 1 ? 's' : ''}
+                    </Text>
                   </View>
                   <View style={styles.dayCalories}>
                     <Text style={[styles.dayCaloriesValue, { color }]}>{day.totalCalories}</Text>
@@ -700,7 +726,12 @@ const NutritionScreen: React.FC<Props> = ({
   // ─── Render: Log Modal ─────────────────────────────────────────────────────
 
   const renderLogModal = () => (
-    <Modal visible={logModalVisible} animationType="slide" transparent onRequestClose={closeLogModal}>
+    <Modal
+      visible={logModalVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={closeLogModal}
+    >
       <View style={styles.modalOverlay}>
         <ScrollView style={styles.modalContent} keyboardShouldPersistTaps="handled">
           <Text style={styles.modalTitle}>{editingLog ? 'Edit Meal' : 'Log Meal'}</Text>
@@ -729,10 +760,7 @@ const NutritionScreen: React.FC<Props> = ({
               value={form.foodName}
               onChangeText={(v) => setForm((f) => ({ ...f, foodName: v }))}
             />
-            <TouchableOpacity
-              style={styles.searchBtn}
-              onPress={() => setFoodSearchVisible(true)}
-            >
+            <TouchableOpacity style={styles.searchBtn} onPress={() => setFoodSearchVisible(true)}>
               <Text style={styles.searchBtnText}>🔍</Text>
             </TouchableOpacity>
           </View>
@@ -760,7 +788,9 @@ const NutritionScreen: React.FC<Props> = ({
                   style={[styles.unitChip, form.unit === unit && styles.unitChipActive]}
                   onPress={() => setForm((f) => ({ ...f, unit }))}
                 >
-                  <Text style={[styles.unitChipText, form.unit === unit && styles.unitChipTextActive]}>
+                  <Text
+                    style={[styles.unitChipText, form.unit === unit && styles.unitChipTextActive]}
+                  >
                     {unit}
                   </Text>
                 </TouchableOpacity>
@@ -825,7 +855,12 @@ const NutritionScreen: React.FC<Props> = ({
   // ─── Render: Goal Modal ────────────────────────────────────────────────────
 
   const renderGoalModal = () => (
-    <Modal visible={goalModalVisible} animationType="slide" transparent onRequestClose={() => setGoalModalVisible(false)}>
+    <Modal
+      visible={goalModalVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={() => setGoalModalVisible(false)}
+    >
       <View style={styles.modalOverlay}>
         <ScrollView style={styles.modalContent} keyboardShouldPersistTaps="handled">
           <Text style={styles.modalTitle}>Nutrition Goal</Text>
@@ -846,7 +881,12 @@ const NutritionScreen: React.FC<Props> = ({
                 style={[styles.chip, goalForm.activityLevel === level && styles.chipActive]}
                 onPress={() => setGoalForm((f) => ({ ...f, activityLevel: level }))}
               >
-                <Text style={[styles.chipText, goalForm.activityLevel === level && styles.chipTextActive]}>
+                <Text
+                  style={[
+                    styles.chipText,
+                    goalForm.activityLevel === level && styles.chipTextActive,
+                  ]}
+                >
                   {capitalize(level)}
                 </Text>
               </TouchableOpacity>
@@ -899,7 +939,12 @@ const NutritionScreen: React.FC<Props> = ({
   // ─── Render: Food Search Modal ─────────────────────────────────────────────
 
   const renderFoodSearchModal = () => (
-    <Modal visible={foodSearchVisible} animationType="slide" transparent onRequestClose={() => setFoodSearchVisible(false)}>
+    <Modal
+      visible={foodSearchVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={() => setFoodSearchVisible(false)}
+    >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Search Food Database</Text>
@@ -930,7 +975,10 @@ const NutritionScreen: React.FC<Props> = ({
                 </Text>
               }
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.foodResultItem} onPress={() => handleSelectFood(item)}>
+                <TouchableOpacity
+                  style={styles.foodResultItem}
+                  onPress={() => handleSelectFood(item)}
+                >
                   <View style={{ flex: 1 }}>
                     <Text style={styles.foodResultName}>{item.name}</Text>
                     {item.brand ? <Text style={styles.foodResultBrand}>{item.brand}</Text> : null}
@@ -944,7 +992,10 @@ const NutritionScreen: React.FC<Props> = ({
             />
           )}
 
-          <TouchableOpacity style={[styles.cancelBtn, { marginTop: 12 }]} onPress={() => setFoodSearchVisible(false)}>
+          <TouchableOpacity
+            style={[styles.cancelBtn, { marginTop: 12 }]}
+            onPress={() => setFoodSearchVisible(false)}
+          >
             <Text style={styles.cancelBtnText}>Close</Text>
           </TouchableOpacity>
         </View>
@@ -970,9 +1021,7 @@ const NutritionScreen: React.FC<Props> = ({
             style={[styles.tab, tab === t && styles.activeTab]}
             onPress={() => setTab(t)}
           >
-            <Text style={[styles.tabText, tab === t && styles.activeTabText]}>
-              {capitalize(t)}
-            </Text>
+            <Text style={[styles.tabText, tab === t && styles.activeTabText]}>{capitalize(t)}</Text>
           </TouchableOpacity>
         ))}
       </View>

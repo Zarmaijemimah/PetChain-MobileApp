@@ -30,11 +30,7 @@ import {
 } from 'react-native';
 import MapView, { Callout, Marker, UrlTile, type Region } from 'react-native-maps';
 
-import mapService, {
-  type ClinicType,
-  type Location,
-  type VetClinic,
-} from '../services/mapService';
+import mapService, { type ClinicType, type Location, type VetClinic } from '../services/mapService';
 import { networkMonitor } from '../utils/networkMonitor';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -136,19 +132,16 @@ const VetMapScreen: React.FC = () => {
 
   // ── Load / filter clinics ───────────────────────────────────────────────────
 
-  const loadClinics = useCallback(
-    async (location: Location, filter: ClinicType | 'all') => {
-      const types: ClinicType[] = filter === 'all' ? [] : [filter];
-      const results = await mapService.getNearbyClinics(
-        location.latitude,
-        location.longitude,
-        15,
-        types,
-      );
-      setClinics(results);
-    },
-    [],
-  );
+  const loadClinics = useCallback(async (location: Location, filter: ClinicType | 'all') => {
+    const types: ClinicType[] = filter === 'all' ? [] : [filter];
+    const results = await mapService.getNearbyClinics(
+      location.latitude,
+      location.longitude,
+      15,
+      types,
+    );
+    setClinics(results);
+  }, []);
 
   const handleFilterChange = async (filter: ClinicType | 'all') => {
     setActiveFilter(filter);
@@ -292,9 +285,7 @@ const VetMapScreen: React.FC = () => {
         <View style={styles.offlineBanner} accessibilityLiveRegion="polite">
           <Text style={styles.offlineBannerText}>
             📡 Offline — showing cached data
-            {lastSyncAt
-              ? ` (synced ${new Date(lastSyncAt).toLocaleDateString()})`
-              : ''}
+            {lastSyncAt ? ` (synced ${new Date(lastSyncAt).toLocaleDateString()})` : ''}
           </Text>
         </View>
       )}
@@ -311,12 +302,7 @@ const VetMapScreen: React.FC = () => {
           accessibilityLabel="Vet clinic map"
         >
           {/* OSM tile overlay — cached by the OS WebView tile cache */}
-          <UrlTile
-            urlTemplate={OSM_TILE_URL}
-            maximumZ={19}
-            flipY={false}
-            offlineMode={isOffline}
-          />
+          <UrlTile urlTemplate={OSM_TILE_URL} maximumZ={19} flipY={false} offlineMode={isOffline} />
 
           {/* Clinic markers */}
           {clinics.map(renderMarker)}
@@ -417,9 +403,7 @@ const VetMapScreen: React.FC = () => {
             <View style={styles.sheetMetaRow}>
               <View style={styles.sheetMetaItem}>
                 <Text style={styles.sheetMetaLabel}>Distance</Text>
-                <Text style={styles.sheetMetaValue}>
-                  {selectedClinic.distance.toFixed(1)} km
-                </Text>
+                <Text style={styles.sheetMetaValue}>{selectedClinic.distance.toFixed(1)} km</Text>
               </View>
               {selectedClinic.estimatedTravelMinutes !== undefined && (
                 <View style={styles.sheetMetaItem}>
@@ -542,7 +526,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...Platform.select({
-      ios: { shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+      },
       android: { elevation: 4 },
     }),
   },
@@ -555,7 +544,12 @@ const styles = StyleSheet.create({
     padding: 8,
     minWidth: 140,
     ...Platform.select({
-      ios: { shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+      },
       android: { elevation: 4 },
     }),
   },
@@ -579,7 +573,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
     ...Platform.select({
-      ios: { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+      },
       android: { elevation: 2 },
     }),
   },
@@ -600,7 +599,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 5,
     ...Platform.select({
-      ios: { shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, shadowOffset: { width: 0, height: 3 } },
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.15,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 3 },
+      },
       android: { elevation: 4 },
     }),
   },
@@ -632,7 +636,12 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? 36 : 24,
     zIndex: 20,
     ...Platform.select({
-      ios: { shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: -4 } },
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: -4 },
+      },
       android: { elevation: 12 },
     }),
   },
@@ -652,7 +661,12 @@ const styles = StyleSheet.create({
   sheetBadgeRow: { flexDirection: 'row', gap: 6 },
   typeBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   typeBadgeText: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
-  badge24h: { backgroundColor: '#e8f5e9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  badge24h: {
+    backgroundColor: '#e8f5e9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
   badge24hText: { fontSize: 11, fontWeight: '600', color: '#4CAF50' },
   sheetCloseBtn: { padding: 4 },
   sheetCloseText: { fontSize: 16, color: '#999' },
@@ -686,7 +700,12 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 10,
     ...Platform.select({
-      ios: { shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+      },
       android: { elevation: 2 },
     }),
   },

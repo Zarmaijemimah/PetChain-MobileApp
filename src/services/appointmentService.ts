@@ -182,9 +182,7 @@ export function getUpcoming(appointments: Appointment[]): Appointment[] {
     .filter((a) => {
       const d = new Date(a.date);
       return (
-        d >= now &&
-        a.status !== AppointmentStatus.CANCELLED &&
-        (a.status as string) !== 'cancelled'
+        d >= now && a.status !== AppointmentStatus.CANCELLED && (a.status as string) !== 'cancelled'
       );
     })
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -196,9 +194,7 @@ export function getPast(appointments: Appointment[]): Appointment[] {
     .filter((a) => {
       const d = new Date(a.date);
       return (
-        d < now ||
-        a.status === AppointmentStatus.CANCELLED ||
-        (a.status as string) === 'cancelled'
+        d < now || a.status === AppointmentStatus.CANCELLED || (a.status as string) === 'cancelled'
       );
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -236,12 +232,11 @@ export async function saveAppointment(
 }
 
 /** Cancel an appointment via the dedicated cancel endpoint. */
-export async function cancelAppointmentById(
-  id: string,
-  reason?: string,
-): Promise<Appointment> {
+export async function cancelAppointmentById(id: string, reason?: string): Promise<Appointment> {
   try {
-    const response = await apiClient.post<{ data: Appointment }>(`${BASE_URL}/${id}/cancel`, { reason });
+    const response = await apiClient.post<{ data: Appointment }>(`${BASE_URL}/${id}/cancel`, {
+      reason,
+    });
     const cancelled = response.data.data;
     await upsertAppointment(cancelled);
     return cancelled;
@@ -317,29 +312,33 @@ export async function scheduleAppointmentReminders(
 
   const title = appointment.title ?? appointment.notes ?? 'Vet Appointment';
 
-  const notif24h = apptMs - 24 * 60 * 60 * 1000 > now
-    ? await scheduleAppointmentNotification({
-        id: `${appointment.id}-24h`,
-        title: `Reminder: ${title} tomorrow`,
-        date: new Date(apptMs - 24 * 60 * 60 * 1000).toISOString(),
-        location: appointment.location,
-      }).catch(() => null)
-    : null;
+  const notif24h =
+    apptMs - 24 * 60 * 60 * 1000 > now
+      ? await scheduleAppointmentNotification({
+          id: `${appointment.id}-24h`,
+          title: `Reminder: ${title} tomorrow`,
+          date: new Date(apptMs - 24 * 60 * 60 * 1000).toISOString(),
+          location: appointment.location,
+        }).catch(() => null)
+      : null;
 
-  const notif1h = apptMs - 60 * 60 * 1000 > now
-    ? await scheduleAppointmentNotification({
-        id: `${appointment.id}-1h`,
-        title: `Reminder: ${title} in 1 hour`,
-        date: new Date(apptMs - 60 * 60 * 1000).toISOString(),
-        location: appointment.location,
-      }).catch(() => null)
-    : null;
+  const notif1h =
+    apptMs - 60 * 60 * 1000 > now
+      ? await scheduleAppointmentNotification({
+          id: `${appointment.id}-1h`,
+          title: `Reminder: ${title} in 1 hour`,
+          date: new Date(apptMs - 60 * 60 * 1000).toISOString(),
+          location: appointment.location,
+        }).catch(() => null)
+      : null;
 
   return [notif24h, notif1h];
 }
 
 /** Legacy single-reminder helper (kept for backward compatibility). */
-export async function scheduleAppointmentReminder(appointment: Appointment): Promise<string | null> {
+export async function scheduleAppointmentReminder(
+  appointment: Appointment,
+): Promise<string | null> {
   const [notif24h] = await scheduleAppointmentReminders(appointment);
   return notif24h;
 }

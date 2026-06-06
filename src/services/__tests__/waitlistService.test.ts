@@ -38,6 +38,7 @@ jest.mock('../../services/notificationService', () => ({
 
 // ─── Imports (after mocks) ────────────────────────────────────────────────────
 
+import { WaitlistStatus } from '../../../../backend/models/WaitlistEntry';
 import {
   joinWaitlist,
   leaveWaitlist,
@@ -49,7 +50,6 @@ import {
   getVetWaitlist,
   ACCEPTANCE_WINDOW_MS,
 } from '../../../../backend/services/waitlistService';
-import { WaitlistStatus } from '../../../../backend/models/WaitlistEntry';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -255,8 +255,18 @@ describe('notifyNextInQueue()', () => {
 
   it('skips users whose preferred window does not cover the slot date', async () => {
     // user-1 wants July, user-2 wants August
-    await joinWaitlist({ ...BASE_INPUT, userId: 'user-1', preferredDateStart: '2026-07-01', preferredDateEnd: '2026-07-31' });
-    const { data: e2 } = await joinWaitlist({ ...BASE_INPUT, userId: 'user-2', preferredDateStart: '2026-08-01', preferredDateEnd: '2026-08-31' });
+    await joinWaitlist({
+      ...BASE_INPUT,
+      userId: 'user-1',
+      preferredDateStart: '2026-07-01',
+      preferredDateEnd: '2026-07-31',
+    });
+    const { data: e2 } = await joinWaitlist({
+      ...BASE_INPUT,
+      userId: 'user-2',
+      preferredDateStart: '2026-08-01',
+      preferredDateEnd: '2026-08-31',
+    });
 
     // Slot opens in August — user-1 should be skipped
     const notified = await notifyNextInQueue('vet-1', '2026-08-10');
@@ -269,7 +279,11 @@ describe('notifyNextInQueue()', () => {
   });
 
   it('returns null when no user covers the slot date', async () => {
-    await joinWaitlist({ ...BASE_INPUT, preferredDateStart: '2026-07-01', preferredDateEnd: '2026-07-31' });
+    await joinWaitlist({
+      ...BASE_INPUT,
+      preferredDateStart: '2026-07-01',
+      preferredDateEnd: '2026-07-31',
+    });
     const result = await notifyNextInQueue('vet-1', '2026-09-01');
     expect(result).toBeNull();
   });

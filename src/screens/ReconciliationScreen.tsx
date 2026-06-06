@@ -23,17 +23,17 @@ import {
   View,
 } from 'react-native';
 
+import type {
+  ReconciliationReport,
+  ReconciliationSummary,
+  RecordReconciliationResult,
+} from '../models/Reconciliation';
 import {
   runReconciliation,
   getReconciliationSummary,
   listReconciliationReports,
   ReconciliationError,
 } from '../services/reconciliationService';
-import type {
-  ReconciliationReport,
-  ReconciliationSummary,
-  RecordReconciliationResult,
-} from '../models/Reconciliation';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,12 +41,12 @@ interface Props {
   onBack: () => void;
 }
 
-type View = 'dashboard' | 'report';
+type ScreenView = 'dashboard' | 'report';
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const ReconciliationScreen: React.FC<Props> = ({ onBack }) => {
-  const [view, setView] = useState<View>('dashboard');
+  const [view, setView] = useState<ScreenView>('dashboard');
   const [summary, setSummary] = useState<ReconciliationSummary | null>(null);
   const [reports, setReports] = useState<ReconciliationReport[]>([]);
   const [selectedReport, setSelectedReport] = useState<ReconciliationReport | null>(null);
@@ -59,10 +59,7 @@ const ReconciliationScreen: React.FC<Props> = ({ onBack }) => {
   const loadDashboard = useCallback(async () => {
     setLoading(true);
     try {
-      const [s, r] = await Promise.all([
-        getReconciliationSummary(),
-        listReconciliationReports(),
-      ]);
+      const [s, r] = await Promise.all([getReconciliationSummary(), listReconciliationReports()]);
       setSummary(s);
       setReports(r);
     } catch {
@@ -129,9 +126,7 @@ const ReconciliationScreen: React.FC<Props> = ({ onBack }) => {
         </View>
       </View>
 
-      <Text style={styles.resultDate}>
-        Visit: {new Date(item.visitDate).toLocaleDateString()}
-      </Text>
+      <Text style={styles.resultDate}>Visit: {new Date(item.visitDate).toLocaleDateString()}</Text>
 
       {item.reason ? <Text style={styles.resultReason}>{item.reason}</Text> : null}
 
@@ -170,9 +165,7 @@ const ReconciliationScreen: React.FC<Props> = ({ onBack }) => {
       accessibilityLabel={`Report from ${new Date(item.startedAt).toLocaleDateString()}`}
     >
       <View style={styles.reportCardRow}>
-        <Text style={styles.reportCardDate}>
-          {new Date(item.startedAt).toLocaleString()}
-        </Text>
+        <Text style={styles.reportCardDate}>{new Date(item.startedAt).toLocaleString()}</Text>
         {item.tamperedCount > 0 && (
           <View style={styles.alertBadge}>
             <Text style={styles.alertBadgeText}>⚠️ {item.tamperedCount} tampered</Text>
@@ -184,9 +177,7 @@ const ReconciliationScreen: React.FC<Props> = ({ onBack }) => {
         {item.missingChainCount} unanchored
       </Text>
       {item.reAnchoredCount > 0 && (
-        <Text style={styles.reportCardReanchor}>
-          🔗 {item.reAnchoredCount} re-anchored
-        </Text>
+        <Text style={styles.reportCardReanchor}>🔗 {item.reAnchoredCount} re-anchored</Text>
       )}
     </TouchableOpacity>
   );
@@ -317,16 +308,8 @@ const ReconciliationScreen: React.FC<Props> = ({ onBack }) => {
 
             {summary?.lastReport && (
               <View style={styles.statsGrid}>
-                <StatCard
-                  label="Total"
-                  value={summary.lastReport.totalRecords}
-                  color="#374151"
-                />
-                <StatCard
-                  label="Clean"
-                  value={summary.lastReport.cleanCount}
-                  color="#16a34a"
-                />
+                <StatCard label="Total" value={summary.lastReport.totalRecords} color="#374151" />
+                <StatCard label="Clean" value={summary.lastReport.cleanCount} color="#16a34a" />
                 <StatCard
                   label="Tampered"
                   value={summary.lastReport.tamperedCount}
@@ -358,7 +341,9 @@ const ReconciliationScreen: React.FC<Props> = ({ onBack }) => {
           {/* Past reports */}
           <Text style={styles.sectionTitle}>Past Reports</Text>
           {reports.length === 0 ? (
-            <Text style={styles.emptyText}>No reports yet. Run a reconciliation to get started.</Text>
+            <Text style={styles.emptyText}>
+              No reports yet. Run a reconciliation to get started.
+            </Text>
           ) : (
             <FlatList
               data={reports}
@@ -413,7 +398,7 @@ const statusPillStyle = (s: string) => {
 };
 
 const statusIcon = (s: string) =>
-  ({ clean: '✅', tampered: '🚨', missing_chain: '🔗', error: '❌' }[s] ?? '❓');
+  ({ clean: '✅', tampered: '🚨', missing_chain: '🔗', error: '❌' })[s] ?? '❓';
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 

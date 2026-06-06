@@ -183,9 +183,7 @@ describe('breadcrumbBlockchain', () => {
 
   it('uses error level for failed transactions', () => {
     breadcrumbBlockchain('failed');
-    expect(Sentry.addBreadcrumb).toHaveBeenCalledWith(
-      expect.objectContaining({ level: 'error' }),
-    );
+    expect(Sentry.addBreadcrumb).toHaveBeenCalledWith(expect.objectContaining({ level: 'error' }));
   });
 });
 
@@ -219,9 +217,7 @@ describe('breadcrumbSync', () => {
 
   it('uses error level for failed sync', () => {
     breadcrumbSync('failed');
-    expect(Sentry.addBreadcrumb).toHaveBeenCalledWith(
-      expect.objectContaining({ level: 'error' }),
-    );
+    expect(Sentry.addBreadcrumb).toHaveBeenCalledWith(expect.objectContaining({ level: 'error' }));
   });
 });
 

@@ -1,15 +1,16 @@
 import { type NextFunction, type Request, type Response } from 'express';
+import * as jwt from 'jsonwebtoken';
+import type { ParsedQs } from 'qs';
 
 import config from '../config';
 import { UserRole } from '../models/UserRole';
-import { sendError } from '../server/response';
 import { store } from '../server/store';
 
 export interface AuthenticatedRequest<
   P = Record<string, string>,
   ResBody = unknown,
-  ReqBody = unknown,
-  ReqQuery = unknown,
+  ReqBody = any,
+  ReqQuery = ParsedQs,
   Locals extends Record<string, unknown> = Record<string, unknown>,
 > extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
   user?: {
@@ -30,20 +31,6 @@ type TokenPayload = {
   amr?: string[];
 };
 
-type JwtLib = typeof import('jsonwebtoken');
-let jwtLib: JwtLib | null | undefined;
-
-function getJwtLib(): JwtLib | null {
-  if (jwtLib !== undefined) return jwtLib;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    jwtLib = require('jsonwebtoken') as JwtLib;
-  } catch {
-    jwtLib = null;
-  }
-  return jwtLib;
-}
-
 function normalizeUser(payload: TokenPayload): AuthenticatedRequest['user'] | null {
   const id = payload.sub ?? payload.id;
   if (!id || !payload.email || !payload.role) return null;
@@ -60,7 +47,9 @@ function decodeUnsignedToken(token: string): AuthenticatedRequest['user'] | null
   try {
     const [, payloadB64] = token.split('.');
     if (!payloadB64) return null;
-    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as TokenPayload;
+    const payload = JSON.parse(
+      Buffer.from(payloadB64, 'base64url').toString('utf8'),
+    ) as TokenPayload;
     return normalizeUser(payload);
   } catch {
     return null;
@@ -82,12 +71,8 @@ function verifyToken(token: string): AuthenticatedRequest['user'] | null {
       };
     }
 
-    const jwt = getJwtLib();
-    if (jwt) {
-      const payload = jwt.verify(token, config.app.jwtSecret) as TokenPayload;
-      return normalizeUser(payload);
-    }
-    return decodeUnsignedToken(token);
+    const payload = jwt.verify(token, config.app.jwtSecret) as TokenPayload;
+    return normalizeUser(payload);
   } catch {
     return decodeUnsignedToken(token);
   }

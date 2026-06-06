@@ -78,7 +78,7 @@ class LoggerService {
     level: LogLevel,
     message: string,
     context?: Record<string, unknown>,
-    error?: Error
+    error?: Error,
   ): void {
     // Check if this log level should be processed
     if (LOG_LEVELS[level] < LOG_LEVELS[this.config.level]) {
@@ -103,7 +103,7 @@ class LoggerService {
 
     // Store to AsyncStorage if enabled
     if (this.config.enableStorage && this.storageInitialized) {
-      this.logToStorage(logEntry).catch(err => {
+      this.logToStorage(logEntry).catch((err) => {
         console.warn('Failed to store log entry:', err);
       });
     }
@@ -113,18 +113,18 @@ class LoggerService {
 
   private logToConsole(entry: LogEntry): void {
     const { level, message, timestamp, context, error } = entry;
-    
+
     // Format the log message
     const formattedMessage = `[${timestamp}] ${level.toUpperCase()}: ${message}`;
-    
+
     // Choose appropriate console method
     const consoleMethod = this.getConsoleMethod(level);
-    
+
     if (context || error) {
       const additionalData: any = {};
       if (context) additionalData.context = context;
       if (error) additionalData.error = { message: error.message, stack: error.stack };
-      
+
       consoleMethod(formattedMessage, additionalData);
     } else {
       consoleMethod(formattedMessage);
@@ -168,15 +168,15 @@ class LoggerService {
       // Get current logs from storage
       const storedLogs = await AsyncStorage.getItem(STORAGE_KEY);
       let logs: LogEntry[] = storedLogs ? JSON.parse(storedLogs) : [];
-      
+
       // Add new entry
       logs.push(entry);
-      
+
       // Trim to max entries
       if (logs.length > this.config.maxStorageEntries) {
         logs = logs.slice(-this.config.maxStorageEntries);
       }
-      
+
       // Save back to storage
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
     } catch (error) {
@@ -189,7 +189,7 @@ class LoggerService {
 
   private addToBuffer(entry: LogEntry): void {
     this.logBuffer.push(entry);
-    
+
     // Trim buffer if it exceeds max size
     if (this.logBuffer.length > this.maxBufferSize) {
       this.logBuffer = this.logBuffer.slice(-this.maxBufferSize);
@@ -209,9 +209,7 @@ class LoggerService {
    * Get logs filtered by level
    */
   getLogsByLevel(level: LogLevel, count: number = 100): LogEntry[] {
-    return this.logBuffer
-      .filter(entry => entry.level === level)
-      .slice(-count);
+    return this.logBuffer.filter((entry) => entry.level === level).slice(-count);
   }
 
   /**
@@ -290,7 +288,7 @@ class LoggerService {
 class ChildLogger {
   constructor(
     private parent: LoggerService,
-    private context: Record<string, unknown>
+    private context: Record<string, unknown>,
   ) {}
 
   debug(message: string, additionalContext?: Record<string, unknown>): void {

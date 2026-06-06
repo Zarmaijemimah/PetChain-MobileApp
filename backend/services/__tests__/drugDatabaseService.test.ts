@@ -111,17 +111,13 @@ describe('drugDatabaseService', () => {
 
       expect(result).toBeDefined();
       expect(result?.range).toBeNull();
-      expect(result?.warnings).toContain(
-        expect.stringContaining('no established dosage range'),
-      );
+      expect(result?.warnings).toContain(expect.stringContaining('no established dosage range'));
     });
 
     it('should warn about missing dosage for species', () => {
       const result = lookupDrug('amoxicillin', 'bird');
 
-      expect(result?.warnings).toContain(
-        expect.stringContaining('no established dosage range'),
-      );
+      expect(result?.warnings).toContain(expect.stringContaining('no established dosage range'));
     });
   });
 
@@ -200,9 +196,7 @@ describe('drugDatabaseService', () => {
       const warnings = getSafetyWarnings('amoxicillin', 'dog', 15);
 
       // Should not have dose-related warnings for typical dose
-      const doseWarnings = warnings.filter((w) =>
-        w.match(/exceeds|below|CRITICAL|WARNING/),
-      );
+      const doseWarnings = warnings.filter((w) => w.match(/exceeds|below|CRITICAL|WARNING/));
       expect(doseWarnings.length).toBeLessThanOrEqual(1);
     });
 

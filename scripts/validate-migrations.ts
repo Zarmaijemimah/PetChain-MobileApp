@@ -1,6 +1,7 @@
-import { Client } from 'pg';
 import path from 'path';
+
 import { runner } from 'node-pg-migrate';
+import { Client } from 'pg';
 
 async function waitForPostgres(client: Client, retries = 10) {
   for (let i = 0; i < retries; i++) {
@@ -17,7 +18,8 @@ async function waitForPostgres(client: Client, retries = 10) {
 }
 
 async function main() {
-  const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/postgres';
+  const DATABASE_URL =
+    process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/postgres';
   const baseClient = new Client({ connectionString: DATABASE_URL });
 
   console.log('[validate] Waiting for Postgres...');
@@ -64,7 +66,9 @@ async function main() {
   const dropClient = new Client({ connectionString: DATABASE_URL });
   await dropClient.connect();
   // Terminate connections to the test DB (safer drop)
-  await dropClient.query(`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${testDbName}'`);
+  await dropClient.query(
+    `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${testDbName}'`,
+  );
   await dropClient.query(`DROP DATABASE IF EXISTS ${testDbName}`);
   await dropClient.end();
 

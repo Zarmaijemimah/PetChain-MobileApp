@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+
 import { UserRole } from '../backend/models/UserRole';
 
 const TEST_SECRET = 'test-secret-key';

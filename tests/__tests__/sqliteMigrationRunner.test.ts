@@ -1,9 +1,10 @@
 import * as SQLite from 'expo-sqlite';
+
 import {
   runSqliteMigrations,
   rollbackSqliteMigrations,
   getSqliteMigrationHistory,
-  SqliteMigration,
+  type SqliteMigration,
 } from '../../src/migrations/sqliteMigrationRunner';
 
 const mockDb = SQLite.openDatabaseSync('petchain.db') as any;
@@ -54,7 +55,10 @@ describe('SQLite migration runner', () => {
     const m1 = makeMigration('20260101000001', 'create table 1');
 
     // Call twice concurrently
-    const [a, b] = await Promise.all([runSqliteMigrations(mockDb, [m1]), runSqliteMigrations(mockDb, [m1])]);
+    const [a, b] = await Promise.all([
+      runSqliteMigrations(mockDb, [m1]),
+      runSqliteMigrations(mockDb, [m1]),
+    ]);
     expect(a.success).toBe(true);
     expect(b.success).toBe(true);
   });

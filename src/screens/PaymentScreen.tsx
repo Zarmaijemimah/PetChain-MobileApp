@@ -12,15 +12,12 @@ import {
 
 import type { Subscription, SubscriptionPlan, SubscriptionPlanDetails } from '../models/Payment';
 import paymentService from '../services/paymentService';
+import { getPublicKeyFromStoredSecret, getStoredSecret } from '../services/stellarAccountService';
 import stellarPathPaymentService, {
   type PathPaymentAuditEntry,
   type PathPaymentQuote,
   type PreparedPayment,
 } from '../services/stellarPathPaymentService';
-import {
-  getPublicKeyFromStoredSecret,
-  getStoredSecret,
-} from '../services/stellarAccountService';
 
 const PaymentScreen: React.FC = () => {
   const [plans, setPlans] = useState<SubscriptionPlanDetails[]>([]);
@@ -235,7 +232,10 @@ const PaymentScreen: React.FC = () => {
               <Text style={styles.planName}>{plan.name}</Text>
               <Text style={styles.planDescription}>{plan.description}</Text>
               <Text style={styles.planPrice}>
-                ${price.toFixed(2)} <Text style={styles.planPricePer}>/ {plan.id === 'premium_annual' ? 'year' : 'month'}</Text>
+                ${price.toFixed(2)}{' '}
+                <Text style={styles.planPricePer}>
+                  / {plan.id === 'premium_annual' ? 'year' : 'month'}
+                </Text>
               </Text>
               {plan.id === 'premium_annual' ? (
                 <Text style={styles.savingsLabel}>Save 20% vs monthly</Text>
@@ -267,19 +267,19 @@ const PaymentScreen: React.FC = () => {
       {quote && preparedPayment ? (
         <View style={styles.quoteCard}>
           <Text style={styles.sectionTitle}>Quote preview</Text>
-          <Text style={styles.quoteLine}>Mode: {quote.mode === 'path' ? 'Path payment' : 'Direct XLM fallback'}</Text>
           <Text style={styles.quoteLine}>
-            Destination: {quote.destinationAmount} XLM
+            Mode: {quote.mode === 'path' ? 'Path payment' : 'Direct XLM fallback'}
           </Text>
+          <Text style={styles.quoteLine}>Destination: {quote.destinationAmount} XLM</Text>
           <Text style={styles.quoteLine}>
             Source: {quote.sourceAmount} {quote.sourceAsset.code}
           </Text>
           <Text style={styles.quoteLine}>Exchange rate: {quote.exchangeRate}</Text>
-          <Text style={styles.quoteLine}>
-            Network fee: ~{quote.estimatedNetworkFee} XLM
-          </Text>
+          <Text style={styles.quoteLine}>Network fee: ~{quote.estimatedNetworkFee} XLM</Text>
           <Text style={styles.quoteLine}>Path hops: {quote.pathCount}</Text>
-          {quote.fallbackReason ? <Text style={styles.fallbackText}>{quote.fallbackReason}</Text> : null}
+          {quote.fallbackReason ? (
+            <Text style={styles.fallbackText}>{quote.fallbackReason}</Text>
+          ) : null}
 
           <Text style={styles.auditTitle}>Route</Text>
           {quote.path.length > 0 ? (
@@ -305,8 +305,8 @@ const PaymentScreen: React.FC = () => {
             )}
           </TouchableOpacity>
           <Text style={styles.helperText}>
-            The transaction is signed locally using the stored Stellar secret key and then
-            submitted to Horizon.
+            The transaction is signed locally using the stored Stellar secret key and then submitted
+            to Horizon.
           </Text>
         </View>
       ) : null}
@@ -324,8 +324,12 @@ const PaymentScreen: React.FC = () => {
                 {entry.exchangeRate}
               </Text>
               <Text style={styles.auditLine}>Fee: {entry.estimatedNetworkFee} XLM</Text>
-              {entry.fallbackReason ? <Text style={styles.fallbackText}>{entry.fallbackReason}</Text> : null}
-              {entry.transactionHash ? <Text style={styles.auditLine}>Tx: {entry.transactionHash}</Text> : null}
+              {entry.fallbackReason ? (
+                <Text style={styles.fallbackText}>{entry.fallbackReason}</Text>
+              ) : null}
+              {entry.transactionHash ? (
+                <Text style={styles.auditLine}>Tx: {entry.transactionHash}</Text>
+              ) : null}
             </View>
           ))}
         </View>
@@ -346,7 +350,12 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 16,
   },
-  accountBannerLabel: { color: '#9fd7c7', fontSize: 12, textTransform: 'uppercase', fontWeight: '700' },
+  accountBannerLabel: {
+    color: '#9fd7c7',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    fontWeight: '700',
+  },
   accountBannerValue: { color: '#fff', marginTop: 6, fontWeight: '600' },
   warnBanner: {
     backgroundColor: '#fff4d6',
@@ -386,7 +395,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#c8e6c9',
   },
-  activeTitle: { fontSize: 12, color: '#2e7d32', fontWeight: '700', textTransform: 'uppercase', marginBottom: 4 },
+  activeTitle: {
+    fontSize: 12,
+    color: '#2e7d32',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
   activePlan: { fontSize: 18, fontWeight: '800', color: '#111', marginBottom: 4 },
   activePeriod: { fontSize: 13, color: '#555' },
   cancelNotice: { fontSize: 13, color: '#e53935', marginTop: 6 },
@@ -403,7 +418,13 @@ const styles = StyleSheet.create({
   planDescription: { fontSize: 13, color: '#60756b', marginBottom: 10 },
   planPrice: { fontSize: 28, fontWeight: '800', color: '#12372a' },
   planPricePer: { fontSize: 14, fontWeight: '500', color: '#60756b' },
-  savingsLabel: { fontSize: 12, color: '#2e7d32', fontWeight: '700', marginTop: 2, marginBottom: 8 },
+  savingsLabel: {
+    fontSize: 12,
+    color: '#2e7d32',
+    fontWeight: '700',
+    marginTop: 2,
+    marginBottom: 8,
+  },
   featureList: { marginTop: 12, marginBottom: 16 },
   featureItem: { fontSize: 13, color: '#344b42', marginBottom: 6 },
   subscribeButton: {

@@ -12,6 +12,12 @@ import {
 } from 'react-native';
 
 import {
+  checkDrugInteractions,
+  getSeverityLabel,
+  recordVetOverride,
+  type InteractionCheckResult,
+} from '../services/drugInteractionService';
+import {
   type DoseLog,
   type Medication,
   type RefillStatus,
@@ -26,12 +32,6 @@ import {
   scheduleRefillReminder,
   syncRefillReminders,
 } from '../services/medicationService';
-import {
-  checkDrugInteractions,
-  getSeverityLabel,
-  recordVetOverride,
-  type InteractionCheckResult,
-} from '../services/drugInteractionService';
 import { scheduleMedicationReminder } from '../services/notificationService';
 import { formatLocalDate, formatLocalTime } from '../utils/dateLocale';
 import { useSecureScreen } from '../utils/secureScreen';
@@ -193,10 +193,7 @@ const MedicationScreen: React.FC = () => {
       const med = medications.find((m) => m.id === medicationId);
       if (med && !skipped) {
         // Decrement both supply fields, then resync run-out & notifications
-        const newSupply = Math.max(
-          0,
-          (med.currentSupply ?? med.remainingPills ?? 0) - 1,
-        );
+        const newSupply = Math.max(0, (med.currentSupply ?? med.remainingPills ?? 0) - 1);
         const updatedMed: Medication = {
           ...med,
           currentSupply: newSupply,
@@ -633,10 +630,7 @@ const MedicationScreen: React.FC = () => {
             autoFocus
           />
           <View style={styles.modalActions}>
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={() => setRefillModalVisible(false)}
-            >
+            <TouchableOpacity style={styles.cancelBtn} onPress={() => setRefillModalVisible(false)}>
               <Text style={styles.cancelBtnText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.saveBtn} onPress={() => void handleRefillComplete()}>

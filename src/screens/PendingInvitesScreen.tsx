@@ -93,28 +93,24 @@ const PendingInvitesScreen: React.FC<Props> = ({ onBack, onInviteAccepted }) => 
 
   const handleDecline = useCallback(
     (invite: PendingInvite) => {
-      Alert.alert(
-        'Decline Invite',
-        `Decline co-ownership invite for ${invite.petName}?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Decline',
-            style: 'destructive',
-            onPress: async () => {
-              setProcessingId(invite.id);
-              try {
-                await multisigService.declineCoOwnerInvite(invite.id);
-                void load(true);
-              } catch (error: any) {
-                Alert.alert('Error', error?.message ?? 'Failed to decline invite.');
-              } finally {
-                setProcessingId(null);
-              }
-            },
+      Alert.alert('Decline Invite', `Decline co-ownership invite for ${invite.petName}?`, [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Decline',
+          style: 'destructive',
+          onPress: async () => {
+            setProcessingId(invite.id);
+            try {
+              await multisigService.declineCoOwnerInvite(invite.id);
+              void load(true);
+            } catch (error: any) {
+              Alert.alert('Error', error?.message ?? 'Failed to decline invite.');
+            } finally {
+              setProcessingId(null);
+            }
           },
-        ],
-      );
+        },
+      ]);
     },
     [load],
   );
@@ -134,9 +130,7 @@ const PendingInvitesScreen: React.FC<Props> = ({ onBack, onInviteAccepted }) => 
           <View style={styles.cardHeaderText}>
             <Text style={styles.petName}>{item.petName}</Text>
             <Text style={styles.invitedBy}>Invited by {item.invitedByName}</Text>
-            <Text style={styles.inviteDate}>
-              {new Date(item.createdAt).toLocaleDateString()}
-            </Text>
+            <Text style={styles.inviteDate}>{new Date(item.createdAt).toLocaleDateString()}</Text>
           </View>
           <View style={styles.multisigBadge}>
             <Text style={styles.multisigBadgeText}>⛓ Multisig</Text>
@@ -147,7 +141,8 @@ const PendingInvitesScreen: React.FC<Props> = ({ onBack, onInviteAccepted }) => 
         <View style={[styles.expiryRow, isExpiringSoon && styles.expiryRowWarn]}>
           <Text style={[styles.expiryText, isExpiringSoon && styles.expiryTextWarn]}>
             {isExpiringSoon ? '⏰ ' : '📅 '}
-            Expires {expiresAt.toLocaleDateString()} at {expiresAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            Expires {expiresAt.toLocaleDateString()} at{' '}
+            {expiresAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </Text>
         </View>
 

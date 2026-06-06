@@ -12,8 +12,8 @@ import {
   View,
 } from 'react-native';
 
-import { generateAppointmentCheckinQRCode } from '../services/qrService';
 import { getPetById } from '../services/petService';
+import { generateAppointmentCheckinQRCode } from '../services/qrService';
 
 interface AppointmentDetailScreenProps {
   route: {
@@ -57,7 +57,11 @@ const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = ({ route
   const onShare = async () => {
     if (!qrUrl) return;
     try {
-      await Share.share({ message: `Check-in QR: ${qrUrl}`, url: qrUrl, title: 'PetChain Check-in QR' });
+      await Share.share({
+        message: `Check-in QR: ${qrUrl}`,
+        url: qrUrl,
+        title: 'PetChain Check-in QR',
+      });
     } catch (err) {
       // ignore
     }
@@ -80,7 +84,11 @@ const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = ({ route
         </TouchableOpacity>
       </View>
 
-      <Modal visible={modalVisible} animationType="slide" onRequestClose={() => setModalVisible(false)}>
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>

@@ -4,17 +4,18 @@
  */
 
 import { EventEmitter } from 'events';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import blockchainEventService, { 
-  type BlockchainEvent, 
-  type TransactionEvent, 
-  type VerificationUpdateEvent 
+import blockchainEventService, {
+  type BlockchainEvent,
+  type TransactionEvent,
+  type VerificationUpdateEvent,
 } from './blockchainEventService';
-import { 
-  verifyRecordOnChain, 
+import {
+  verifyRecordOnChain,
   invalidateBlockchainCacheKey,
-  type StellarRecordVerification 
+  type StellarRecordVerification,
 } from './blockchainService';
 import { loggerService } from './loggerService';
 
@@ -84,9 +85,9 @@ export class BlockchainIntegrationService extends EventEmitter {
     }
 
     try {
-      loggerService.info('Initializing blockchain integration', { 
+      loggerService.info('Initializing blockchain integration', {
         accounts: petChainAccounts,
-        config: this.config 
+        config: this.config,
       });
 
       // Load persisted data
@@ -101,10 +102,9 @@ export class BlockchainIntegrationService extends EventEmitter {
       this.startVerificationPolling();
 
       this.isInitialized = true;
-      
+
       loggerService.info('Blockchain integration initialized successfully');
       this.emit('initialized', { accounts: petChainAccounts });
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Initialization failed';
       loggerService.error('Failed to initialize blockchain integration', { error: errorMessage });
@@ -116,15 +116,15 @@ export class BlockchainIntegrationService extends EventEmitter {
    * Add a record for verification monitoring
    */
   async addRecordForVerification(
-    recordId: string, 
+    recordId: string,
     expectedHash?: string,
-    transactionHash?: string
+    transactionHash?: string,
   ): Promise<void> {
     try {
-      loggerService.debug('Adding record for verification', { 
-        recordId, 
+      loggerService.debug('Adding record for verification', {
+        recordId,
         hasExpectedHash: !!expectedHash,
-        transactionHash 
+        transactionHash,
       });
 
       // Check if already verified
@@ -157,7 +157,6 @@ export class BlockchainIntegrationService extends EventEmitter {
       }
 
       this.emit('recordAdded', { recordId, status });
-
     } catch (error) {
       loggerService.error('Failed to add record for verification', {
         recordId,
@@ -185,7 +184,7 @@ export class BlockchainIntegrationService extends EventEmitter {
    */
   getStatus(): IntegrationStatus {
     const eventServiceStatus = blockchainEventService.getStatus();
-    
+
     return {
       connected: eventServiceStatus.connected,
       activeAccounts: eventServiceStatus.subscribedAccounts,
@@ -203,7 +202,7 @@ export class BlockchainIntegrationService extends EventEmitter {
       loggerService.debug('Checking record verification', { recordId });
 
       const verification = await verifyRecordOnChain(recordId, expectedHash);
-      
+
       await this.updateVerificationStatus(recordId, {
         verified: verification.verified,
         transactionHash: verification.txHash,
@@ -213,7 +212,6 @@ export class BlockchainIntegrationService extends EventEmitter {
       });
 
       return verification.verified;
-
     } catch (error) {
       loggerService.error('Failed to check record verification', {
         recordId,
@@ -229,11 +227,8 @@ export class BlockchainIntegrationService extends EventEmitter {
   async clearVerificationData(): Promise<void> {
     this.verificationStatuses.clear();
     this.pendingVerifications.clear();
-    
-    await AsyncStorage.multiRemove([
-      VERIFICATION_STATUS_KEY,
-      PENDING_VERIFICATIONS_KEY,
-    ]);
+
+    await AsyncStorage.multiRemove([VERIFICATION_STATUS_KEY, PENDING_VERIFICATIONS_KEY]);
 
     loggerService.info('Verification data cleared');
     this.emit('dataCleared');
@@ -301,7 +296,7 @@ export class BlockchainIntegrationService extends EventEmitter {
 
           // Remove from pending
           this.pendingVerifications.delete(recordId);
-          
+
           // Invalidate cache for this record
           invalidateBlockchainCacheKey(`verify:${recordId}`);
         }
@@ -333,8 +328,8 @@ export class BlockchainIntegrationService extends EventEmitter {
   }
 
   private async updateVerificationStatus(
-    recordId: string, 
-    updates: Partial<RecordVerificationStatus>
+    recordId: string,
+    updates: Partial<RecordVerificationStatus>,
   ): Promise<void> {
     const current = this.verificationStatuses.get(recordId) || {
       recordId,
@@ -360,7 +355,7 @@ export class BlockchainIntegrationService extends EventEmitter {
 
     this.verificationInterval = setInterval(() => {
       this.pollPendingVerifications();
-    }, this.config.verificationCheckInterval);
+    }, this.config.verificationCheckInterval) as unknown as NodeJS.Timeout;
 
     loggerService.debug('Started verification polling', {
       interval: this.config.verificationCheckInterval,
@@ -378,7 +373,7 @@ export class BlockchainIntegrationService extends EventEmitter {
 
     // Check a subset of pending verifications to avoid overwhelming the API
     const toCheck = Array.from(this.pendingVerifications).slice(0, 5);
-    
+
     for (const recordId of toCheck) {
       try {
         const status = this.verificationStatuses.get(recordId);
@@ -397,7 +392,6 @@ export class BlockchainIntegrationService extends EventEmitter {
         await this.updateVerificationStatus(recordId, {
           lastChecked: new Date().toISOString(),
         });
-
       } catch (error) {
         loggerService.warn('Error during verification polling', {
           recordId,
@@ -432,7 +426,6 @@ export class BlockchainIntegrationService extends EventEmitter {
         statusCount: this.verificationStatuses.size,
         pendingCount: this.pendingVerifications.size,
       });
-
     } catch (error) {
       loggerService.warn('Failed to load persisted verification data', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -449,7 +442,6 @@ export class BlockchainIntegrationService extends EventEmitter {
         [VERIFICATION_STATUS_KEY, JSON.stringify(statusArray)],
         [PENDING_VERIFICATIONS_KEY, JSON.stringify(pendingArray)],
       ]);
-
     } catch (error) {
       loggerService.warn('Failed to persist verification data', {
         error: error instanceof Error ? error.message : 'Unknown error',

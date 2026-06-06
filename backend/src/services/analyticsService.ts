@@ -89,8 +89,19 @@ export interface FlowCrashStat {
 }
 
 export interface DeviceBreakdown {
-  byDevice: Array<{ model: string; crashCount: number; totalSessions: number; crashFreeRate: number }>;
-  byOsVersion: Array<{ os: string; osVersion: string; crashCount: number; totalSessions: number; crashFreeRate: number }>;
+  byDevice: Array<{
+    model: string;
+    crashCount: number;
+    totalSessions: number;
+    crashFreeRate: number;
+  }>;
+  byOsVersion: Array<{
+    os: string;
+    osVersion: string;
+    crashCount: number;
+    totalSessions: number;
+    crashFreeRate: number;
+  }>;
 }
 
 // ─── Session Store ────────────────────────────────────────────────────────────
@@ -111,7 +122,13 @@ class SessionStore {
         id,
         startedAt: Date.now(),
         status: 'active',
-        device: { model: 'unknown', os: 'unknown', osVersion: 'unknown', appVersion: 'unknown', platform: 'unknown' },
+        device: {
+          model: 'unknown',
+          os: 'unknown',
+          osVersion: 'unknown',
+          appVersion: 'unknown',
+          platform: 'unknown',
+        },
         appVersion: 'unknown',
         flowPath: [],
         hasCrash: false,
@@ -155,9 +172,7 @@ class CrashStore {
   private crashes = new Map<string, StoredCrashReport>();
   private idCounter = 0;
 
-  async create(
-    report: Omit<StoredCrashReport, 'id'>,
-  ): Promise<StoredCrashReport> {
+  async create(report: Omit<StoredCrashReport, 'id'>): Promise<StoredCrashReport> {
     const id = `crash-${Date.now()}-${++this.idCounter}`;
     const stored: StoredCrashReport = { id, ...report };
     this.crashes.set(id, stored);
@@ -231,14 +246,10 @@ class AnalyticsEngine {
     const completed = this.sessions.getCompleted(appVersion);
     const totalSessions = completed.length;
 
-    const crashedSessions = completed.filter(
-      (s) => s.status === 'crashed' || s.hasCrash,
-    ).length;
+    const crashedSessions = completed.filter((s) => s.status === 'crashed' || s.hasCrash).length;
 
     const crashFreeRate =
-      totalSessions === 0
-        ? 100
-        : ((totalSessions - crashedSessions) / totalSessions) * 100;
+      totalSessions === 0 ? 100 : ((totalSessions - crashedSessions) / totalSessions) * 100;
 
     const topCrashFlows = await this.getTopCrashFlows(appVersion, 5);
     const breakdown = await this.getDeviceBreakdown(appVersion);
@@ -315,8 +326,7 @@ class AnalyticsEngine {
         model,
         crashCount: crashed,
         totalSessions: total,
-        crashFreeRate:
-          total === 0 ? 100 : Math.round(((total - crashed) / total) * 10000) / 100,
+        crashFreeRate: total === 0 ? 100 : Math.round(((total - crashed) / total) * 10000) / 100,
       }))
       .sort((a, b) => b.crashCount - a.crashCount);
 
@@ -338,8 +348,7 @@ class AnalyticsEngine {
           osVersion: osVersion ?? 'unknown',
           crashCount: crashed,
           totalSessions: total,
-          crashFreeRate:
-            total === 0 ? 100 : Math.round(((total - crashed) / total) * 10000) / 100,
+          crashFreeRate: total === 0 ? 100 : Math.round(((total - crashed) / total) * 10000) / 100,
         };
       })
       .sort((a, b) => b.crashCount - a.crashCount);

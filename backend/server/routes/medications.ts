@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import express from 'express';
 
-import { authenticateJWT, authorizeRoles, type AuthenticatedRequest } from '../../middleware/auth';
 import { logAuditTrail } from '../../middleware/auditLogger';
+import { authenticateJWT, authorizeRoles, type AuthenticatedRequest } from '../../middleware/auth';
 import { UserRole } from '../../models/UserRole';
 import { ok, sendError } from '../response';
 import { store, type StoredMedication } from '../store';
@@ -82,7 +82,7 @@ router.post('/', authorizeRoles(UserRole.ADMIN, UserRole.VET), (req, res) => {
   };
   store.medications.set(id, row);
   void logAuditTrail({
-    req,
+    req: req as AuthenticatedRequest,
     entityType: 'medication',
     entityId: id,
     action: 'CREATE',
@@ -108,7 +108,7 @@ router.put('/:id', authorizeRoles(UserRole.ADMIN, UserRole.VET), (req, res) => {
   };
   store.medications.set(row.id, next);
   void logAuditTrail({
-    req,
+    req: req as AuthenticatedRequest,
     entityType: 'medication',
     entityId: row.id,
     action: 'UPDATE',
@@ -125,7 +125,7 @@ router.delete('/:id', authorizeRoles(UserRole.ADMIN, UserRole.VET), (req, res) =
   }
   store.medications.delete(req.params.id);
   void logAuditTrail({
-    req,
+    req: req as AuthenticatedRequest,
     entityType: 'medication',
     entityId: existing.id,
     action: 'DELETE',

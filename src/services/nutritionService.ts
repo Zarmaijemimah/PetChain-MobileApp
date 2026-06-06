@@ -48,10 +48,7 @@ export async function saveNutritionLog(log: NutritionLog): Promise<void> {
 
 export async function deleteNutritionLog(id: string): Promise<void> {
   const logs = await getNutritionLogs();
-  await AsyncStorage.setItem(
-    NUTRITION_LOGS_KEY,
-    JSON.stringify(logs.filter((l) => l.id !== id)),
-  );
+  await AsyncStorage.setItem(NUTRITION_LOGS_KEY, JSON.stringify(logs.filter((l) => l.id !== id)));
 }
 
 // ─── CRUD: Nutrition Goals ────────────────────────────────────────────────────
@@ -112,10 +109,7 @@ export function getFeedingStatus(
 /**
  * Build a daily nutrition summary for a pet on a given date.
  */
-export async function getDailySummary(
-  petId: string,
-  date: string,
-): Promise<DailyNutritionSummary> {
+export async function getDailySummary(petId: string, date: string): Promise<DailyNutritionSummary> {
   const [logs, goal] = await Promise.all([
     getNutritionLogsByDate(petId, date),
     getNutritionGoalByPet(petId),
@@ -175,7 +169,12 @@ export async function getWeeklyReport(
   const daysUnder = dailySummaries.filter((s) => s.status === 'under').length;
   const daysOver = dailySummaries.filter((s) => s.status === 'over').length;
 
-  const recommendation = buildWeeklyRecommendation(daysOnTrack, daysUnder, daysOver, avgDailyCalories);
+  const recommendation = buildWeeklyRecommendation(
+    daysOnTrack,
+    daysUnder,
+    daysOver,
+    avgDailyCalories,
+  );
 
   return {
     petId,
@@ -200,7 +199,7 @@ function buildWeeklyRecommendation(
   avgCalories: number,
 ): string {
   if (daysOnTrack >= 5) {
-    return 'Great job! Your pet\'s nutrition is well-balanced this week.';
+    return "Great job! Your pet's nutrition is well-balanced this week.";
   }
   if (daysOver >= 4) {
     return `Your pet was overfed on ${daysOver} days this week. Consider reducing portion sizes to avoid weight gain.`;
@@ -292,10 +291,14 @@ export function getDietaryRecommendations(
     tips.push('Reduce calorie intake by 20% and increase exercise. Use weight-management food.');
   }
   if (healthConditions.includes('diabetes')) {
-    tips.push('Feed consistent portions at regular times. Low-glycemic, high-fiber diets help regulate blood sugar.');
+    tips.push(
+      'Feed consistent portions at regular times. Low-glycemic, high-fiber diets help regulate blood sugar.',
+    );
   }
   if (healthConditions.includes('kidney_disease')) {
-    tips.push('Low-phosphorus, low-protein diets are recommended for kidney disease. Consult your vet.');
+    tips.push(
+      'Low-phosphorus, low-protein diets are recommended for kidney disease. Consult your vet.',
+    );
   }
   if (healthConditions.includes('allergies')) {
     tips.push('Consider a limited-ingredient or hydrolyzed protein diet to identify allergens.');
@@ -308,7 +311,7 @@ export function getDietaryRecommendations(
   }
 
   if (tips.length === 0) {
-    tips.push('Maintain a balanced diet appropriate for your pet\'s age and size.');
+    tips.push("Maintain a balanced diet appropriate for your pet's age and size.");
   }
 
   return tips;
@@ -339,8 +342,8 @@ export async function searchFoodDatabase(query: string): Promise<FoodItem[]> {
     },
     {
       id: 'food_002',
-      name: 'Hill\'s Science Diet Adult',
-      brand: 'Hill\'s',
+      name: "Hill's Science Diet Adult",
+      brand: "Hill's",
       category: 'dry',
       caloriesPer100g: 363,
       proteinPer100g: 18.5,
@@ -461,11 +464,7 @@ export async function searchFoodDatabase(query: string): Promise<FoodItem[]> {
 /**
  * Calculate calories for a given food item and amount.
  */
-export function calculateCaloriesFromFood(
-  food: FoodItem,
-  amount: number,
-  unit: string,
-): number {
+export function calculateCaloriesFromFood(food: FoodItem, amount: number, unit: string): number {
   // Convert everything to grams first
   let amountInGrams = amount;
   switch (unit) {

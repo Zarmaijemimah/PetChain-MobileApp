@@ -6,7 +6,12 @@
  * documents with OCR fallback.
  */
 
-import type { Prescription, Diagnosis, VaccinationRecord, Treatment } from '../models/MedicalRecord';
+import type {
+  Prescription,
+  Diagnosis,
+  VaccinationRecord,
+  Treatment,
+} from '../models/MedicalRecord';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,7 +49,8 @@ const PATTERNS = {
   vetName: /(?:Dr\.?|Dr|Veterinarian|Vet)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/g,
 
   // Clinic/hospital name patterns
-  clinic: /(?:Clinic|Hospital|Veterinary|Animal|Pet|Care|Center|Surgery|Practice)\s+([A-Z][a-zA-Z\s&]+)/gi,
+  clinic:
+    /(?:Clinic|Hospital|Veterinary|Animal|Pet|Care|Center|Surgery|Practice)\s+([A-Z][a-zA-Z\s&]+)/gi,
 
   // Phone patterns
   phone: /(?:\+?1[-.\s]?)?\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/g,
@@ -53,25 +59,31 @@ const PATTERNS = {
   email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
 
   // Medication patterns: "name dosage frequency"
-  medication: /(?:prescribed?|medication|drug|medicine|rx|take|give)\s*:?\s*([A-Za-z0-9\s\-]+?)(?:\s+(\d+(?:\.\d+)?)\s*(?:mg|ml|g|iu|units?|tabs?|caps?|drops?|cc|ml))?(?:\s+([a-z\s]+?))?(?:every|once|twice|three times|daily|bid|tid|qid|as needed|prn|q\d+h)?/gi,
+  medication:
+    /(?:prescribed?|medication|drug|medicine|rx|take|give)\s*:?\s*([A-Za-z0-9\s\-]+?)(?:\s+(\d+(?:\.\d+)?)\s*(?:mg|ml|g|iu|units?|tabs?|caps?|drops?|cc|ml))?(?:\s+([a-z\s]+?))?(?:every|once|twice|three times|daily|bid|tid|qid|as needed|prn|q\d+h)?/gi,
 
   // Vaccination patterns
-  vaccination: /(?:vaccin|immuniz|shot|inocul)\w*\s*:?\s*([A-Za-z0-9\s\-,&]+?)(?:\s+(?:on|date|given|administered)\s+([^\n]+?))?(?:\n|$)/gi,
+  vaccination:
+    /(?:vaccin|immuniz|shot|inocul)\w*\s*:?\s*([A-Za-z0-9\s\-,&]+?)(?:\s+(?:on|date|given|administered)\s+([^\n]+?))?(?:\n|$)/gi,
 
   // Diagnosis patterns
-  diagnosis: /(?:diagnos[ie]s?|condition|disease|illness|problem)\s*:?\s*([A-Za-z0-9\s\-,&()]+?)(?:\n|$)/gi,
+  diagnosis:
+    /(?:diagnos[ie]s?|condition|disease|illness|problem)\s*:?\s*([A-Za-z0-9\s\-,&()]+?)(?:\n|$)/gi,
 
   // Treatment patterns
-  treatment: /(?:treatment|procedure|surgery|therapy|intervention)\s*:?\s*([A-Za-z0-9\s\-,&()]+?)(?:\n|$)/gi,
+  treatment:
+    /(?:treatment|procedure|surgery|therapy|intervention)\s*:?\s*([A-Za-z0-9\s\-,&()]+?)(?:\n|$)/gi,
 
   // Next visit/follow-up patterns
-  nextVisit: /(?:follow[- ]?up|next (?:visit|appointment|check[- ]?up)|recheck|return)\s*:?\s*([^\n]+?)(?:\n|$)/gi,
+  nextVisit:
+    /(?:follow[- ]?up|next (?:visit|appointment|check[- ]?up)|recheck|return)\s*:?\s*([^\n]+?)(?:\n|$)/gi,
 
   // Dosage patterns
   dosage: /(\d+(?:\.\d+)?)\s*(?:mg|ml|g|iu|units?|tabs?|caps?|drops?|cc|ml)/gi,
 
   // Frequency patterns
-  frequency: /(?:once daily|twice daily|three times daily|every other day|daily|bid|tid|qid|as needed|prn|q\d+h|every \d+ hours?)/gi,
+  frequency:
+    /(?:once daily|twice daily|three times daily|every other day|daily|bid|tid|qid|as needed|prn|q\d+h|every \d+ hours?)/gi,
 };
 
 // ─── Medication Database ──────────────────────────────────────────────────────
@@ -442,7 +454,9 @@ function extractDiagnoses(text: string): Diagnosis[] {
   const diagnosisMatches = text.match(PATTERNS.diagnosis);
   if (diagnosisMatches) {
     diagnosisMatches.forEach((match) => {
-      const diagText = match.replace(/^(?:diagnos[ie]s?|condition|disease|illness|problem)\s*:?\s*/i, '').trim();
+      const diagText = match
+        .replace(/^(?:diagnos[ie]s?|condition|disease|illness|problem)\s*:?\s*/i, '')
+        .trim();
       if (diagText && !seen.has(diagText.toLowerCase())) {
         diagnoses.push({
           diagnosisText: diagText,
@@ -482,7 +496,9 @@ function extractTreatments(text: string): Treatment[] {
   const treatmentMatches = text.match(PATTERNS.treatment);
   if (treatmentMatches) {
     treatmentMatches.forEach((match) => {
-      const treatText = match.replace(/^(?:treatment|procedure|surgery|therapy|intervention)\s*:?\s*/i, '').trim();
+      const treatText = match
+        .replace(/^(?:treatment|procedure|surgery|therapy|intervention)\s*:?\s*/i, '')
+        .trim();
       if (treatText && !seen.has(treatText.toLowerCase())) {
         treatments.push({
           treatmentText: treatText,
@@ -506,7 +522,9 @@ function extractPrescriptions(text: string): Prescription[] {
   const medMatches = text.match(PATTERNS.medication);
   if (medMatches) {
     medMatches.forEach((match) => {
-      const medText = match.replace(/^(?:prescribed?|medication|drug|medicine|rx|take|give)\s*:?\s*/i, '').trim();
+      const medText = match
+        .replace(/^(?:prescribed?|medication|drug|medicine|rx|take|give)\s*:?\s*/i, '')
+        .trim();
       if (medText && !seen.has(medText.toLowerCase())) {
         // Extract dosage
         const dosageMatch = medText.match(PATTERNS.dosage);
@@ -652,7 +670,9 @@ export function validateExtractedRecord(record: ExtractedVetRecord): {
     record.prescriptions.length === 0 &&
     record.vaccinations.length === 0
   ) {
-    errors.push('At least one medical item (diagnosis, treatment, prescription, or vaccination) is required');
+    errors.push(
+      'At least one medical item (diagnosis, treatment, prescription, or vaccination) is required',
+    );
   }
 
   return {

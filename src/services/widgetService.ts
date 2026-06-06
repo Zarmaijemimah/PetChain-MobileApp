@@ -12,18 +12,18 @@
  * - Listens to notification events
  */
 
-import { AppState, NativeModules, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { AppState, NativeModules, Platform } from 'react-native';
 
-import { getMedications } from './medicationService';
 import { getUpcomingAppointments } from './appointmentService';
 import { getHealthMetrics } from './healthMetricService';
-import { getPets } from './petService';
 import { getItem, setItem } from './localDB';
-import type { Medication } from '../models/Medication';
+import { getMedications } from './medicationService';
+import petService from './petService';
 import type { Appointment } from '../models/Appointment';
-import type { Pet } from '../models/Pet';
 import type { HealthMetricEntry } from '../models/HealthMetric';
+import type { Medication } from '../models/Medication';
+import type { Pet } from '../models/Pet';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -109,7 +109,8 @@ async function calculatePetHealthScore(petId: string): Promise<number> {
         return sum + 3; // high
       }, 0) / recentMetrics.length;
 
-    if (avgActivityLevel < 2) score -= 20; // Low activity
+    if (avgActivityLevel < 2)
+      score -= 20; // Low activity
     else if (avgActivityLevel < 2.5) score -= 10; // Moderate activity
 
     // Check temperature variance (should be normal 37-39°C for most pets)
@@ -134,7 +135,7 @@ async function calculatePetHealthScore(petId: string): Promise<number> {
 async function getTodaysMedicationSchedule(): Promise<MedicationScheduleItem[]> {
   try {
     const medications = await getMedications();
-    const pets = await getPets();
+    const pets = await petService.getAllPets();
 
     if (!medications.length) return [];
 
@@ -157,9 +158,8 @@ async function getTodaysMedicationSchedule(): Promise<MedicationScheduleItem[]> 
       if (!pet) continue;
 
       // Get dose logs for today to check if taken
-      const doseLogs = (await getItem(`dose_logs_${med.id}`, '[]')) as {
-        scheduledFor?: string;
-      }[];
+      const doseLogsRaw = await getItem(`dose_logs_${med.id}`);
+      const doseLogs = JSON.parse(doseLogsRaw ?? '[]') as { scheduledFor?: string }[];
       const takenToday = doseLogs.some((log) => log.scheduledFor?.startsWith(todayString));
 
       scheduleItems.push({
@@ -185,7 +185,7 @@ async function getTodaysMedicationSchedule(): Promise<MedicationScheduleItem[]> 
 
 async function getUpcomingAppointmentsForWidget(): Promise<UpcomingAppointmentItem[]> {
   try {
-    const pets = await getPets();
+    const pets = await petService.getAllPets();
     const appointments: UpcomingAppointmentItem[] = [];
 
     for (const pet of pets) {
@@ -226,7 +226,7 @@ async function getUpcomingAppointmentsForWidget(): Promise<UpcomingAppointmentIt
 
 async function getAllPetsHealthScores(): Promise<PetHealthScore[]> {
   try {
-    const pets = await getPets();
+    const pets = await petService.getAllPets();
     const healthScores: PetHealthScore[] = [];
 
     for (const pet of pets) {
@@ -362,9 +362,9 @@ export function initializeWidgetService(): () => void {
  */
 export async function getWidgetDataFromCache(): Promise<WidgetData | null> {
   try {
-    const cached = await getItem(WIDGET_DATA_KEY, null);
+    const cached = await getItem(WIDGET_DATA_KEY);
     if (cached) {
-      return JSON.parse(cached as string);
+      return JSON.parse(cached) as WidgetData;
     }
     return null;
   } catch (error) {

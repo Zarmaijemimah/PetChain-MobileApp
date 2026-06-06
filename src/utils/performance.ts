@@ -4,25 +4,25 @@ const SLOW_SQL_THRESHOLD_MS = 200; // flag queries slower than this
 
 export function initPerformance(dsn?: string) {
   try {
-    if (!Sentry.getCurrentHub()) return;
+    if (!(Sentry as any).getCurrentHub?.()) return;
     Sentry.init({ dsn, tracesSampleRate: 0.2 });
   } catch (e) {
     // fail silently in init
-    // eslint-disable-next-line no-console
+
     console.warn('Sentry init failed', e);
   }
 }
 
 export function startSpan(name: string) {
   try {
-    const tracer = Sentry.getCurrentHub().getScope()?.getTransaction?.() as
-      | Sentry.Transaction
+    const tracer = (Sentry as any).getCurrentHub?.().getScope()?.getTransaction?.() as
+      | any
       | undefined;
 
     if (tracer) return tracer.startChild({ op: 'task', description: name });
 
-    return Sentry.startTransaction({ name });
-  } catch (e) {
+    return ((Sentry as any).startTransaction ?? (Sentry as any).startSpan)({ name });
+  } catch {
     return undefined;
   }
 }
@@ -30,7 +30,7 @@ export function startSpan(name: string) {
 export function finishSpan(span?: { finish: () => void }) {
   try {
     span?.finish();
-  } catch (e) {
+  } catch {
     // ignore
   }
 }
@@ -39,17 +39,21 @@ export function recordMetric(name: string, value: number, tags?: Record<string, 
   try {
     Sentry.addBreadcrumb({ category: 'metric', message: `${name}:${value}`, data: tags });
     // Also attach as measurement on the active transaction if any
-    const txn = Sentry.getCurrentHub().getScope()?.getTransaction?.();
+    const txn = (Sentry as any).getCurrentHub?.().getScope()?.getTransaction?.();
     if (txn && typeof txn.setMeasurement === 'function') {
-      // @ts-ignore
       txn.setMeasurement(name, value);
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 }
 
-export function recordApiTiming(url: string | undefined, method: string | undefined, durationMs: number, status?: number) {
+export function recordApiTiming(
+  url: string | undefined,
+  method: string | undefined,
+  durationMs: number,
+  status?: number,
+) {
   recordMetric('api.duration_ms', durationMs, { url, method, status });
 }
 
@@ -57,7 +61,7 @@ export function recordSqlTiming(query: string, durationMs: number) {
   recordMetric('sql.duration_ms', durationMs, { query });
   if (durationMs >= SLOW_SQL_THRESHOLD_MS) {
     Sentry.captureMessage(`Slow SQL query (${durationMs}ms)`, {
-      level: Sentry.Severity.Warning,
+      level: 'warning',
       tags: { slow_sql: 'true' },
       extra: { query, durationMs },
     });

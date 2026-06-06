@@ -1,4 +1,4 @@
-import { apiClient } from './api';
+import api from './api';
 
 export interface HealthScoreExplanation {
   overallScore: number;
@@ -32,7 +32,7 @@ class HealthScoringServiceV2 {
    */
   async calculateHealthScore(petId: string): Promise<HealthScoreExplanation> {
     try {
-      const response = await apiClient.get(`/api/health-scoring/v2/pet/${petId}`);
+      const response = await api.get(`/api/health-scoring/v2/pet/${petId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to calculate health score:', error);
@@ -45,7 +45,7 @@ class HealthScoringServiceV2 {
    */
   async compareAlgorithms(petId: string): Promise<AlgorithmComparison> {
     try {
-      const response = await apiClient.get(`/api/health-scoring/v2/compare/${petId}`);
+      const response = await api.get(`/api/health-scoring/v2/compare/${petId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to compare algorithms:', error);
@@ -56,9 +56,12 @@ class HealthScoringServiceV2 {
   /**
    * Update health score incrementally as new data arrives
    */
-  async updateHealthScore(petId: string, newFactor: Record<string, unknown>): Promise<HealthScoreExplanation> {
+  async updateHealthScore(
+    petId: string,
+    newFactor: Record<string, unknown>,
+  ): Promise<HealthScoreExplanation> {
     try {
-      const response = await apiClient.post(`/api/health-scoring/v2/update/${petId}`, {
+      const response = await api.post(`/api/health-scoring/v2/update/${petId}`, {
         newFactor,
       });
       return response.data;

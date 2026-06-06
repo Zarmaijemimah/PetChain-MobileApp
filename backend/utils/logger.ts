@@ -11,8 +11,8 @@
  * - Error rate spike alerting via a sliding-window counter
  */
 
-import path from 'path';
 import { AsyncLocalStorage } from 'async_hooks';
+import path from 'path';
 
 // ─── Correlation ID store ─────────────────────────────────────────────────────
 
@@ -76,9 +76,8 @@ function makeFallbackLogger(): LoggerLike {
 
 function createLogger(): LoggerLike {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const winston = require('winston') as typeof import('winston');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const DailyRotateFile = require('winston-daily-rotate-file') as {
       default?: new (opts: Record<string, unknown>) => unknown;
     };
@@ -117,7 +116,7 @@ function createLogger(): LoggerLike {
       }),
     );
 
-    const transports: winston.transport[] = [];
+    const transports: import('winston').transport[] = [];
     const isDev = (process.env.APP_ENV ?? 'development') === 'development';
     transports.push(
       new winston.transports.Console({
@@ -136,7 +135,7 @@ function createLogger(): LoggerLike {
           maxSize: process.env.LOG_MAX_SIZE ?? '20m',
           maxFiles: process.env.LOG_RETENTION_DAYS ? `${process.env.LOG_RETENTION_DAYS}d` : '14d',
           format: structuredFormat,
-        }),
+        }) as import('winston').transport,
       );
       transports.push(
         new DailyRotateFile.default({
@@ -148,7 +147,7 @@ function createLogger(): LoggerLike {
           maxSize: process.env.LOG_MAX_SIZE ?? '20m',
           maxFiles: process.env.LOG_RETENTION_DAYS ? `${process.env.LOG_RETENTION_DAYS}d` : '30d',
           format: structuredFormat,
-        }),
+        }) as import('winston').transport,
       );
     }
 
@@ -170,7 +169,7 @@ export default logger;
 
 // ─── Error rate alerting ──────────────────────────────────────────────────────
 
-const ERROR_WINDOW_MS = Number(process.env.ALERT_WINDOW_MS ?? 60_000);   // 1 min
+const ERROR_WINDOW_MS = Number(process.env.ALERT_WINDOW_MS ?? 60_000); // 1 min
 const ERROR_THRESHOLD = Number(process.env.ALERT_ERROR_THRESHOLD ?? 10); // 10 errors/min
 
 const errorTimestamps: number[] = [];

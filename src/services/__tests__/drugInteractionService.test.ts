@@ -1,3 +1,5 @@
+import * as SecureStore from 'expo-secure-store';
+
 import {
   checkDrugInteractions,
   findInteraction,
@@ -7,7 +9,6 @@ import {
 } from '../../services/drugInteractionService';
 
 // expo-secure-store is auto-mocked via jest.config.js moduleNameMapper
-import * as SecureStore from 'expo-secure-store';
 
 const mockGetItem = SecureStore.getItemAsync as jest.Mock;
 const mockSetItem = SecureStore.setItemAsync as jest.Mock;

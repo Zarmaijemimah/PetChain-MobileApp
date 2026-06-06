@@ -173,10 +173,7 @@ export async function leaveWaitlist(entryId: string): Promise<WaitlistEntryRespo
 
   const entry = entries[idx];
 
-  if (
-    entry.status === WaitlistStatus.ACCEPTED ||
-    entry.status === WaitlistStatus.CANCELLED
-  ) {
+  if (entry.status === WaitlistStatus.ACCEPTED || entry.status === WaitlistStatus.CANCELLED) {
     return {
       success: false,
       data: entry,
@@ -299,7 +296,8 @@ export async function acceptSlot(
     return {
       success: false,
       data: entry,
-      message: 'The 15-minute acceptance window has expired. The slot has been offered to the next user.',
+      message:
+        'The 15-minute acceptance window has expired. The slot has been offered to the next user.',
     };
   }
 

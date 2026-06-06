@@ -31,6 +31,7 @@ export const lightTheme = {
   chartLine: '#1976D2',
   chartAnnotation: '#E53E3E',
   chartRangeFill: 'rgba(76, 175, 80, 0.18)',
+  white: '#FFFFFF',
 };
 
 export const darkTheme = {
@@ -61,6 +62,7 @@ export const darkTheme = {
   chartLine: '#90CAF9',
   chartAnnotation: '#FCA5A5',
   chartRangeFill: 'rgba(129, 199, 132, 0.2)',
+  white: '#FFFFFF',
 };
 
 export const navigationLightTheme = {

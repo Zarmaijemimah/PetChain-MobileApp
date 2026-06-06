@@ -298,9 +298,9 @@ export async function getAppointmentsInWindow<T = unknown>(
   return out;
 }
 
-export async function upsertAppointment<T extends { id: string; petId: string; date: string; status?: string }>(
-  appt: T,
-): Promise<void> {
+export async function upsertAppointment<
+  T extends { id: string; petId: string; date: string; status?: string },
+>(appt: T): Promise<void> {
   const encryptedData = await encrypt(appt, 'localdb_appointments');
   await db.runAsync(
     `INSERT OR REPLACE INTO appointments (id, pet_id, scheduled_at, status, data) VALUES (?, ?, ?, ?, ?)`,

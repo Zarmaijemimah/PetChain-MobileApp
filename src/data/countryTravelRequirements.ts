@@ -143,7 +143,8 @@ export const COUNTRY_REQUIREMENTS: CountryTravelRequirements[] = [
         issuingAuthority: 'USDA-accredited veterinarian',
       },
     ],
-    additionalNotes: 'Dogs must be vaccinated against rabies if traveling from high-risk countries.',
+    additionalNotes:
+      'Dogs must be vaccinated against rabies if traveling from high-risk countries.',
   },
   {
     countryCode: 'AU',
@@ -325,7 +326,8 @@ export const COUNTRY_REQUIREMENTS: CountryTravelRequirements[] = [
         issuingAuthority: 'Government-accredited veterinarian',
       },
     ],
-    additionalNotes: 'Quarantine period applies. Apply for import licence at least 30 days before travel.',
+    additionalNotes:
+      'Quarantine period applies. Apply for import licence at least 30 days before travel.',
   },
 ];
 

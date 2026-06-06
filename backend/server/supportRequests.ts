@@ -108,4 +108,3 @@ export function updateSupportRequest(
 export function getSupportRequest(id: string): SupportRequest | null {
   return supportRequests.get(id) ?? null;
 }
-

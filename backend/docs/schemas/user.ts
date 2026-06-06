@@ -5,7 +5,17 @@
 export const userSchemas = {
   User: {
     type: 'object',
-    required: ['id', 'email', 'name', 'role', 'pets', 'createdAt', 'updatedAt', 'isEmailVerified', 'authProvider'],
+    required: [
+      'id',
+      'email',
+      'name',
+      'role',
+      'pets',
+      'createdAt',
+      'updatedAt',
+      'isEmailVerified',
+      'authProvider',
+    ],
     properties: {
       id: { $ref: '#/components/schemas/UUID' },
       email: { type: 'string', format: 'email', example: 'jane.doe@example.com' },

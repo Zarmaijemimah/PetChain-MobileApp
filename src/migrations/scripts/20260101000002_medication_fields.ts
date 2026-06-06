@@ -1,4 +1,5 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
+
 import type { SqliteMigration } from '../sqliteMigrationRunner';
 
 const migration: SqliteMigration = {
@@ -8,16 +9,12 @@ const migration: SqliteMigration = {
   async up(db: SQLiteDatabase) {
     // SQLite ALTER TABLE only supports ADD COLUMN — use IF NOT EXISTS guard via try/catch
     try {
-      await db.execAsync(
-        `ALTER TABLE medications ADD COLUMN prescriber_info TEXT`,
-      );
+      await db.execAsync(`ALTER TABLE medications ADD COLUMN prescriber_info TEXT`);
     } catch {
       // Column already exists — idempotent
     }
     try {
-      await db.execAsync(
-        `ALTER TABLE medications ADD COLUMN pharmacy_info TEXT`,
-      );
+      await db.execAsync(`ALTER TABLE medications ADD COLUMN pharmacy_info TEXT`);
     } catch {
       // Column already exists — idempotent
     }

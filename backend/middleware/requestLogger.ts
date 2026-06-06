@@ -18,8 +18,7 @@ import logger, { runWithContext, trackError } from '../utils/logger';
 export const CORRELATION_HEADER = 'x-correlation-id';
 
 export function requestLogger(req: Request, res: Response, next: NextFunction): void {
-  const correlationId =
-    (req.headers[CORRELATION_HEADER] as string | undefined) ?? randomUUID();
+  const correlationId = (req.headers[CORRELATION_HEADER] as string | undefined) ?? randomUUID();
 
   // Expose on the request object so downstream handlers can read it
   (req as Request & { correlationId: string }).correlationId = correlationId;
@@ -30,32 +29,35 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
   const startMs = Date.now();
 
   // Run the rest of the request inside the correlation context
-  runWithContext({ correlationId, userId: (req as Request & { user?: { id: string } }).user?.id }, () => {
-    logger.http('incoming request', {
-      method: req.method,
-      path: req.path,
-      query: Object.keys(req.query).length ? req.query : undefined,
-      ip: req.ip,
-      userAgent: req.headers['user-agent'],
-    });
-
-    res.on('finish', () => {
-      const durationMs = Date.now() - startMs;
-      const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info';
-
-      logger.log(level, 'request completed', {
+  runWithContext(
+    { correlationId, userId: (req as Request & { user?: { id: string } }).user?.id },
+    () => {
+      logger.http('incoming request', {
         method: req.method,
         path: req.path,
-        status: res.statusCode,
-        durationMs,
-        correlationId,
+        query: Object.keys(req.query).length ? req.query : undefined,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
       });
 
-      if (res.statusCode >= 500) {
-        trackError();
-      }
-    });
+      res.on('finish', () => {
+        const durationMs = Date.now() - startMs;
+        const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info';
 
-    next();
-  });
+        logger.log(level, 'request completed', {
+          method: req.method,
+          path: req.path,
+          status: res.statusCode,
+          durationMs,
+          correlationId,
+        });
+
+        if (res.statusCode >= 500) {
+          trackError();
+        }
+      });
+
+      next();
+    },
+  );
 }

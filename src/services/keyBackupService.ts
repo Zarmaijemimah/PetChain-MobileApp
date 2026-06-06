@@ -1,5 +1,6 @@
 import bip39 from 'bip39';
 import CryptoJS from 'crypto-js';
+
 import { encryptedAsyncStorage } from '../utils/encryptedAsyncStorage';
 import { splitSecret, combineShares } from '../utils/shamirSecretSharing';
 

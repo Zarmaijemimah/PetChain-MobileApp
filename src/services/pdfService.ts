@@ -173,9 +173,7 @@ export async function shareCertificate(filePath: string): Promise<void> {
  * Anchor the certificate hash to Stellar blockchain.
  * Returns the transaction hash.
  */
-export async function anchorCertificateToStellar(
-  certificateHash: string,
-): Promise<string | null> {
+export async function anchorCertificateToStellar(certificateHash: string): Promise<string | null> {
   try {
     const apiClient = (await import('./apiClient')).default;
     const res = await apiClient.post<{ success: boolean; data: { txHash: string } }>(

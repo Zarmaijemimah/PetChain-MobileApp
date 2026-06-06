@@ -136,7 +136,9 @@ const KeyRotationScreen: React.FC<Props> = ({
               {currentPublicKey}
             </Text>
           </View>
-          <Text style={styles.keyHint}>This key will be removed once the rotation is approved.</Text>
+          <Text style={styles.keyHint}>
+            This key will be removed once the rotation is approved.
+          </Text>
         </View>
 
         {/* New key form */}
@@ -179,10 +181,9 @@ const KeyRotationScreen: React.FC<Props> = ({
           <Text style={styles.recoveryTitle}>🛡️ Recovery Guidance</Text>
           <Text style={styles.recoveryText}>
             • Generate your new keypair offline using the Stellar Laboratory or a hardware wallet.
-            {'\n'}• Never share your secret key — only the public key is needed here.{'\n'}
-            • Store your new secret key securely before submitting this request.{'\n'}
-            • If you lose access to both keys, you will need all other co-owners to remove your
-            signer entry manually.
+            {'\n'}• Never share your secret key — only the public key is needed here.{'\n'}• Store
+            your new secret key securely before submitting this request.{'\n'}• If you lose access
+            to both keys, you will need all other co-owners to remove your signer entry manually.
           </Text>
         </View>
 

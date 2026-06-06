@@ -3,8 +3,8 @@ import * as Notifications from 'expo-notifications';
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, AppState, type AppStateStatus, I18nManager } from 'react-native';
 
-import './src/i18n';
 import StorybookUIRoot from './.storybook';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import OfflineIndicator from './src/components/OfflineIndicator';
 import { useSplashGuard } from './src/components/SplashGuard';
 import ThemeTransitionView from './src/components/ThemeTransitionView';
@@ -19,17 +19,15 @@ import {
   loadLockTimeout,
   getLockTimeoutMs,
 } from './src/services/appLockService';
-import crashReporting from './src/services/crashReporting';
+import { registerBackgroundMedicationTask } from './src/services/backgroundTaskService';
 import errorTracking from './src/services/errorTracking';
-import ErrorBoundary from './src/components/ErrorBoundary';
 import {
   registerNotificationActions,
   watchNotificationActions,
 } from './src/services/notificationService';
 import updateService from './src/services/updateService';
-import { registerBackgroundMedicationTask } from './src/services/backgroundTaskService';
 import { checkAppVersion } from './src/services/versionCheckService';
-import { initializeWidgetService, refreshWidgetData } from './src/services/widgetService';
+import { initializeWidgetService } from './src/services/widgetService';
 
 const isStorybookEnabled = process.env.STORYBOOK_ENABLED === 'true';
 
@@ -113,10 +111,10 @@ function App() {
     void registerNotificationActions();
     const subscription = watchNotificationActions();
     void registerBackgroundMedicationTask();
-    
+
     // Initialize widget service and update widgets
     const unsubscribeWidget = initializeWidgetService();
-    
+
     return () => {
       subscription.remove();
       unsubscribeWidget();

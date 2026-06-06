@@ -4,15 +4,16 @@
  * Uses a mock DB pool injected via app.locals so no real Postgres is needed.
  * Install supertest: npm i -D supertest @types/supertest
  */
-import { createApp } from '../server';
+import http from 'http';
+
 import { UserRole } from '../models/UserRole';
+import { createApp } from '../server';
 import { store } from '../server/store';
 
 // ---------------------------------------------------------------------------
 // Minimal supertest shim — avoids adding a new dependency for the test runner.
 // Replace with `import request from 'supertest'` once supertest is installed.
 // ---------------------------------------------------------------------------
-import http from 'http';
 
 function makeRequest(app: ReturnType<typeof createApp>) {
   const server = http.createServer(app);
@@ -69,14 +70,14 @@ const ownerToken = makeToken({ id: 'u2', email: 'owner@test.com', role: UserRole
 // Mock DB pool
 // ---------------------------------------------------------------------------
 const mockQueryResults: Record<string, unknown[]> = {
-  'last_login_at >= NOW() - INTERVAL \'7 days\'': [{ count: '42' }],
-  'last_login_at >= NOW() - INTERVAL \'30 days\'': [{ count: '120' }],
+  "last_login_at >= NOW() - INTERVAL '7 days'": [{ count: '42' }],
+  "last_login_at >= NOW() - INTERVAL '30 days'": [{ count: '120' }],
   'pet_count::text': [
     { pet_count: '1', user_count: '30' },
     { pet_count: '2', user_count: '10' },
     { pet_count: '3', user_count: '5' },
   ],
-  'feature_events': [
+  feature_events: [
     {
       qr_scanner: '15',
       medical_records: '80',
@@ -85,7 +86,7 @@ const mockQueryResults: Record<string, unknown[]> = {
       emergency: '5',
     },
   ],
-  'subscription_tier': [
+  subscription_tier: [
     { tier: 'free', count: '90' },
     { tier: 'pro', count: '30' },
   ],
@@ -126,9 +127,7 @@ describe('GET /admin/analytics', () => {
   });
 
   it('returns 401 when no token is provided', async () => {
-    const { status } = await makeRequest(app)
-      .get('/admin/analytics')
-      .set({});
+    const { status } = await makeRequest(app).get('/admin/analytics').set({});
     expect(status).toBe(401);
   });
 
@@ -161,18 +160,22 @@ describe('GET /admin/analytics', () => {
   });
 
   it('returns 200 with analytics payload for admin', async () => {
-    const { status, body } = await makeRequest(app)
+    const { status, body } = (await makeRequest(app)
       .get('/admin/analytics')
-      .set({ Authorization: `Bearer ${adminToken}` }) as {
-        status: number;
-        body: {
-          activeUsers: { last7Days: number; last30Days: number };
-          petDistribution: { totalPets: number; avgPetsPerUser: number; buckets: Record<string, number> };
-          featureAdoption: Record<string, number>;
-          subscriptionTiers: Record<string, number>;
-          generatedAt: string;
+      .set({ Authorization: `Bearer ${adminToken}` })) as {
+      status: number;
+      body: {
+        activeUsers: { last7Days: number; last30Days: number };
+        petDistribution: {
+          totalPets: number;
+          avgPetsPerUser: number;
+          buckets: Record<string, number>;
         };
+        featureAdoption: Record<string, number>;
+        subscriptionTiers: Record<string, number>;
+        generatedAt: string;
       };
+    };
 
     expect(status).toBe(200);
     expect(body.activeUsers.last7Days).toBe(42);

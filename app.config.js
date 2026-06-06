@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports, no-undef */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 // Load .env.<APP_ENV> via dotenv
 const APP_ENV = process.env.APP_ENV ?? 'development';

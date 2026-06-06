@@ -1,13 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Alert,
-  Modal,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { reminderService, type SnoozeDuration } from '../services/reminderService';
 import { useAppTheme } from '../theme';

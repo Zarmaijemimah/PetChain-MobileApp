@@ -1,5 +1,6 @@
 import * as StellarSdk from '@stellar/stellar-sdk';
 import * as SecureStore from 'expo-secure-store';
+
 import config from '../config';
 import logger from './loggerService';
 
@@ -15,7 +16,7 @@ function horizonUrl(): string {
 }
 
 function getServer() {
-  return new StellarSdk.Server(horizonUrl());
+  return new StellarSdk.Horizon.Server(horizonUrl());
 }
 
 export async function storeSecret(secret: string): Promise<void> {
@@ -80,7 +81,13 @@ export async function getTransactions(
 ): Promise<{ records: TxRow[]; next?: string } | null> {
   try {
     const server = getServer();
-    const res = await server.transactions().forAccount(publicKey).limit(limit).order('desc').cursor(cursor ?? 'now').call();
+    const res = await server
+      .transactions()
+      .forAccount(publicKey)
+      .limit(limit)
+      .order('desc')
+      .cursor(cursor ?? 'now')
+      .call();
     const rows: TxRow[] = res.records.map((r: any) => ({
       id: r.id,
       memo: r.memo ?? null,
@@ -90,7 +97,8 @@ export async function getTransactions(
       operation_count: r.operation_count,
     }));
     // Horizon provides a next link containing a cursor; return the paging token of the last record
-    const next = res.records.length > 0 ? res.records[res.records.length - 1].paging_token : undefined;
+    const next =
+      res.records.length > 0 ? res.records[res.records.length - 1].paging_token : undefined;
     return { records: rows, next };
   } catch (err) {
     logger.error('stellar_tx_history_failed', { publicKey }, err as Error);
@@ -98,8 +106,9 @@ export async function getTransactions(
   }
 }
 
-export async function fundTestnet(publicKey: string): Promise<{ success: boolean; message?: string }>
-{
+export async function fundTestnet(
+  publicKey: string,
+): Promise<{ success: boolean; message?: string }> {
   if (config.env === 'production') {
     return { success: false, message: 'Friendbot is disabled in production' };
   }

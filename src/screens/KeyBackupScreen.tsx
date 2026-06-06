@@ -1,7 +1,8 @@
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+
 import keyBackupService from '../services/keyBackupService';
-import { useNavigation } from '@react-navigation/native';
 
 export default function KeyBackupScreen() {
   const [mnemonic, setMnemonic] = React.useState<string | null>(null);
@@ -33,16 +34,22 @@ export default function KeyBackupScreen() {
 
       {mnemonic ? (
         <View style={styles.box}>
-          <Text selectable style={styles.mnemonicText}>{mnemonic}</Text>
+          <Text selectable style={styles.mnemonicText}>
+            {mnemonic}
+          </Text>
         </View>
       ) : (
         <Text>Generating...</Text>
       )}
 
-      <Text style={[styles.message, { marginTop: 16 }]}>Social recovery shares (give to trusted contacts)</Text>
+      <Text style={[styles.message, { marginTop: 16 }]}>
+        Social recovery shares (give to trusted contacts)
+      </Text>
       {shares?.map((s, i) => (
         <View key={i} style={styles.shareRow}>
-          <Text selectable style={styles.shareText}>{s}</Text>
+          <Text selectable style={styles.shareText}>
+            {s}
+          </Text>
         </View>
       ))}
 
@@ -61,6 +68,12 @@ const styles = StyleSheet.create({
   mnemonicText: { fontSize: 16, color: '#111' },
   shareRow: { marginTop: 8, padding: 12, backgroundColor: '#fafafa', borderRadius: 6 },
   shareText: { fontSize: 12, color: '#222' },
-  btn: { marginTop: 24, backgroundColor: '#1976D2', padding: 12, borderRadius: 8, alignItems: 'center' },
+  btn: {
+    marginTop: 24,
+    backgroundColor: '#1976D2',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
   btnText: { color: '#fff', fontWeight: '600' },
 });

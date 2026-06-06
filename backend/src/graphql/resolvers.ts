@@ -398,16 +398,18 @@ export const resolvers: Resolvers<GraphQLContext> = {
     sosAlert: {
       subscribe: (_parent, _args, ctx) => {
         requireAuth(ctx);
-        return pubsub.asyncIterator(SOS_ALERT);
+        return pubsub.asyncIterator(SOS_ALERT) as unknown as AsyncIterable<unknown>;
       },
+      resolve: (payload: { sosAlert: unknown }) => payload.sosAlert,
     },
     syncStatus: {
       subscribe: (_parent, _args, ctx) => {
         requireAuth(ctx);
-        return pubsub.asyncIterator(SYNC_STATUS);
+        return pubsub.asyncIterator(SYNC_STATUS) as unknown as AsyncIterable<unknown>;
       },
+      resolve: (payload: { syncStatus: unknown }) => payload.syncStatus,
     },
-  },
+  } as any,
 
   // Field resolvers — use DataLoaders to avoid N+1
   User: {

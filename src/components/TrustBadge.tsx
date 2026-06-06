@@ -8,12 +8,15 @@ interface Props {
   compact?: boolean;
 }
 
-const STATUS_CONFIG: Record<VerificationStatus, { icon: string; label: string; bg: string; color: string }> = {
-  verified:   { icon: '✓', label: 'Blockchain Verified',  bg: '#10B981', color: '#fff' },
-  tampered:   { icon: '✕', label: 'Tampered',             bg: '#EF4444', color: '#fff' },
-  unverified: { icon: '—', label: 'Not on Chain',         bg: '#6B7280', color: '#fff' },
-  pending:    { icon: '⏳', label: 'Verifying…',          bg: '#F59E0B', color: '#fff' },
-  offline:    { icon: '⚡', label: 'Cached (Offline)',    bg: '#8B5CF6', color: '#fff' },
+const STATUS_CONFIG: Record<
+  VerificationStatus,
+  { icon: string; label: string; bg: string; color: string }
+> = {
+  verified: { icon: '✓', label: 'Blockchain Verified', bg: '#10B981', color: '#fff' },
+  tampered: { icon: '✕', label: 'Tampered', bg: '#EF4444', color: '#fff' },
+  unverified: { icon: '—', label: 'Not on Chain', bg: '#6B7280', color: '#fff' },
+  pending: { icon: '⏳', label: 'Verifying…', bg: '#F59E0B', color: '#fff' },
+  offline: { icon: '⚡', label: 'Cached (Offline)', bg: '#8B5CF6', color: '#fff' },
 };
 
 export const TrustBadge: React.FC<Props> = ({ status, compact = false }) => {

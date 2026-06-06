@@ -1,10 +1,7 @@
 import * as Application from 'expo-application';
 
 import apiClient from '../../services/apiClient';
-import {
-  checkAppVersion,
-  clearVersionCheckCache,
-} from '../../services/versionCheckService';
+import { checkAppVersion, clearVersionCheckCache } from '../../services/versionCheckService';
 
 jest.mock('../../services/apiClient', () => ({
   get: jest.fn(),

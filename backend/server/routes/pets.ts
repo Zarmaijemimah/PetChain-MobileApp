@@ -393,7 +393,7 @@ router.put('/:id', async (req: AuthenticatedRequest, res) => {
       const issuerPublicKey = process.env.STELLAR_ISSUER_PUBLIC_KEY;
       const currentOwnerSeed = process.env.STELLAR_SOURCE_SEED;
       const newOwnerUser = await userRepository.findById(body.ownerId);
-      const newOwnerPublicKey = newOwnerUser?.stellarPublicKey; // Assuming user model has this field
+      const newOwnerPublicKey = newOwnerUser?.stellar_public_key;
 
       if (issuerPublicKey && currentOwnerSeed && newOwnerPublicKey) {
         await transferPetAsset(assetCode, issuerPublicKey, currentOwnerSeed, newOwnerPublicKey);

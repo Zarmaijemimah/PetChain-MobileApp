@@ -18,7 +18,6 @@ export enum AppointmentType {
   DIAGNOSTIC = 'DIAGNOSTIC',
   SPECIALIST_REFERRAL = 'SPECIALIST_REFERRAL',
   NUTRITION_CONSULTATION = 'NUTRITION_CONSULTATION',
-  
 }
 
 export interface AppointmentVetSummary {

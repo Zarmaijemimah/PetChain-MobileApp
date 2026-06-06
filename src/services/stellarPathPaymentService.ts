@@ -108,9 +108,9 @@ export async function submitPathPayment(input: {
 
 export async function getPathPaymentAudits(paymentId?: string): Promise<PathPaymentAuditEntry[]> {
   const params = paymentId ? `?paymentId=${encodeURIComponent(paymentId)}` : '';
-  const response = await apiClient.get<ApiResponse<PathPaymentAuditEntry[]> | PathPaymentAuditEntry[]>(
-    `/payments/stellar/audits${params}`,
-  );
+  const response = await apiClient.get<
+    ApiResponse<PathPaymentAuditEntry[]> | PathPaymentAuditEntry[]
+  >(`/payments/stellar/audits${params}`);
   return unwrap(response.data);
 }
 

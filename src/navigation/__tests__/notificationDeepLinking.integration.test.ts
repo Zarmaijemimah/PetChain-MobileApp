@@ -9,6 +9,7 @@
  */
 
 import type * as Notifications from 'expo-notifications';
+
 import { extractDeepLinkParams } from '../notificationService';
 
 describe('Notification Deep Linking - Navigation Integration', () => {

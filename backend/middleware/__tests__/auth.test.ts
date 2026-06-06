@@ -53,7 +53,12 @@ describe('Auth Middleware', () => {
 
     it('should reject expired token', () => {
       const token = jwt.sign(
-        { sub: 'user-1', email: 'test@test.com', role: UserRole.OWNER, exp: Math.floor(Date.now() / 1000) - 3600 },
+        {
+          sub: 'user-1',
+          email: 'test@test.com',
+          role: UserRole.OWNER,
+          exp: Math.floor(Date.now() / 1000) - 3600,
+        },
         secret,
       );
       mockReq.headers.authorization = `Bearer ${token}`;

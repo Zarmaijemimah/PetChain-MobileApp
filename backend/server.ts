@@ -1,4 +1,5 @@
 import express from 'express';
+
 import adminRouter from './src/routes/admin';
 
 export function createApp(db: unknown) {

@@ -1,7 +1,8 @@
-import express, { Request, Response } from 'express';
-import { authenticate } from '../middleware/auth';
-import healthScoringServiceV2 from '../services/healthScoringServiceV2';
-import { query } from '../src/db';
+import express, { type Request, type Response } from 'express';
+
+import { authenticateJWT as authenticate } from '../../middleware/auth';
+import healthScoringServiceV2 from '../../services/healthScoringServiceV2';
+import { query } from '../db';
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.get('/v2/pet/:petId', authenticate, async (req: Request, res: Response) =
   try {
     // Verify user owns the pet
     const petResult = await query('SELECT * FROM pets WHERE id = $1 AND owner_id = $2', [
-      req.params.petId,
+      String(req.params.petId),
       (req as any).user.id,
     ]);
 
@@ -21,7 +22,9 @@ router.get('/v2/pet/:petId', authenticate, async (req: Request, res: Response) =
       return res.status(403).json({ error: 'Pet not found or not owned by user' });
     }
 
-    const scoreExplanation = await healthScoringServiceV2.calculateHealthScore(req.params.petId);
+    const scoreExplanation = await healthScoringServiceV2.calculateHealthScore(
+      String(req.params.petId),
+    );
 
     res.json(scoreExplanation);
   } catch (error) {
@@ -59,7 +62,7 @@ router.get('/v2/compare/:petId', authenticate, async (req: Request, res: Respons
   try {
     // Verify user owns the pet
     const petResult = await query('SELECT * FROM pets WHERE id = $1 AND owner_id = $2', [
-      req.params.petId,
+      String(req.params.petId),
       (req as any).user.id,
     ]);
 
@@ -67,7 +70,7 @@ router.get('/v2/compare/:petId', authenticate, async (req: Request, res: Respons
       return res.status(403).json({ error: 'Pet not found or not owned by user' });
     }
 
-    const comparison = await healthScoringServiceV2.compareAlgorithms(req.params.petId);
+    const comparison = await healthScoringServiceV2.compareAlgorithms(String(req.params.petId));
 
     res.json(comparison);
   } catch (error) {
@@ -84,7 +87,7 @@ router.post('/v2/update/:petId', authenticate, async (req: Request, res: Respons
   try {
     // Verify user owns the pet
     const petResult = await query('SELECT * FROM pets WHERE id = $1 AND owner_id = $2', [
-      req.params.petId,
+      String(req.params.petId),
       (req as any).user.id,
     ]);
 
@@ -99,7 +102,7 @@ router.post('/v2/update/:petId', authenticate, async (req: Request, res: Respons
     }
 
     const updatedScore = await healthScoringServiceV2.updateHealthScoreIncremental(
-      req.params.petId,
+      String(req.params.petId),
       newFactor,
     );
 

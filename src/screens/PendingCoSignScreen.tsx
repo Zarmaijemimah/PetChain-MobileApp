@@ -69,12 +69,14 @@ const PendingCoSignScreen: React.FC<Props> = ({
 
   const isExpired = new Date() > new Date(transaction.expiresAt);
   const isExpiringSoon =
-    !isExpired &&
-    new Date(transaction.expiresAt).getTime() - Date.now() < 24 * 60 * 60 * 1000;
+    !isExpired && new Date(transaction.expiresAt).getTime() - Date.now() < 24 * 60 * 60 * 1000;
 
   const handleSign = async () => {
     if (!privateKey.trim()) {
-      Alert.alert('Private Key Required', 'Enter your Stellar secret key to sign this transaction.');
+      Alert.alert(
+        'Private Key Required',
+        'Enter your Stellar secret key to sign this transaction.',
+      );
       return;
     }
     if (!privateKey.trim().startsWith('S') || privateKey.trim().length !== 56) {
@@ -140,10 +142,7 @@ const PendingCoSignScreen: React.FC<Props> = ({
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {/* Operation type banner */}
         <View
-          style={[
-            styles.opBanner,
-            { borderLeftColor: RISK_COLORS[transaction.operationType] },
-          ]}
+          style={[styles.opBanner, { borderLeftColor: RISK_COLORS[transaction.operationType] }]}
         >
           <Text style={styles.opBannerIcon}>{OP_ICONS[transaction.operationType]}</Text>
           <View style={styles.opBannerText}>
@@ -223,10 +222,7 @@ const PendingCoSignScreen: React.FC<Props> = ({
             </Text>
 
             {!showKeyInput ? (
-              <TouchableOpacity
-                style={styles.showKeyBtn}
-                onPress={() => setShowKeyInput(true)}
-              >
+              <TouchableOpacity style={styles.showKeyBtn} onPress={() => setShowKeyInput(true)}>
                 <Text style={styles.showKeyBtnText}>Enter Secret Key to Sign</Text>
               </TouchableOpacity>
             ) : (
@@ -259,7 +255,9 @@ const PendingCoSignScreen: React.FC<Props> = ({
 
         {alreadySigned && (
           <View style={styles.alreadySignedBanner}>
-            <Text style={styles.alreadySignedText}>✅ You have already signed this transaction.</Text>
+            <Text style={styles.alreadySignedText}>
+              ✅ You have already signed this transaction.
+            </Text>
           </View>
         )}
       </ScrollView>
@@ -354,7 +352,13 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
   },
   metaKey: { fontSize: 12, color: '#666', textTransform: 'capitalize' },
-  metaValue: { fontSize: 12, color: '#1a1a1a', fontWeight: '600', maxWidth: '55%', textAlign: 'right' },
+  metaValue: {
+    fontSize: 12,
+    color: '#1a1a1a',
+    fontWeight: '600',
+    maxWidth: '55%',
+    textAlign: 'right',
+  },
   signNote: { fontSize: 12, color: '#666', lineHeight: 18, marginBottom: 14 },
   showKeyBtn: {
     borderWidth: 1,

@@ -4,8 +4,8 @@
  * Unit and integration tests for the widget service
  */
 
-import * as widgetService from '../services/widgetService';
 import * as widgetDebug from '../services/widgetDebug';
+import * as widgetService from '../services/widgetService';
 
 describe('widgetService', () => {
   describe('getTodaysMedicationSchedule', () => {

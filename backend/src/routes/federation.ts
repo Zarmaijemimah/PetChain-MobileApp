@@ -2,6 +2,8 @@ import express from 'express';
 
 import { authenticateJWT, authorizeRoles, type AuthenticatedRequest } from '../../middleware/auth';
 import { UserRole } from '../../models/UserRole';
+import { ok, sendError } from '../../server/response';
+import { store } from '../../server/store';
 import {
   claimFederatedAddress,
   getSignedRecord,
@@ -11,8 +13,6 @@ import {
   signMedicalRecord,
   verifyRecordSignature,
 } from '../../services/federationService';
-import { ok, sendError } from '../response';
-import { store } from '../store';
 
 const router = express.Router();
 

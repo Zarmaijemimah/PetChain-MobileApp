@@ -1,3 +1,4 @@
+import fetch from 'node-fetch';
 import request from 'supertest';
 
 import { UserRole } from '../../../models/UserRole';
@@ -7,7 +8,6 @@ import { store } from '../../store';
 // ─── Mock node-fetch (provider token exchange) ────────────────────────────────
 
 jest.mock('node-fetch');
-import fetch from 'node-fetch';
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
 
 // ─── Mock pkce-challenge ──────────────────────────────────────────────────────
@@ -32,10 +32,16 @@ function auth(userId: string) {
 
 function makeUser(id: string, extra: Record<string, unknown> = {}) {
   return {
-    id, email: `${id}@test.com`, name: 'Test User',
-    role: UserRole.OWNER, pets: [],
-    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-    isEmailVerified: true, twoFactorEnabled: false, ...extra,
+    id,
+    email: `${id}@test.com`,
+    name: 'Test User',
+    role: UserRole.OWNER,
+    pets: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isEmailVerified: true,
+    twoFactorEnabled: false,
+    ...extra,
   };
 }
 
@@ -143,9 +149,7 @@ describe('POST /api/auth/oauth/google', () => {
     mockFetch.mockResolvedValueOnce(googleTokenResponse('new-sub', 'user@gmail.com'));
 
     const state = await getState();
-    const res = await request(app)
-      .post('/api/auth/oauth/google')
-      .send({ code: 'code', state });
+    const res = await request(app).post('/api/auth/oauth/google').send({ code: 'code', state });
 
     expect(res.status).toBe(200);
     expect(res.body.data.user.id).toBe('existing-user');
@@ -161,27 +165,21 @@ describe('POST /api/auth/oauth/google', () => {
 
   it('rejects missing code', async () => {
     const state = await getState();
-    const res = await request(app)
-      .post('/api/auth/oauth/google')
-      .send({ state });
+    const res = await request(app).post('/api/auth/oauth/google').send({ state });
     expect(res.status).toBe(400);
   });
 
   it('returns 401 when provider exchange fails', async () => {
     mockFetch.mockResolvedValueOnce({ ok: false, status: 400, json: async () => ({}) } as any);
     const state = await getState();
-    const res = await request(app)
-      .post('/api/auth/oauth/google')
-      .send({ code: 'bad_code', state });
+    const res = await request(app).post('/api/auth/oauth/google').send({ code: 'bad_code', state });
     expect(res.status).toBe(401);
     expect(res.body.error.code).toBe('OAUTH_EXCHANGE_FAILED');
   });
 
   it('rejects unknown provider', async () => {
     const state = await getState();
-    const res = await request(app)
-      .post('/api/auth/oauth/twitter')
-      .send({ code: 'code', state });
+    const res = await request(app).post('/api/auth/oauth/twitter').send({ code: 'code', state });
     expect(res.status).toBe(400);
   });
 
@@ -245,9 +243,7 @@ describe('POST /api/auth/oauth/refresh', () => {
       .send({ code: 'code', state: r.body.data.state });
     const { refreshToken } = login.body.data;
 
-    const res = await request(app)
-      .post('/api/auth/oauth/refresh')
-      .send({ refreshToken });
+    const res = await request(app).post('/api/auth/oauth/refresh').send({ refreshToken });
     expect(res.status).toBe(200);
     expect(res.body.data.token).toBeDefined();
     expect(res.body.data.refreshToken).toBeDefined();
@@ -302,24 +298,17 @@ describe('POST /api/auth/oauth/revoke', () => {
     expect(res.status).toBe(200);
 
     // Revoked token should no longer refresh
-    const refresh = await request(app)
-      .post('/api/auth/oauth/refresh')
-      .send({ refreshToken });
+    const refresh = await request(app).post('/api/auth/oauth/refresh').send({ refreshToken });
     expect(refresh.status).toBe(401);
   });
 
   it('returns 401 without auth', async () => {
-    const res = await request(app)
-      .post('/api/auth/oauth/revoke')
-      .send({ refreshToken: 'token' });
+    const res = await request(app).post('/api/auth/oauth/revoke').send({ refreshToken: 'token' });
     expect(res.status).toBe(401);
   });
 
   it('returns 400 for missing refreshToken', async () => {
-    const res = await request(app)
-      .post('/api/auth/oauth/revoke')
-      .set(auth(OWNER_ID))
-      .send({});
+    const res = await request(app).post('/api/auth/oauth/revoke').set(auth(OWNER_ID)).send({});
     expect(res.status).toBe(400);
   });
 });
@@ -328,13 +317,16 @@ describe('POST /api/auth/oauth/revoke', () => {
 
 describe('GET /api/auth/oauth/providers', () => {
   it('returns linked providers', async () => {
-    store.users.set(OWNER_ID, makeUser(OWNER_ID, {
-      oauthIdentities: [{ provider: 'google', providerUserId: 'g-123', linkedAt: new Date().toISOString() }],
-    }) as any);
+    store.users.set(
+      OWNER_ID,
+      makeUser(OWNER_ID, {
+        oauthIdentities: [
+          { provider: 'google', providerUserId: 'g-123', linkedAt: new Date().toISOString() },
+        ],
+      }) as any,
+    );
 
-    const res = await request(app)
-      .get('/api/auth/oauth/providers')
-      .set(auth(OWNER_ID));
+    const res = await request(app).get('/api/auth/oauth/providers').set(auth(OWNER_ID));
     expect(res.status).toBe(200);
     expect(res.body.data.linked[0].provider).toBe('google');
   });
@@ -360,9 +352,14 @@ describe('POST /api/auth/oauth/link', () => {
 
   it('prevents linking a provider already linked to another account', async () => {
     // OTHER_ID already has this Google identity
-    store.users.set(OTHER_ID, makeUser(OTHER_ID, {
-      oauthIdentities: [{ provider: 'google', providerUserId: 'taken-sub', linkedAt: new Date().toISOString() }],
-    }) as any);
+    store.users.set(
+      OTHER_ID,
+      makeUser(OTHER_ID, {
+        oauthIdentities: [
+          { provider: 'google', providerUserId: 'taken-sub', linkedAt: new Date().toISOString() },
+        ],
+      }) as any,
+    );
 
     mockFetch.mockResolvedValueOnce(googleTokenResponse('taken-sub', 'taken@gmail.com'));
     const r = await request(app).post('/api/auth/oauth/pkce-init');
@@ -387,32 +384,36 @@ describe('POST /api/auth/oauth/link', () => {
 
 describe('DELETE /api/auth/oauth/unlink/:provider', () => {
   it('unlinks a provider when another login method exists', async () => {
-    store.users.set(OWNER_ID, makeUser(OWNER_ID, {
-      passwordHash: '$2b$10$hash',
-      oauthIdentities: [{ provider: 'google', providerUserId: 'g-123', linkedAt: new Date().toISOString() }],
-    }) as any);
+    store.users.set(
+      OWNER_ID,
+      makeUser(OWNER_ID, {
+        passwordHash: '$2b$10$hash',
+        oauthIdentities: [
+          { provider: 'google', providerUserId: 'g-123', linkedAt: new Date().toISOString() },
+        ],
+      }) as any,
+    );
 
-    const res = await request(app)
-      .delete('/api/auth/oauth/unlink/google')
-      .set(auth(OWNER_ID));
+    const res = await request(app).delete('/api/auth/oauth/unlink/google').set(auth(OWNER_ID));
     expect(res.status).toBe(200);
   });
 
   it('prevents unlinking the only login method', async () => {
-    store.users.set(OWNER_ID, makeUser(OWNER_ID, {
-      oauthIdentities: [{ provider: 'google', providerUserId: 'g-123', linkedAt: new Date().toISOString() }],
-    }) as any);
+    store.users.set(
+      OWNER_ID,
+      makeUser(OWNER_ID, {
+        oauthIdentities: [
+          { provider: 'google', providerUserId: 'g-123', linkedAt: new Date().toISOString() },
+        ],
+      }) as any,
+    );
 
-    const res = await request(app)
-      .delete('/api/auth/oauth/unlink/google')
-      .set(auth(OWNER_ID));
+    const res = await request(app).delete('/api/auth/oauth/unlink/google').set(auth(OWNER_ID));
     expect(res.status).toBe(400);
   });
 
   it('rejects unknown provider', async () => {
-    const res = await request(app)
-      .delete('/api/auth/oauth/unlink/twitter')
-      .set(auth(OWNER_ID));
+    const res = await request(app).delete('/api/auth/oauth/unlink/twitter').set(auth(OWNER_ID));
     expect(res.status).toBe(400);
   });
 

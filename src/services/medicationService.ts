@@ -224,9 +224,7 @@ export function getRefillStatus(med: Medication, now: Date = new Date()): Refill
 export async function refreshRunOutDate(med: Medication): Promise<Medication> {
   const supply = med.currentSupply ?? med.remainingPills;
   const runOutIso =
-    supply !== undefined && supply > 0
-      ? estimateRunOutDate(supply, med.frequency)
-      : undefined;
+    supply !== undefined && supply > 0 ? estimateRunOutDate(supply, med.frequency) : undefined;
 
   const updated: Medication = {
     ...med,
@@ -366,7 +364,6 @@ export async function scheduleRefillReminder(med: Medication): Promise<void> {
       body: `Time to refill ${med.name}`,
       data: { medicationId: med.id },
     },
-    trigger: { type: 'date', date: trigger } as Notifications.DateTriggerInput,
     trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: trigger },
   });
 }

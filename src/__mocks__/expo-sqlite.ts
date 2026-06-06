@@ -40,7 +40,9 @@ async function executeSql(sql: string, params: any[] = []): Promise<any[]> {
     return [];
   }
 
-  if (normalized.startsWith("update schema_migrations set status = 'rolled_back' where version = ?")) {
+  if (
+    normalized.startsWith("update schema_migrations set status = 'rolled_back' where version = ?")
+  ) {
     ensureSchemaMigrationsTable();
     const rows = tableStore.get('schema_migrations')!;
     const [version] = params;
@@ -51,12 +53,23 @@ async function executeSql(sql: string, params: any[] = []): Promise<any[]> {
     return [];
   }
 
-  if (normalized.startsWith("select version from schema_migrations where status = 'applied' order by version asc")) {
+  if (
+    normalized.startsWith(
+      "select version from schema_migrations where status = 'applied' order by version asc",
+    )
+  ) {
     ensureSchemaMigrationsTable();
-    return tableStore.get('schema_migrations')!.filter((row) => row.status === 'applied').map((row) => ({ version: row.version }));
+    return tableStore
+      .get('schema_migrations')!
+      .filter((row) => row.status === 'applied')
+      .map((row) => ({ version: row.version }));
   }
 
-  if (normalized.startsWith('select version, description, applied_at, status from schema_migrations order by version asc')) {
+  if (
+    normalized.startsWith(
+      'select version, description, applied_at, status from schema_migrations order by version asc',
+    )
+  ) {
     ensureSchemaMigrationsTable();
     return [...tableStore.get('schema_migrations')!];
   }
@@ -78,8 +91,12 @@ const mockTx = {
 
 const mockDb = {
   execAsync: jest.fn((sql: string) => executeSql(sql)),
-  runAsync: jest.fn((sql: string, params: any[] = []) => executeSql(sql, params).then(() => ({ changes: 1, lastInsertRowId: 1 }))),
-  getFirstAsync: jest.fn((sql: string, params: any[] = []) => executeSql(sql, params).then((rows) => (rows.length ? rows[0] : null))),
+  runAsync: jest.fn((sql: string, params: any[] = []) =>
+    executeSql(sql, params).then(() => ({ changes: 1, lastInsertRowId: 1 })),
+  ),
+  getFirstAsync: jest.fn((sql: string, params: any[] = []) =>
+    executeSql(sql, params).then((rows) => (rows.length ? rows[0] : null)),
+  ),
   getAllAsync: jest.fn((sql: string, params: any[] = []) => executeSql(sql, params)),
   withTransactionAsync: jest.fn(async (callback: () => Promise<void>) => callback()),
   transaction: jest.fn((callback: (tx: typeof mockTx) => void) => {

@@ -1,6 +1,6 @@
 import { UserRole } from '../../models/UserRole';
-import referralService from '../referralService';
 import { store, type StoredUser } from '../../server/store';
+import referralService from '../referralService';
 
 function user(id: string, email: string, phone?: string): StoredUser {
   const t = new Date().toISOString();

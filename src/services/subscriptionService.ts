@@ -79,7 +79,11 @@ async function purchasePlan(productId: ProductId): Promise<SubscriptionStatus> {
         const purchase = results[0];
         try {
           const plan = productId === PRODUCT_IDS.annual ? 'premium_annual' : 'premium_monthly';
-          const sub = await syncWithBackend(purchase.transactionId ?? productId, plan);
+          const sub = await syncWithBackend(
+            (purchase as { orderId?: string; transactionId?: string }).orderId ??
+              purchase.productId,
+            plan,
+          );
           await IAP.finishTransactionAsync(purchase, true);
           resolve({
             isPremium: true,
@@ -89,7 +93,7 @@ async function purchasePlan(productId: ProductId): Promise<SubscriptionStatus> {
         } catch (err) {
           reject(err);
         }
-      } else if (responseCode === IAP.IAPResponseCode.USER_CANCELLED) {
+      } else if (responseCode === IAP.IAPResponseCode.USER_CANCELED) {
         resolve(FREE_STATUS);
       } else {
         reject(new Error(`Purchase failed: ${errorCode ?? responseCode}`));
@@ -110,7 +114,10 @@ async function restorePurchases(): Promise<SubscriptionStatus> {
   const latest = results[results.length - 1];
   const plan = latest.productId === PRODUCT_IDS.annual ? 'premium_annual' : 'premium_monthly';
   try {
-    const sub = await syncWithBackend(latest.transactionId ?? latest.productId, plan);
+    const sub = await syncWithBackend(
+      (latest as { orderId?: string; transactionId?: string }).orderId ?? latest.productId,
+      plan,
+    );
     return {
       isPremium: true,
       plan: sub.plan as SubscriptionStatus['plan'],

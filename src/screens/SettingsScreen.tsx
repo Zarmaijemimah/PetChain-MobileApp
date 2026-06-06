@@ -332,7 +332,9 @@ const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
             } catch (err) {
               Alert.alert(
                 t('common.error'),
-                err instanceof Error ? err.message : t('settings.exportFailed', 'Export request failed'),
+                err instanceof Error
+                  ? err.message
+                  : t('settings.exportFailed', 'Export request failed'),
               );
             } finally {
               setExportRequesting(false);
@@ -437,9 +439,7 @@ const SettingsScreen: React.FC<Props> = ({ onLogout }) => {
           autoCapitalize="none"
         />
 
-        <Text style={[styles.label, { color: colors.secondaryText }]}>
-          {t('settings.address')}
-        </Text>
+        <Text style={[styles.label, { color: colors.secondaryText }]}>{t('settings.address')}</Text>
         <TextInput
           style={inputStyle}
           value={street}

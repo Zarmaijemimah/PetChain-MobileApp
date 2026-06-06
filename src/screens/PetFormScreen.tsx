@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import type { Species } from '../models/Pet';
 import breedInsightsService from '../services/breedInsightsService';
 import petService, { type Pet } from '../services/petService';
 import { parseWeightToKg, weightUnit } from '../utils/localeValues';
@@ -143,7 +144,7 @@ const PetFormScreen: React.FC<Props> = ({ pet, ownerId = '', onBack, onSaved }) 
       const weightValue = Number(form.weight.trim());
       const payload = {
         name: form.name.trim(),
-        species: form.species.trim(),
+        species: form.species.trim() as Species,
         breed: form.breed.trim() || undefined,
         dateOfBirth: form.dateOfBirth.trim() || undefined,
         weightKg:

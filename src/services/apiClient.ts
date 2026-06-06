@@ -7,6 +7,7 @@ import axios, {
 import { fetch as pinnedFetch } from 'react-native-ssl-pinning';
 
 import config from '../config';
+import { getToken } from './authService';
 import { SSL_PINS, PIN_FAILURE_SUPPORT_URL } from '../config/security';
 import { setupInterceptors } from '../middleware/apiInterceptors';
 import { logError } from '../utils/errorLogger';
@@ -46,7 +47,7 @@ export async function pinnedRequest<T>(
 
   try {
     const res = await pinnedFetch(url, {
-      method: (options.method ?? 'GET') as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+      method: (options.method ?? 'GET') as 'GET' | 'POST' | 'PUT' | 'DELETE',
       headers: (options.headers as Record<string, string>) ?? {},
       body: options.body as string | undefined,
       sslPinning: {
@@ -149,7 +150,7 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(async (requestConfig) => {
   const token = await getToken();
   if (token) {
-    requestConfig.headers = requestConfig.headers ?? {} as typeof requestConfig.headers;
+    requestConfig.headers = requestConfig.headers ?? ({} as typeof requestConfig.headers);
     (requestConfig.headers as Record<string, string>).Authorization = `Bearer ${token}`;
   }
   return requestConfig;

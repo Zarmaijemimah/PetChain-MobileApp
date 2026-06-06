@@ -154,7 +154,8 @@ export const authSchemas = {
       user: { $ref: '#/components/schemas/AuthUserSummary' },
       token: {
         type: 'string',
-        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLWlkIiwiZXhwIjoxNzA5MDAwMDAwfQ.signature',
+        example:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLWlkIiwiZXhwIjoxNzA5MDAwMDAwfQ.signature',
         description: 'JWT access token — include as Authorization: Bearer {token}',
       },
       refreshToken: {

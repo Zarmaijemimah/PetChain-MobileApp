@@ -6,7 +6,9 @@ describe('Emergency SOS Flow', () => {
       newInstance: true,
       launchArgs: { detoxSeed: 'test', detoxSkipOnboarding: 'true' },
     });
-    await waitFor(element(by.id('pet-list-screen'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('pet-list-screen')))
+      .toBeVisible()
+      .withTimeout(10000);
   });
 
   afterAll(async () => {
@@ -39,6 +41,8 @@ describe('Emergency SOS Flow', () => {
     await element(by.id('contact-name-input')).typeText('Jane Doe');
     await element(by.id('contact-phone-input')).typeText('+15551234567');
     await element(by.id('contact-save-button')).tap();
-    await waitFor(element(by.text('Jane Doe'))).toBeVisible().withTimeout(5000);
+    await waitFor(element(by.text('Jane Doe')))
+      .toBeVisible()
+      .withTimeout(5000);
   });
 });

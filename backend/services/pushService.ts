@@ -133,7 +133,10 @@ export interface UserPushPreferences {
 
 const DEFAULT_PREFS: UserPushPreferences = {
   enabled: true,
-  topics: Object.fromEntries(ALL_TOPICS.map((t) => [t, true])) as Record<NotificationTopic, boolean>,
+  topics: Object.fromEntries(ALL_TOPICS.map((t) => [t, true])) as Record<
+    NotificationTopic,
+    boolean
+  >,
 };
 
 export async function getPreferences(userId: string): Promise<UserPushPreferences> {
@@ -197,7 +200,9 @@ async function sendToExpo(job: PushJob): Promise<boolean> {
     return false;
   }
 
-  const result = (await response.json()) as { data?: { status?: string; details?: { error?: string } } };
+  const result = (await response.json()) as {
+    data?: { status?: string; details?: { error?: string } };
+  };
   const status = result?.data?.status;
 
   if (status === 'error') {

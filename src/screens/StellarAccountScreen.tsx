@@ -14,9 +14,10 @@ import {
   View,
 } from 'react-native';
 
-import stellarService from '../services/stellarAccountService';
-import { getQRImageUrl } from '../services/qrCodeService';
+import config from '../config';
 import logger from '../services/loggerService';
+import { getQRImageUrl } from '../services/qrCodeService';
+import stellarService from '../services/stellarAccountService';
 
 const StellarAccountScreen: React.FC = () => {
   const [publicKey, setPublicKey] = useState<string | null>(null);
@@ -100,13 +101,16 @@ const StellarAccountScreen: React.FC = () => {
     if (!publicKey) return;
     const res = await stellarService.getTransactions(publicKey, nextCursor);
     if (res) {
-      setTxs(prev => [...prev, ...res.records]);
+      setTxs((prev) => [...prev, ...res.records]);
       setNextCursor(res.next);
     }
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Text style={styles.title}>Stellar Account</Text>
@@ -131,7 +135,9 @@ const StellarAccountScreen: React.FC = () => {
                   {qrUrl && <Image source={{ uri: qrUrl }} style={styles.qr} />}
                 </>
               ) : (
-                <Text style={styles.hint}>No key stored. Import your secret key securely below.</Text>
+                <Text style={styles.hint}>
+                  No key stored. Import your secret key securely below.
+                </Text>
               )}
             </View>
 
@@ -139,12 +145,26 @@ const StellarAccountScreen: React.FC = () => {
               <Text style={styles.cardTitle}>Balance</Text>
               <Text style={styles.balanceText}>{balance ?? '—'}</Text>
               <View style={styles.rowSpace}>
-                <TouchableOpacity style={styles.actionBtn} onPress={() => publicKey && refreshBalance(publicKey)}>
+                <TouchableOpacity
+                  style={styles.actionBtn}
+                  onPress={() => publicKey && refreshBalance(publicKey)}
+                >
                   <Text style={styles.actionBtnText}>Refresh</Text>
                 </TouchableOpacity>
                 {!publicKey ? null : (
-                  <TouchableOpacity style={[styles.actionBtn, config.env === 'production' && styles.actionBtnDisabled]} onPress={handleFundTestnet} disabled={funding || config.env === 'production'}>
-                    {funding ? <ActivityIndicator color="#fff" /> : <Text style={styles.actionBtnText}>Fund (Testnet)</Text>}
+                  <TouchableOpacity
+                    style={[
+                      styles.actionBtn,
+                      config.env === 'production' && styles.actionBtnDisabled,
+                    ]}
+                    onPress={handleFundTestnet}
+                    disabled={funding || config.env === 'production'}
+                  >
+                    {funding ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <Text style={styles.actionBtnText}>Fund (Testnet)</Text>
+                    )}
                   </TouchableOpacity>
                 )}
               </View>
@@ -171,12 +191,14 @@ const StellarAccountScreen: React.FC = () => {
               <Text style={styles.cardTitle}>Recent Transactions</Text>
               {txs.length === 0 ? (
                 <Text style={styles.hint}>No transactions loaded.</Text>
-              ) : txs.map(tx => (
-                <View key={tx.id} style={styles.txRow}>
-                  <Text style={styles.txTitle}>{tx.id.substring(0, 10)}…</Text>
-                  <Text style={styles.txTime}>{tx.created_at}</Text>
-                </View>
-              ))}
+              ) : (
+                txs.map((tx) => (
+                  <View key={tx.id} style={styles.txRow}>
+                    <Text style={styles.txTitle}>{tx.id.substring(0, 10)}…</Text>
+                    <Text style={styles.txTime}>{tx.created_at}</Text>
+                  </View>
+                ))
+              )}
               <TouchableOpacity style={styles.loadMore} onPress={loadMoreTx}>
                 <Text style={styles.loadMoreText}>Load more</Text>
               </TouchableOpacity>
@@ -196,8 +218,19 @@ const styles = StyleSheet.create({
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, marginBottom: 12 },
   cardTitle: { fontSize: 14, fontWeight: '700', marginBottom: 8 },
   keyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  keyText: { fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', fontSize: 12, color: '#111', flex: 1, marginRight: 8 },
-  smallBtn: { backgroundColor: '#4CAF50', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  keyText: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    fontSize: 12,
+    color: '#111',
+    flex: 1,
+    marginRight: 8,
+  },
+  smallBtn: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
   smallBtnText: { color: '#fff', fontWeight: '700' },
   qr: { width: 160, height: 160, marginTop: 12, alignSelf: 'center' },
   hint: { color: '#666', fontSize: 13 },
@@ -208,7 +241,13 @@ const styles = StyleSheet.create({
   actionBtnDisabled: { backgroundColor: '#999' },
   input: { borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 8, padding: 10, marginTop: 8 },
   monoInput: { fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
-  submitBtn: { backgroundColor: '#1a73e8', padding: 12, borderRadius: 10, marginTop: 12, alignItems: 'center' },
+  submitBtn: {
+    backgroundColor: '#1a73e8',
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 12,
+    alignItems: 'center',
+  },
   submitBtnText: { color: '#fff', fontWeight: '700' },
   txRow: { borderTopWidth: 1, borderTopColor: '#f0f0f0', paddingVertical: 10 },
   txTitle: { fontSize: 13, fontWeight: '700' },

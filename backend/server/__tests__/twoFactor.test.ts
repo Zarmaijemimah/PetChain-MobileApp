@@ -32,7 +32,10 @@ describe('POST /api/auth/2fa/setup', () => {
   it('returns qrCode and secret', async () => {
     const res = await request(app).post('/api/auth/2fa/setup').set(authHeader());
     expect(res.status).toBe(200);
-    expect(res.body.data).toMatchObject({ qrCode: expect.stringContaining('data:image'), secret: expect.any(String) });
+    expect(res.body.data).toMatchObject({
+      qrCode: expect.stringContaining('data:image'),
+      secret: expect.any(String),
+    });
     // Pending secret stored on user
     expect(store.users.get('user-2fa')?.twoFactorPendingSecret).toBeTruthy();
   });
@@ -99,7 +102,10 @@ describe('POST /api/auth/2fa/verify', () => {
   });
 
   it('returns 401 for invalid TOTP code', async () => {
-    store.users.set('user-2fa', makeUser({ twoFactorEnabled: true, twoFactorSecret: 'JBSWY3DPEHPK3PXP' }));
+    store.users.set(
+      'user-2fa',
+      makeUser({ twoFactorEnabled: true, twoFactorSecret: 'JBSWY3DPEHPK3PXP' }),
+    );
     const res = await request(app)
       .post('/api/auth/2fa/verify')
       .set(authHeader())
@@ -121,7 +127,10 @@ describe('POST /api/auth/2fa/disable', () => {
   });
 
   it('returns 403 for admin accounts', async () => {
-    store.users.set('user-2fa', makeUser({ role: UserRole.ADMIN, twoFactorEnabled: true, twoFactorSecret: 'S' }));
+    store.users.set(
+      'user-2fa',
+      makeUser({ role: UserRole.ADMIN, twoFactorEnabled: true, twoFactorSecret: 'S' }),
+    );
     const res = await request(app)
       .post('/api/auth/2fa/disable')
       .set(authHeader())
@@ -131,7 +140,10 @@ describe('POST /api/auth/2fa/disable', () => {
   });
 
   it('returns 401 for invalid TOTP code', async () => {
-    store.users.set('user-2fa', makeUser({ twoFactorEnabled: true, twoFactorSecret: 'JBSWY3DPEHPK3PXP' }));
+    store.users.set(
+      'user-2fa',
+      makeUser({ twoFactorEnabled: true, twoFactorSecret: 'JBSWY3DPEHPK3PXP' }),
+    );
     const res = await request(app)
       .post('/api/auth/2fa/disable')
       .set(authHeader())
@@ -152,14 +164,20 @@ describe('POST /api/auth/2fa/backup-verify', () => {
   });
 
   it('returns 400 for missing code', async () => {
-    store.users.set('user-2fa', makeUser({ twoFactorEnabled: true, twoFactorBackupCodes: ['$2a$10$x'] }));
+    store.users.set(
+      'user-2fa',
+      makeUser({ twoFactorEnabled: true, twoFactorBackupCodes: ['$2a$10$x'] }),
+    );
     const res = await request(app).post('/api/auth/2fa/backup-verify').set(authHeader()).send({});
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
 
   it('returns 401 for invalid backup code', async () => {
-    store.users.set('user-2fa', makeUser({ twoFactorEnabled: true, twoFactorBackupCodes: ['$2a$10$invalidhash'] }));
+    store.users.set(
+      'user-2fa',
+      makeUser({ twoFactorEnabled: true, twoFactorBackupCodes: ['$2a$10$invalidhash'] }),
+    );
     const res = await request(app)
       .post('/api/auth/2fa/backup-verify')
       .set(authHeader())
@@ -181,7 +199,10 @@ describe('POST /api/auth/2fa/backup-regenerate', () => {
   });
 
   it('returns 401 for invalid TOTP code', async () => {
-    store.users.set('user-2fa', makeUser({ twoFactorEnabled: true, twoFactorSecret: 'JBSWY3DPEHPK3PXP' }));
+    store.users.set(
+      'user-2fa',
+      makeUser({ twoFactorEnabled: true, twoFactorSecret: 'JBSWY3DPEHPK3PXP' }),
+    );
     const res = await request(app)
       .post('/api/auth/2fa/backup-regenerate')
       .set(authHeader())
@@ -219,7 +240,9 @@ describe('POST /api/auth/2fa/recovery/request', () => {
 
 describe('POST /api/auth/2fa/recovery/verify', () => {
   it('returns 400 for missing fields', async () => {
-    const res = await request(app).post('/api/auth/2fa/recovery/verify').send({ email: 'user@petchain.app' });
+    const res = await request(app)
+      .post('/api/auth/2fa/recovery/verify')
+      .send({ email: 'user@petchain.app' });
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });

@@ -12,8 +12,13 @@ const redisMock = {
     mockRedisData[key] = val;
     return 'OK';
   }),
-  get: jest.fn(async (key: string) => mockRedisData[key] as string ?? null),
-  del: jest.fn(async (key: string) => { delete mockRedisData[key]; delete mockSets[key]; delete mockLists[key]; return 1; }),
+  get: jest.fn(async (key: string) => (mockRedisData[key] as string) ?? null),
+  del: jest.fn(async (key: string) => {
+    delete mockRedisData[key];
+    delete mockSets[key];
+    delete mockLists[key];
+    return 1;
+  }),
   sadd: jest.fn(async (key: string, ...members: string[]) => {
     if (!mockSets[key]) mockSets[key] = new Set();
     members.forEach((m) => mockSets[key].add(m));
@@ -61,6 +66,7 @@ jest.mock('node-fetch');
 // ─── Imports ──────────────────────────────────────────────────────────────────
 
 import fetch from 'node-fetch';
+
 import {
   clearDLQ,
   drainQueue,

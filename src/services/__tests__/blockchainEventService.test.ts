@@ -114,7 +114,7 @@ describe('BlockchainEventService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockNetInfoListeners.length = 0;
-    
+
     service = new BlockchainEventService({
       websocketUrl: 'ws://localhost:3001/test',
       reconnectDelay: 100, // Faster for tests
@@ -128,6 +128,7 @@ describe('BlockchainEventService', () => {
     (global as any).WebSocket = class extends MockWebSocket {
       constructor(url: string) {
         super(url);
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         mockWebSocket = this;
       }
     };
@@ -142,15 +143,13 @@ describe('BlockchainEventService', () => {
   describe('connect()', () => {
     it('establishes WebSocket connection successfully', async () => {
       const connectPromise = service.connect(['ACCOUNT1', 'ACCOUNT2']);
-      
+
       // Wait for connection to complete
       await connectPromise;
-      
+
       expect(service.getStatus().connected).toBe(true);
       expect(service.getStatus().subscribedAccounts).toEqual(['ACCOUNT1', 'ACCOUNT2']);
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        'Connected to blockchain events'
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith('Connected to blockchain events');
     });
 
     it('handles connection timeout', async () => {
@@ -170,7 +169,9 @@ describe('BlockchainEventService', () => {
         onclose: any = null;
         onmessage: any = null;
         onerror: any = null;
-        constructor() { /* never fires onopen */ }
+        constructor() {
+          /* never fires onopen */
+        }
         send() {}
         close() {}
       };
@@ -212,15 +213,13 @@ describe('BlockchainEventService', () => {
     it('does not reconnect if already connected', async () => {
       await service.connect();
       const firstStatus = service.getStatus();
-      
+
       await service.connect();
       const secondStatus = service.getStatus();
-      
+
       expect(firstStatus.connected).toBe(true);
       expect(secondStatus.connected).toBe(true);
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        'Already connected to blockchain events'
-      );
+      expect(mockLogger.debug).toHaveBeenCalledWith('Already connected to blockchain events');
     });
   });
 
@@ -230,25 +229,23 @@ describe('BlockchainEventService', () => {
     it('disconnects cleanly', async () => {
       await service.connect();
       expect(service.getStatus().connected).toBe(true);
-      
+
       service.disconnect();
-      
+
       expect(service.getStatus().connected).toBe(false);
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        'Manually disconnecting from blockchain events'
-      );
+      expect(mockLogger.info).toHaveBeenCalledWith('Manually disconnecting from blockchain events');
     });
 
     it('prevents automatic reconnection after manual disconnect', async () => {
       await service.connect();
       service.disconnect();
-      
+
       // Simulate connection loss
       mockWebSocket.close(1006, 'Connection lost');
-      
+
       // Wait a bit to see if reconnection is attempted
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
       expect(service.getStatus().connected).toBe(false);
       expect(service.getStatus().reconnectAttempts).toBe(0);
     });
@@ -318,18 +315,17 @@ describe('BlockchainEventService', () => {
       };
 
       mockWebSocket.simulateMessage(mockStatus);
-      
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        'Received status update',
-        { status: { connected: true, error: null } }
-      );
+
+      expect(mockLogger.debug).toHaveBeenCalledWith('Received status update', {
+        status: { connected: true, error: null },
+      });
     });
 
     it('handles pong messages', () => {
       const mockPong = { type: 'pong' };
 
       mockWebSocket.simulateMessage(mockPong);
-      
+
       expect(mockLogger.debug).toHaveBeenCalledWith('Received heartbeat pong');
     });
 
@@ -337,11 +333,10 @@ describe('BlockchainEventService', () => {
       const mockUnknown = { type: 'unknown_type' };
 
       mockWebSocket.simulateMessage(mockUnknown);
-      
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        'Unknown message type',
-        { type: 'unknown_type' }
-      );
+
+      expect(mockLogger.debug).toHaveBeenCalledWith('Unknown message type', {
+        type: 'unknown_type',
+      });
     });
 
     it('handles malformed messages', () => {
@@ -349,12 +344,12 @@ describe('BlockchainEventService', () => {
       if (mockWebSocket.onmessage) {
         mockWebSocket.onmessage(new MessageEvent('message', { data: 'invalid json' }));
       }
-      
+
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Failed to parse WebSocket message',
         expect.objectContaining({
           data: 'invalid json',
-        })
+        }),
       );
     });
   });
@@ -364,24 +359,24 @@ describe('BlockchainEventService', () => {
   describe('subscribeToAccounts()', () => {
     it('subscribes to accounts when connected', async () => {
       await service.connect();
-      
+
       const sendSpy = jest.spyOn(mockWebSocket, 'send');
-      
+
       service.subscribeToAccounts(['ACCOUNT1', 'ACCOUNT2']);
-      
+
       expect(sendSpy).toHaveBeenCalledWith(
         JSON.stringify({
           type: 'subscribe',
           accounts: ['ACCOUNT1', 'ACCOUNT2'],
-        })
+        }),
       );
-      
+
       expect(service.getStatus().subscribedAccounts).toEqual(['ACCOUNT1', 'ACCOUNT2']);
     });
 
     it('updates subscribed accounts when not connected', () => {
       service.subscribeToAccounts(['ACCOUNT3']);
-      
+
       expect(service.getStatus().subscribedAccounts).toEqual(['ACCOUNT3']);
     });
   });
@@ -392,16 +387,16 @@ describe('BlockchainEventService', () => {
     it('attempts reconnection on connection loss', async () => {
       await service.connect();
       expect(service.getStatus().connected).toBe(true);
-      
+
       // Simulate connection loss
       mockWebSocket.close(1006, 'Connection lost');
-      
+
       expect(service.getStatus().connected).toBe(false);
       expect(mockLogger.info).toHaveBeenCalledWith(
         'Scheduling reconnection',
         expect.objectContaining({
           attempt: 1,
-        })
+        }),
       );
     });
 
@@ -430,11 +425,15 @@ describe('BlockchainEventService', () => {
       };
 
       // Initial connect fails — scheduleReconnection is called
-      try { await testService.connect(); } catch { /* expected */ }
+      try {
+        await testService.connect();
+      } catch {
+        /* expected */
+      }
 
       // Wait for 2 reconnect attempts to exhaust:
       // attempt 1: delay=30ms, attempt 2: delay=60ms → total ~120ms + buffer
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
       expect(testService.getStatus().error).toBe('Max reconnection attempts reached');
 
@@ -447,12 +446,12 @@ describe('BlockchainEventService', () => {
   describe('network monitoring', () => {
     it('attempts reconnection when network comes back online', async () => {
       const connectSpy = jest.spyOn(service, 'connect');
-      
+
       // Simulate network reconnection
-      mockNetInfoListeners.forEach(listener => {
+      mockNetInfoListeners.forEach((listener) => {
         listener({ isConnected: true });
       });
-      
+
       expect(connectSpy).toHaveBeenCalled();
     });
   });
@@ -462,7 +461,7 @@ describe('BlockchainEventService', () => {
   describe('getStatus()', () => {
     it('returns current status', () => {
       const status = service.getStatus();
-      
+
       expect(status).toMatchObject({
         connected: false,
         lastEventTime: null,
@@ -474,9 +473,9 @@ describe('BlockchainEventService', () => {
 
     it('updates status after connection', async () => {
       await service.connect(['ACCOUNT1']);
-      
+
       const status = service.getStatus();
-      
+
       expect(status.connected).toBe(true);
       expect(status.subscribedAccounts).toEqual(['ACCOUNT1']);
     });
@@ -487,7 +486,7 @@ describe('BlockchainEventService', () => {
   describe('checkRecordVerification()', () => {
     it('returns verification result', async () => {
       const result = await service.checkRecordVerification('record123');
-      
+
       expect(result).toMatchObject({
         recordId: 'record123',
         verified: true,
@@ -511,11 +510,11 @@ describe('BlockchainEventService', () => {
   describe('destroy()', () => {
     it('cleans up resources', async () => {
       await service.connect();
-      
+
       const initialListenerCount = mockNetInfoListeners.length;
-      
+
       service.destroy();
-      
+
       expect(service.getStatus().connected).toBe(false);
       expect(mockNetInfoListeners.length).toBe(initialListenerCount - 1);
     });

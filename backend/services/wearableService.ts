@@ -1,5 +1,5 @@
-import { query } from '../src/db';
 import { sendAlertNotification } from '../../src/services/notificationService';
+import { query } from '../src/db';
 
 type ProviderKey = string;
 
@@ -26,7 +26,10 @@ export interface NormalizedMetric {
 
 // Minimal provider client interface — real integrations should be implemented
 // separately. We include a mock provider here for tests and local development.
-const PROVIDER_CLIENTS: Record<ProviderKey, { sync: (token: string, petId: string) => Promise<any[]> }> = {
+const PROVIDER_CLIENTS: Record<
+  ProviderKey,
+  { sync: (token: string, petId: string) => Promise<any[]> }
+> = {
   mockfit: {
     async sync(_token: string, petId: string) {
       // return example provider events
@@ -62,7 +65,9 @@ export async function connectProviderOAuth(
   );
 }
 
-export async function refreshTokenIfNeeded(record: ProviderTokenRecord): Promise<ProviderTokenRecord> {
+export async function refreshTokenIfNeeded(
+  record: ProviderTokenRecord,
+): Promise<ProviderTokenRecord> {
   // caller should implement provider-specific refresh flows. Here we simply
   // return the record unchanged as a safe default.
   return record;
@@ -80,16 +85,40 @@ function normalizeProviderEvent(providerKey: ProviderKey, event: any): Normalize
 
     const metrics: NormalizedMetric[] = [];
     if (typeof event.steps === 'number') {
-      metrics.push({ ...base, metricType: 'steps', value: event.steps, unit: 'count', recordedAt: event.ts });
+      metrics.push({
+        ...base,
+        metricType: 'steps',
+        value: event.steps,
+        unit: 'count',
+        recordedAt: event.ts,
+      });
     }
     if (typeof event.sleep_minutes === 'number') {
-      metrics.push({ ...base, metricType: 'sleep_duration', value: event.sleep_minutes, unit: 'minutes', recordedAt: event.ts });
+      metrics.push({
+        ...base,
+        metricType: 'sleep_duration',
+        value: event.sleep_minutes,
+        unit: 'minutes',
+        recordedAt: event.ts,
+      });
     }
     if (typeof event.sleep_quality === 'number') {
-      metrics.push({ ...base, metricType: 'sleep_quality', value: event.sleep_quality, unit: 'ratio', recordedAt: event.ts });
+      metrics.push({
+        ...base,
+        metricType: 'sleep_quality',
+        value: event.sleep_quality,
+        unit: 'ratio',
+        recordedAt: event.ts,
+      });
     }
     if (typeof event.activity_score === 'number') {
-      metrics.push({ ...base, metricType: 'activity_score', value: event.activity_score, unit: 'score', recordedAt: event.ts });
+      metrics.push({
+        ...base,
+        metricType: 'activity_score',
+        value: event.activity_score,
+        unit: 'score',
+        recordedAt: event.ts,
+      });
     }
     return metrics;
   }
@@ -97,13 +126,29 @@ function normalizeProviderEvent(providerKey: ProviderKey, event: any): Normalize
   // Default: attempt best-effort mappings
   const recordedAt = event.timestamp ?? event.ts ?? new Date().toISOString();
   const entries: NormalizedMetric[] = [];
-  if (event.steps) entries.push({ petId: String(event.petId ?? 'unknown'), metricType: 'steps', value: Number(event.steps), unit: 'count', recordedAt, providerKey, providerEventId: event.id ?? null, raw: event });
+  if (event.steps)
+    entries.push({
+      petId: String(event.petId ?? 'unknown'),
+      metricType: 'steps',
+      value: Number(event.steps),
+      unit: 'count',
+      recordedAt,
+      providerKey,
+      providerEventId: event.id ?? null,
+      raw: event,
+    });
   return entries;
 }
 
-export async function syncProviderForPet(providerKey: ProviderKey, petId: string): Promise<{ imported: number }> {
+export async function syncProviderForPet(
+  providerKey: ProviderKey,
+  petId: string,
+): Promise<{ imported: number }> {
   // Load token
-  const res = await query('SELECT * FROM wearable_tokens WHERE provider_key = $1 AND pet_id = $2', [providerKey, petId]);
+  const res = await query('SELECT * FROM wearable_tokens WHERE provider_key = $1 AND pet_id = $2', [
+    providerKey,
+    petId,
+  ]);
   const tokenRecord = res.rows[0];
   if (!tokenRecord) return { imported: 0 };
 
@@ -126,7 +171,16 @@ export async function syncProviderForPet(providerKey: ProviderKey, petId: string
     const text = `INSERT INTO activity_metrics (pet_id, metric_type, value, unit, recorded_at, provider_key, provider_event_id, raw, created_at)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8, now())
       ON CONFLICT (provider_key, provider_event_id) DO UPDATE SET value = EXCLUDED.value, raw = EXCLUDED.raw, recorded_at = EXCLUDED.recorded_at`;
-    const params = [m.petId, m.metricType, m.value, m.unit ?? null, m.recordedAt, m.providerKey, m.providerEventId ?? null, m.raw ?? {}];
+    const params = [
+      m.petId,
+      m.metricType,
+      m.value,
+      m.unit ?? null,
+      m.recordedAt,
+      m.providerKey,
+      m.providerEventId ?? null,
+      m.raw ?? {},
+    ];
     await query(text, params);
     imported += 1;
   }
@@ -147,13 +201,21 @@ export async function getActivitySummary(petId: string) {
   return res.rows;
 }
 
-export async function getHistoricalActivity(petId: string, metricType: string, fromIso: string, toIso: string) {
+export async function getHistoricalActivity(
+  petId: string,
+  metricType: string,
+  fromIso: string,
+  toIso: string,
+) {
   const text = `SELECT recorded_at, value FROM activity_metrics WHERE pet_id = $1 AND metric_type = $2 AND recorded_at >= $3 AND recorded_at <= $4 ORDER BY recorded_at ASC`;
   const res = await query(text, [petId, metricType, fromIso, toIso]);
   return res.rows;
 }
 
-export async function detectAnomaliesForPet(petId: string, options?: { windowDays?: number; thresholdPct?: number }) {
+export async function detectAnomaliesForPet(
+  petId: string,
+  options?: { windowDays?: number; thresholdPct?: number },
+) {
   const windowDays = options?.windowDays ?? 14;
   const thresholdPct = options?.thresholdPct ?? 0.5; // 50% drop triggers
 

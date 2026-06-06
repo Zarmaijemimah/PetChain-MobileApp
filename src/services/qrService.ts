@@ -1,12 +1,12 @@
+import StellarSdk from '@stellar/stellar-sdk';
 import CryptoJS from 'crypto-js';
 import * as SecureStore from 'expo-secure-store';
-import StellarSdk from '@stellar/stellar-sdk';
 
-import { encodePayload } from '../utils/qrUtils';
-import { getQRImageUrl } from './qrCodeService';
-import * as petService from './petService';
 import * as medicationService from './medicationService';
+import * as petService from './petService';
+import { getQRImageUrl } from './qrCodeService';
 import * as vaccinationService from './vaccinationService';
+import { encodePayload } from '../utils/qrUtils';
 
 const STELLAR_SECRET_KEY = 'stellar.secret';
 
@@ -56,12 +56,18 @@ export const generateAppointmentCheckinQRCode = async (
   const pet = await petService.getPetById(petId);
 
   const allMeds = await medicationService.getMedications();
-  const meds = allMeds.filter((m) => m.petId === petId).map((m) => ({ id: m.id, name: m.name, dosage: m.dosage, status: m.status }));
+  const meds = allMeds
+    .filter((m) => m.petId === petId)
+    .map((m) => ({ id: m.id, name: m.name, dosage: m.dosage, status: m.status }));
 
   let vaccinations: Array<{ id: string; vaccineName: string; administeredDate?: string }> = [];
   try {
     const v = await vaccinationService.getVaccinationReminders(petId);
-    vaccinations = v.map((r) => ({ id: r.id, vaccineName: r.vaccineName, administeredDate: r.lastAdministeredDate }));
+    vaccinations = v.map((r) => ({
+      id: r.id,
+      vaccineName: r.vaccineName,
+      administeredDate: r.lastAdministeredDate,
+    }));
   } catch {
     vaccinations = [];
   }
@@ -100,7 +106,7 @@ export const generateAppointmentCheckinQRCode = async (
     } catch (err) {
       // Do not fail QR generation if signing fails — return unsigned payload
       // but include an error log via console for visibility.
-      // eslint-disable-next-line no-console
+
       console.warn('QR signing failed:', err);
     }
   }

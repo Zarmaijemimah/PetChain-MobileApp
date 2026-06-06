@@ -27,8 +27,9 @@ export async function getHealthAlerts(status: 'active' | 'all' = 'active') {
 }
 
 export async function runDailyHealthPredictions() {
-  const response =
-    await apiClient.post<ApiResponse<HealthPredictionAlert[]>>('/health-alerts/run-daily');
+  const response = await apiClient.post<ApiResponse<HealthPredictionAlert[]>>(
+    '/health-alerts/run-daily',
+  );
   return response.data.data;
 }
 

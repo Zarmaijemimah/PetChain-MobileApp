@@ -146,7 +146,7 @@ describe('POST /api/documents', () => {
     expect(res.status).toBe(400);
   });
 
-  it('rejects owner uploading for another owner\'s pet', async () => {
+  it("rejects owner uploading for another owner's pet", async () => {
     const res = await request(app)
       .post('/api/documents')
       .set(authHeader(OTHER_OWNER_ID))
@@ -200,14 +200,9 @@ describe('POST /api/documents', () => {
 
 describe('GET /api/documents', () => {
   it('lists documents for a pet', async () => {
-    await request(app)
-      .post('/api/documents')
-      .set(authHeader(OWNER_ID))
-      .send(validDocBody(PET_ID));
+    await request(app).post('/api/documents').set(authHeader(OWNER_ID)).send(validDocBody(PET_ID));
 
-    const res = await request(app)
-      .get(`/api/documents?petId=${PET_ID}`)
-      .set(authHeader(OWNER_ID));
+    const res = await request(app).get(`/api/documents?petId=${PET_ID}`).set(authHeader(OWNER_ID));
 
     expect(res.status).toBe(200);
     expect(res.body.data.length).toBe(1);
@@ -242,9 +237,7 @@ describe('GET /api/documents', () => {
 
     await request(app).delete(`/api/documents/${docId}`).set(authHeader(OWNER_ID));
 
-    const res = await request(app)
-      .get(`/api/documents?petId=${PET_ID}`)
-      .set(authHeader(OWNER_ID));
+    const res = await request(app).get(`/api/documents?petId=${PET_ID}`).set(authHeader(OWNER_ID));
 
     expect(res.body.data.length).toBe(0);
   });
@@ -274,9 +267,7 @@ describe('GET /api/documents', () => {
       .set(authHeader(OWNER_ID))
       .send(validDocBody(PET_ID, { parentId: v1.body.data.id }));
 
-    const res = await request(app)
-      .get(`/api/documents?petId=${PET_ID}`)
-      .set(authHeader(OWNER_ID));
+    const res = await request(app).get(`/api/documents?petId=${PET_ID}`).set(authHeader(OWNER_ID));
 
     expect(res.body.data.length).toBe(1);
     expect(res.body.data[0].version).toBe(2);
@@ -293,9 +284,7 @@ describe('GET /api/documents/:id', () => {
       .send(validDocBody(PET_ID));
     const docId = upload.body.data.id;
 
-    const res = await request(app)
-      .get(`/api/documents/${docId}`)
-      .set(authHeader(OWNER_ID));
+    const res = await request(app).get(`/api/documents/${docId}`).set(authHeader(OWNER_ID));
 
     expect(res.status).toBe(200);
     expect(res.body.data.encryptedContent).toBeDefined();
@@ -304,9 +293,7 @@ describe('GET /api/documents/:id', () => {
   });
 
   it('returns 404 for non-existent document', async () => {
-    const res = await request(app)
-      .get('/api/documents/nonexistent')
-      .set(authHeader(OWNER_ID));
+    const res = await request(app).get('/api/documents/nonexistent').set(authHeader(OWNER_ID));
 
     expect(res.status).toBe(404);
   });
@@ -332,9 +319,7 @@ describe('GET /api/documents/:id', () => {
     const docId = upload.body.data.id;
     await request(app).delete(`/api/documents/${docId}`).set(authHeader(OWNER_ID));
 
-    const res = await request(app)
-      .get(`/api/documents/${docId}`)
-      .set(authHeader(OWNER_ID));
+    const res = await request(app).get(`/api/documents/${docId}`).set(authHeader(OWNER_ID));
 
     expect(res.status).toBe(404);
   });
@@ -376,16 +361,12 @@ describe('DELETE /api/documents/:id', () => {
       .send(validDocBody(PET_ID));
     const docId = upload.body.data.id;
 
-    const res = await request(app)
-      .delete(`/api/documents/${docId}`)
-      .set(authHeader(OWNER_ID));
+    const res = await request(app).delete(`/api/documents/${docId}`).set(authHeader(OWNER_ID));
 
     expect(res.status).toBe(200);
 
     // Verify it's soft-deleted (not accessible via GET)
-    const getRes = await request(app)
-      .get(`/api/documents/${docId}`)
-      .set(authHeader(OWNER_ID));
+    const getRes = await request(app).get(`/api/documents/${docId}`).set(authHeader(OWNER_ID));
     expect(getRes.status).toBe(404);
   });
 
@@ -397,9 +378,7 @@ describe('DELETE /api/documents/:id', () => {
     const docId = upload.body.data.id;
     await request(app).delete(`/api/documents/${docId}`).set(authHeader(OWNER_ID));
 
-    const res = await request(app)
-      .delete(`/api/documents/${docId}`)
-      .set(authHeader(OWNER_ID));
+    const res = await request(app).delete(`/api/documents/${docId}`).set(authHeader(OWNER_ID));
 
     expect(res.status).toBe(404);
   });
@@ -497,9 +476,7 @@ describe('POST /api/documents/:id/restore', () => {
     const docId = upload.body.data.id;
     await request(app).delete(`/api/documents/${docId}`).set(authHeader(OWNER_ID));
 
-    const res = await request(app)
-      .post(`/api/documents/${docId}/restore`)
-      .set(authHeader(VET_ID));
+    const res = await request(app).post(`/api/documents/${docId}/restore`).set(authHeader(VET_ID));
 
     expect(res.status).toBe(403);
   });
@@ -519,7 +496,7 @@ describe('GET /api/documents/quota/:ownerId', () => {
     expect(res.body.data.remaining).toBeDefined();
   });
 
-  it('returns 403 when owner requests another owner\'s quota', async () => {
+  it("returns 403 when owner requests another owner's quota", async () => {
     const res = await request(app)
       .get(`/api/documents/quota/${OWNER_ID}`)
       .set(authHeader(OTHER_OWNER_ID));

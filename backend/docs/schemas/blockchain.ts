@@ -20,7 +20,11 @@ export const blockchainSchemas = {
         example: 'GABC...XYZ',
         description: 'Stellar account that submitted the transaction',
       },
-      feeCharged: { type: 'string', example: '100', description: 'Fee in stroops (1 XLM = 10,000,000 stroops)' },
+      feeCharged: {
+        type: 'string',
+        example: '100',
+        description: 'Fee in stroops (1 XLM = 10,000,000 stroops)',
+      },
       memo: { type: 'string', example: 'petchain:record:abc123' },
       operationCount: { type: 'integer', example: 1 },
     },

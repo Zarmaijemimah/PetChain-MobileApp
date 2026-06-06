@@ -1,6 +1,7 @@
 import path from 'path';
-import { Pool } from 'pg';
+
 import { runner } from 'node-pg-migrate';
+import { Pool } from 'pg';
 
 const DATABASE_URL =
   process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/petchain';
@@ -40,7 +41,7 @@ export async function runMigrations({
   const dir = migrationsDir || path.resolve(__dirname, '..', 'migrations');
   const dbUrl = databaseUrl || process.env.DATABASE_URL || DATABASE_URL;
 
-  console.log('[db] Running pending PostgreSQL migrations…');
+  console.warn('[db] Running pending PostgreSQL migrations…');
 
   _pgMigrationsInFlight = (async () => {
     try {
@@ -49,10 +50,10 @@ export async function runMigrations({
         dir,
         direction: 'up',
         migrationsTable: 'schema_migrations',
-        log: (msg: string) => console.log('[db:migrate]', msg),
+        log: (msg: string) => console.warn('[db:migrate]', msg),
       });
 
-      console.log('[db] Migrations complete.');
+      console.warn('[db] Migrations complete.');
     } finally {
       _pgMigrationsInFlight = null;
     }
@@ -71,7 +72,7 @@ export async function rollbackMigrations(
   const dir = migrationsDir || path.resolve(__dirname, '..', 'migrations');
   const dbUrl = databaseUrl || process.env.DATABASE_URL || DATABASE_URL;
 
-  console.log(`[db] Rolling back ${count} migration(s)…`);
+  console.warn(`[db] Rolling back ${count} migration(s)…`);
 
   await runner({
     databaseUrl: dbUrl,
@@ -79,10 +80,10 @@ export async function rollbackMigrations(
     direction: 'down',
     count,
     migrationsTable: 'schema_migrations',
-    log: (msg: string) => console.log('[db:rollback]', msg),
+    log: (msg: string) => console.warn('[db:rollback]', msg),
   });
 
-  console.log('[db] Rollback complete.');
+  console.warn('[db] Rollback complete.');
 }
 
 /**

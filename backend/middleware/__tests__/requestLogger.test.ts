@@ -9,11 +9,11 @@
  * - correlationId is accessible inside the request handler via AsyncLocalStorage
  */
 
-import express, { Request, Response } from 'express';
+import express, { type Request, type Response } from 'express';
 import request from 'supertest';
 
-import { requestLogger, CORRELATION_HEADER } from '../requestLogger';
 import { getCorrelationId } from '../../utils/logger';
+import { requestLogger, CORRELATION_HEADER } from '../requestLogger';
 
 // ─── Test app ─────────────────────────────────────────────────────────────────
 
@@ -48,18 +48,13 @@ describe('requestLogger middleware', () => {
 
   it('echoes back a provided X-Correlation-ID header', async () => {
     const clientId = 'my-client-correlation-id';
-    const res = await request(app)
-      .get('/echo')
-      .set(CORRELATION_HEADER, clientId);
+    const res = await request(app).get('/echo').set(CORRELATION_HEADER, clientId);
 
     expect(res.headers[CORRELATION_HEADER]).toBe(clientId);
   });
 
   it('generates a unique correlation ID per request when none provided', async () => {
-    const [r1, r2] = await Promise.all([
-      request(app).get('/echo'),
-      request(app).get('/echo'),
-    ]);
+    const [r1, r2] = await Promise.all([request(app).get('/echo'), request(app).get('/echo')]);
     const id1 = r1.headers[CORRELATION_HEADER];
     const id2 = r2.headers[CORRELATION_HEADER];
     expect(id1).toBeDefined();
@@ -69,9 +64,7 @@ describe('requestLogger middleware', () => {
 
   it('propagates correlationId into the handler via AsyncLocalStorage', async () => {
     const clientId = 'propagation-test-id';
-    const res = await request(app)
-      .get('/echo')
-      .set(CORRELATION_HEADER, clientId);
+    const res = await request(app).get('/echo').set(CORRELATION_HEADER, clientId);
 
     expect(res.status).toBe(200);
     expect(res.body.correlationId).toBe(clientId);
@@ -81,9 +74,7 @@ describe('requestLogger middleware', () => {
     const res = await request(app).get('/echo');
     const id = res.headers[CORRELATION_HEADER] as string;
     // UUID v4 pattern
-    expect(id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-    );
+    expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
   });
 
   it('returns 500 on the /boom route and still sets correlation header', async () => {

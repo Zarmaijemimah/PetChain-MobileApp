@@ -33,20 +33,20 @@ jest.mock('@stellar/stellar-sdk', () => ({
 class MockWebSocket {
   static OPEN = 1;
   static CLOSED = 3;
-  
+
   readyState = MockWebSocket.OPEN;
   onopen: any = null;
   onclose: any = null;
   onmessage: any = null;
   onerror: any = null;
   private _listeners: Record<string, Array<(...args: any[]) => void>> = {};
-  
+
   constructor(public url: string) {}
-  
+
   send(data: string): void {}
   close(): void {
     this.readyState = MockWebSocket.CLOSED;
-    (this._listeners['close'] ?? []).forEach(fn => fn());
+    (this._listeners['close'] ?? []).forEach((fn) => fn());
   }
   on(event: string, listener: (...args: any[]) => void): this {
     if (!this._listeners[event]) this._listeners[event] = [];
@@ -54,11 +54,11 @@ class MockWebSocket {
     return this;
   }
   off(event: string, listener: (...args: any[]) => void): this {
-    this._listeners[event] = (this._listeners[event] ?? []).filter(fn => fn !== listener);
+    this._listeners[event] = (this._listeners[event] ?? []).filter((fn) => fn !== listener);
     return this;
   }
   emit(event: string, ...args: any[]): boolean {
-    (this._listeners[event] ?? []).forEach(fn => fn(...args));
+    (this._listeners[event] ?? []).forEach((fn) => fn(...args));
     return true;
   }
 }
@@ -138,10 +138,10 @@ describe('HorizonStreamService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     mockCursorStorage = new MockCursorStorage();
     mockCloseFunction = jest.fn();
-    
+
     // Reset mock implementations
     mockServer.transactions.mockReturnValue(mockStreamBuilder);
     mockServer.operations.mockReturnValue(mockOperationsBuilder);
@@ -149,7 +149,7 @@ describe('HorizonStreamService', () => {
     mockStreamBuilder.stream.mockReturnValue(mockCloseFunction);
     mockOperationsBuilder.forTransaction.mockReturnValue(mockOperationsBuilder);
     mockOperationsBuilder.call.mockResolvedValue({ records: [] });
-    
+
     service = new HorizonStreamService({
       horizonUrl: 'https://horizon-testnet.stellar.org',
       cursorStorage: mockCursorStorage,
@@ -168,32 +168,32 @@ describe('HorizonStreamService', () => {
   describe('startTransactionStream()', () => {
     it('starts streaming transactions successfully', async () => {
       const accounts = ['GACCOUNT1', 'GACCOUNT2'];
-      
+
       await service.startTransactionStream(accounts);
-      
+
       expect(mockServer.transactions).toHaveBeenCalled();
       expect(mockStreamBuilder.stream).toHaveBeenCalledWith({
         onmessage: expect.any(Function),
         onerror: expect.any(Function),
         reconnectTimeout: 100,
       });
-      
+
       const status = service.getStatus();
       expect(status.isConnected).toBe(true);
       expect(status.subscribedAccounts).toEqual(new Set(accounts));
-      
+
       expect(mockLogger.info).toHaveBeenCalledWith(
         'Starting transaction stream',
-        expect.objectContaining({ accounts })
+        expect.objectContaining({ accounts }),
       );
     });
 
     it('resumes from last cursor when available', async () => {
       const lastCursor = 'last_cursor_123';
       await mockCursorStorage.setCursor('petchain-transactions', lastCursor);
-      
+
       await service.startTransactionStream(['GACCOUNT1']);
-      
+
       expect(mockStreamBuilder.cursor).toHaveBeenCalledWith(lastCursor);
     });
 
@@ -202,10 +202,11 @@ describe('HorizonStreamService', () => {
       mockStreamBuilder.stream.mockImplementation(() => {
         throw error;
       });
-      
-      await expect(service.startTransactionStream(['GACCOUNT1']))
-        .rejects.toThrow('Stream startup failed');
-      
+
+      await expect(service.startTransactionStream(['GACCOUNT1'])).rejects.toThrow(
+        'Stream startup failed',
+      );
+
       const status = service.getStatus();
       expect(status.error).toBe('Stream startup failed');
     });
@@ -215,10 +216,10 @@ describe('HorizonStreamService', () => {
 
   describe('transaction processing', () => {
     let onMessageHandler: (tx: any) => void;
-    
+
     beforeEach(async () => {
       await service.startTransactionStream(['GACCOUNT1']);
-      
+
       // Capture the onmessage handler
       const streamCall = mockStreamBuilder.stream.mock.calls[0][0];
       onMessageHandler = streamCall.onmessage;
@@ -248,10 +249,10 @@ describe('HorizonStreamService', () => {
       });
 
       onMessageHandler(mockTx);
-      
+
       // Wait for async processing
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       const cursor = await mockCursorStorage.getCursor('petchain-transactions');
       expect(cursor).toBe('new_cursor_456');
     });
@@ -283,10 +284,10 @@ describe('HorizonStreamService', () => {
       });
 
       onMessageHandler(mockTx);
-      
+
       // Wait for async processing
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       expect(mockOperationsBuilder.forTransaction).toHaveBeenCalledWith('hash123');
     });
 
@@ -303,15 +304,15 @@ describe('HorizonStreamService', () => {
       });
 
       onMessageHandler(mockTx);
-      
+
       // Wait for async processing
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'Failed to fetch transaction operations',
         expect.objectContaining({
           transactionHash: 'hash123',
-        })
+        }),
       );
     });
   });
@@ -320,10 +321,10 @@ describe('HorizonStreamService', () => {
 
   describe('error handling', () => {
     let onErrorHandler: (error: any) => void;
-    
+
     beforeEach(async () => {
       await service.startTransactionStream(['GACCOUNT1']);
-      
+
       // Capture the onerror handler
       const streamCall = mockStreamBuilder.stream.mock.calls[0][0];
       onErrorHandler = streamCall.onerror;
@@ -331,35 +332,35 @@ describe('HorizonStreamService', () => {
 
     it('handles stream errors and attempts reconnection', async () => {
       const error = new Error('Stream connection lost');
-      
+
       onErrorHandler(error);
-      
+
       const status = service.getStatus();
       expect(status.isConnected).toBe(false);
       expect(status.error).toBe('Stream connection lost');
       expect(status.reconnectAttempts).toBe(1);
-      
+
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Stream error occurred',
         expect.objectContaining({
           error: 'Stream connection lost',
           reconnectAttempts: 1,
-        })
+        }),
       );
     });
 
     it('stops reconnecting after max attempts', async () => {
       // Trigger multiple errors to exceed max attempts
       const error = new Error('Persistent error');
-      
+
       for (let i = 0; i < 4; i++) {
         onErrorHandler(error);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
       }
-      
+
       expect(mockLogger.error).toHaveBeenCalledWith(
         'Max reconnection attempts reached',
-        expect.objectContaining({ streamId: 'petchain-transactions' })
+        expect.objectContaining({ streamId: 'petchain-transactions' }),
       );
     });
 
@@ -371,7 +372,7 @@ describe('HorizonStreamService', () => {
       });
 
       const error = new Error('Persistent error');
-      
+
       // Exceed max attempts
       for (let i = 0; i < 4; i++) {
         onErrorHandler(error);
@@ -385,12 +386,10 @@ describe('HorizonStreamService', () => {
     it('adds WebSocket clients and sends status', () => {
       const mockWs = new MockWebSocket('ws://test');
       const sendSpy = jest.spyOn(mockWs, 'send');
-      
+
       service.addWebSocketClient(mockWs as any);
-      
-      expect(sendSpy).toHaveBeenCalledWith(
-        expect.stringContaining('"type":"status"')
-      );
+
+      expect(sendSpy).toHaveBeenCalledWith(expect.stringContaining('"type":"status"'));
     });
 
     it('broadcasts events to all WebSocket clients', async () => {
@@ -398,52 +397,48 @@ describe('HorizonStreamService', () => {
       const mockWs2 = new MockWebSocket('ws://test2');
       const sendSpy1 = jest.spyOn(mockWs1, 'send');
       const sendSpy2 = jest.spyOn(mockWs2, 'send');
-      
+
       service.addWebSocketClient(mockWs1 as any);
       service.addWebSocketClient(mockWs2 as any);
-      
+
       // Clear initial status messages
       sendSpy1.mockClear();
       sendSpy2.mockClear();
-      
+
       // Start stream and trigger transaction
       await service.startTransactionStream(['GACCOUNT1']);
       const streamCall = mockStreamBuilder.stream.mock.calls[0][0];
       const mockTx = createMockTransaction({ source_account: 'GACCOUNT1' });
-      
+
       streamCall.onmessage(mockTx);
-      
+
       // Wait for async processing
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
-      expect(sendSpy1).toHaveBeenCalledWith(
-        expect.stringContaining('"type":"transaction"')
-      );
-      expect(sendSpy2).toHaveBeenCalledWith(
-        expect.stringContaining('"type":"transaction"')
-      );
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(sendSpy1).toHaveBeenCalledWith(expect.stringContaining('"type":"transaction"'));
+      expect(sendSpy2).toHaveBeenCalledWith(expect.stringContaining('"type":"transaction"'));
     });
 
     it('removes dead WebSocket clients', async () => {
       const mockWs = new MockWebSocket('ws://test');
       mockWs.readyState = MockWebSocket.CLOSED;
-      
+
       service.addWebSocketClient(mockWs as any);
-      
+
       // Start stream and trigger transaction
       await service.startTransactionStream(['GACCOUNT1']);
       const streamCall = mockStreamBuilder.stream.mock.calls[0][0];
       const mockTx = createMockTransaction({ source_account: 'GACCOUNT1' });
-      
+
       streamCall.onmessage(mockTx);
-      
+
       // Wait for async processing
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       // Client should be removed from internal set (we can't directly test this,
       // but the service should handle it gracefully)
       expect(mockLogger.warn).not.toHaveBeenCalledWith(
-        expect.stringContaining('Failed to send to WebSocket client')
+        expect.stringContaining('Failed to send to WebSocket client'),
       );
     });
   });
@@ -453,11 +448,11 @@ describe('HorizonStreamService', () => {
   describe('stream management', () => {
     it('stops all streams', async () => {
       await service.startTransactionStream(['GACCOUNT1']);
-      
+
       service.stopAllStreams();
-      
+
       expect(mockCloseFunction).toHaveBeenCalled();
-      
+
       const status = service.getStatus();
       expect(status.isConnected).toBe(false);
       expect(status.subscribedAccounts.size).toBe(0);
@@ -467,16 +462,16 @@ describe('HorizonStreamService', () => {
       mockCloseFunction.mockImplementation(() => {
         throw new Error('Close failed');
       });
-      
+
       await service.startTransactionStream(['GACCOUNT1']);
-      
+
       service.stopAllStreams();
-      
+
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'Error closing stream',
         expect.objectContaining({
           streamId: 'petchain-transactions',
-        })
+        }),
       );
     });
   });
@@ -486,10 +481,10 @@ describe('HorizonStreamService', () => {
   describe('cursor management', () => {
     it('sets cursor manually', async () => {
       await service.setCursor('test-stream', 'manual_cursor_789');
-      
+
       const cursor = await mockCursorStorage.getCursor('test-stream');
       expect(cursor).toBe('manual_cursor_789');
-      
+
       const status = service.getStatus();
       expect(status.currentCursor).toBe('manual_cursor_789');
     });
@@ -500,7 +495,7 @@ describe('HorizonStreamService', () => {
   describe('getStatus()', () => {
     it('returns current status', () => {
       const status = service.getStatus();
-      
+
       expect(status).toMatchObject({
         isConnected: false,
         lastEventTime: null,
@@ -513,9 +508,9 @@ describe('HorizonStreamService', () => {
 
     it('updates status after starting stream', async () => {
       await service.startTransactionStream(['GACCOUNT1', 'GACCOUNT2']);
-      
+
       const status = service.getStatus();
-      
+
       expect(status.isConnected).toBe(true);
       expect(status.subscribedAccounts).toEqual(new Set(['GACCOUNT1', 'GACCOUNT2']));
     });
@@ -526,22 +521,22 @@ describe('HorizonStreamService', () => {
   describe('transaction relevance filtering', () => {
     it('identifies relevant transactions by source account', async () => {
       await service.startTransactionStream(['GACCOUNT1']);
-      
+
       const streamCall = mockStreamBuilder.stream.mock.calls[0][0];
       const relevantTx = createMockTransaction({ source_account: 'GACCOUNT1' });
       const irrelevantTx = createMockTransaction({ source_account: 'GUNRELATED' });
-      
+
       let eventCount = 0;
       service.on('transaction', () => {
         eventCount++;
       });
-      
+
       streamCall.onmessage(relevantTx);
       streamCall.onmessage(irrelevantTx);
-      
+
       // Wait for async processing
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       expect(eventCount).toBe(1); // Only relevant transaction should emit event
     });
   });

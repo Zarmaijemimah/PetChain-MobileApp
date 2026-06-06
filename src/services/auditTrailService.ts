@@ -100,4 +100,3 @@ export async function exportAuditTrailCsv(params: {
 }
 
 export default { getAuditTrail, exportAuditTrailCsv };
-

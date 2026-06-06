@@ -104,8 +104,10 @@ function toParams(filters: BrowseShelterPetsFilters = {}): URLSearchParams {
   if (filters.species) params.set('species', filters.species);
   if (filters.breed?.trim()) params.set('breed', filters.breed.trim());
   if (filters.location?.trim()) params.set('location', filters.location.trim());
-  if (typeof filters.ageMinMonths === 'number') params.set('ageMinMonths', String(filters.ageMinMonths));
-  if (typeof filters.ageMaxMonths === 'number') params.set('ageMaxMonths', String(filters.ageMaxMonths));
+  if (typeof filters.ageMinMonths === 'number')
+    params.set('ageMinMonths', String(filters.ageMinMonths));
+  if (typeof filters.ageMaxMonths === 'number')
+    params.set('ageMaxMonths', String(filters.ageMaxMonths));
   return params;
 }
 
@@ -114,9 +116,9 @@ export async function getShelterOAuthUrl(
   redirectUri?: string,
 ): Promise<ShelterOAuthConnection> {
   const params = redirectUri ? `?redirectUri=${encodeURIComponent(redirectUri)}` : '';
-  const response = await apiClient.get<ApiEnvelope<ShelterOAuthConnection> | ShelterOAuthConnection>(
-    `/shelter/oauth/${encodeURIComponent(provider)}${params}`,
-  );
+  const response = await apiClient.get<
+    ApiEnvelope<ShelterOAuthConnection> | ShelterOAuthConnection
+  >(`/shelter/oauth/${encodeURIComponent(provider)}${params}`);
   return unwrap(response.data);
 }
 
@@ -129,12 +131,11 @@ export async function browseAdoptablePets(
   return unwrap(response.data);
 }
 
-export async function adoptShelterPet(
-  input: AdoptShelterPetInput,
-): Promise<AdoptShelterPetResult> {
-  const response = await apiClient.post<
-    ApiEnvelope<AdoptShelterPetResult> | AdoptShelterPetResult
-  >('/shelter/adopt', input);
+export async function adoptShelterPet(input: AdoptShelterPetInput): Promise<AdoptShelterPetResult> {
+  const response = await apiClient.post<ApiEnvelope<AdoptShelterPetResult> | AdoptShelterPetResult>(
+    '/shelter/adopt',
+    input,
+  );
   return unwrap(response.data);
 }
 
@@ -155,7 +156,10 @@ function toShelterError(error: unknown): ShelterIntegrationError {
         ?.message ??
       (error.response?.data as { error?: { message?: string } } | undefined)?.error?.message ??
       error.message;
-    return new ShelterIntegrationError(message || 'Shelter integration request failed', 'HTTP_ERROR');
+    return new ShelterIntegrationError(
+      message || 'Shelter integration request failed',
+      'HTTP_ERROR',
+    );
   }
   return new ShelterIntegrationError(
     error instanceof Error ? error.message : 'Unexpected shelter integration error',

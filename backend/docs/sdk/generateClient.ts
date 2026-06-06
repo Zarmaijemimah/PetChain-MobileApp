@@ -42,7 +42,8 @@ function extractEndpoints(spec: Record<string, unknown>): EndpointDef[] {
       endpoints.push({
         method: method.toUpperCase(),
         path: pathStr,
-        operationId: (op.operationId as string) || `${method}_${pathStr.replace(/[^a-zA-Z0-9]/g, '_')}`,
+        operationId:
+          (op.operationId as string) || `${method}_${pathStr.replace(/[^a-zA-Z0-9]/g, '_')}`,
         summary: (op.summary as string) || '',
         tags: (op.tags as string[]) || [],
         hasBody: !!op.requestBody,
@@ -59,7 +60,15 @@ function extractEndpoints(spec: Record<string, unknown>): EndpointDef[] {
 // ─── Generate method signature ────────────────────────────────────────────────
 
 function generateMethod(endpoint: EndpointDef): string {
-  const { method, path: pathStr, operationId, summary, hasBody, hasPathParams, hasQueryParams } = endpoint;
+  const {
+    method,
+    path: pathStr,
+    operationId,
+    summary,
+    hasBody,
+    hasPathParams,
+    hasQueryParams,
+  } = endpoint;
 
   // Build parameter list
   const params: string[] = [];
@@ -78,7 +87,10 @@ function generateMethod(endpoint: EndpointDef): string {
   }
 
   // Build URL with path param substitution
-  const urlExpr = pathStr.replace(/\{([^}]+)\}/g, (_match, param) => `\${encodeURIComponent(${param})}`);
+  const urlExpr = pathStr.replace(
+    /\{([^}]+)\}/g,
+    (_match, param) => `\${encodeURIComponent(${param})}`,
+  );
 
   // Build axios call
   const axiosArgs: string[] = [`\`${urlExpr}\``];
@@ -244,7 +256,9 @@ async function main(): Promise<void> {
   const { openApiSpec } = await import('../openapi/spec');
 
   const endpoints = extractEndpoints(openApiSpec as unknown as Record<string, unknown>);
-  console.log(`   Found ${endpoints.length} endpoints across ${new Set(endpoints.map((e) => e.tags[0])).size} tags`);
+  console.log(
+    `   Found ${endpoints.length} endpoints across ${new Set(endpoints.map((e) => e.tags[0])).size} tags`,
+  );
 
   const sdkContent = generateSdkFile(endpoints);
 

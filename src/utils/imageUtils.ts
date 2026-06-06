@@ -1,6 +1,3 @@
-import { Platform } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
-import ImageResizer from 'react-native-image-resizer';
 import { PermissionsAndroid, Platform } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import ImageResizer from 'react-native-image-resizer';

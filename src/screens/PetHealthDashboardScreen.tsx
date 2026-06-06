@@ -228,8 +228,14 @@ const PetHealthDashboardScreen: React.FC<Props> = ({ petId, petName, onBack, onO
     );
   }
 
-  const { recentRecords, activeMedications, upcomingAppointments, latestMetric, healthScore, weightHistory } =
-    data;
+  const {
+    recentRecords,
+    activeMedications,
+    upcomingAppointments,
+    latestMetric,
+    healthScore,
+    weightHistory,
+  } = data;
 
   return (
     <View style={styles.container}>

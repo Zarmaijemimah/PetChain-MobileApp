@@ -16,7 +16,12 @@ router.post('/', (req, res) => {
   };
 
   if (!name?.trim() || !email?.trim() || !subject?.trim() || !message?.trim()) {
-    return sendError(res, 400, 'VALIDATION_ERROR', 'name, email, subject, and message are required');
+    return sendError(
+      res,
+      400,
+      'VALIDATION_ERROR',
+      'name, email, subject, and message are required',
+    );
   }
 
   const ticket = createSupportRequest({
@@ -32,4 +37,3 @@ router.post('/', (req, res) => {
 });
 
 export default router;
-

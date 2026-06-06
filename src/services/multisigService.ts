@@ -88,7 +88,9 @@ export async function getJointOwnership(id: string): Promise<JointOwnershipRespo
 }
 
 /** Get joint ownership for a specific pet */
-export async function getJointOwnershipByPet(petId: string): Promise<JointOwnershipResponse | null> {
+export async function getJointOwnershipByPet(
+  petId: string,
+): Promise<JointOwnershipResponse | null> {
   try {
     const endpoint = MULTISIG_ENDPOINTS.JOINT_OWNERSHIP_BY_PET.replace(
       ':petId',
@@ -97,7 +99,10 @@ export async function getJointOwnershipByPet(petId: string): Promise<JointOwners
     const response = await apiClient.get<JointOwnershipResponse>(endpoint);
     return response.data;
   } catch (error: any) {
-    if (error?.response?.status === 404 || (error instanceof MultisigServiceError && error.status === 404)) {
+    if (
+      error?.response?.status === 404 ||
+      (error instanceof MultisigServiceError && error.status === 404)
+    ) {
       return null;
     }
     throw toMultisigError(error);
@@ -201,7 +206,9 @@ export async function getAllTransactions(
  * The signedTransactionXdr is the base64 XDR of the transaction signed
  * with the user's Stellar keypair (done client-side or via secure enclave).
  */
-export async function signTransaction(data: SignTransactionRequest): Promise<PendingTransactionResponse> {
+export async function signTransaction(
+  data: SignTransactionRequest,
+): Promise<PendingTransactionResponse> {
   try {
     const endpoint = MULTISIG_ENDPOINTS.MULTISIG_TRANSACTION_SIGN.replace(
       ':id',
@@ -224,7 +231,9 @@ export async function rejectTransaction(
       ':id',
       encodeURIComponent(transactionId),
     );
-    const response = await apiClient.post<PendingTransactionResponse>(endpoint, { signerPublicKey });
+    const response = await apiClient.post<PendingTransactionResponse>(endpoint, {
+      signerPublicKey,
+    });
     return response.data;
   } catch (error) {
     throw toMultisigError(error);
@@ -276,7 +285,9 @@ export async function initiateRecordDeletion(
 // ─── Key Rotation ─────────────────────────────────────────────────────────────
 
 /** Request a signing key rotation — creates a pending signer_management transaction */
-export async function requestKeyRotation(data: KeyRotationRequest): Promise<PendingTransactionResponse> {
+export async function requestKeyRotation(
+  data: KeyRotationRequest,
+): Promise<PendingTransactionResponse> {
   try {
     const response = await apiClient.post<PendingTransactionResponse>(
       MULTISIG_ENDPOINTS.MULTISIG_KEY_ROTATION,

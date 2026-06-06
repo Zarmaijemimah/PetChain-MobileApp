@@ -121,7 +121,7 @@ router.post('/login', async (req, res) => {
 // Generates a new TOTP secret and QR code for the authenticated user.
 // The secret is stored as "pending" until confirmed via /verify-setup.
 router.post('/2fa/setup', authenticateJWT, async (req: AuthenticatedRequest, res) => {
-  const user = store.users.get(req.user?.id ?? "");
+  const user = store.users.get(req.user?.id ?? '');
   if (!user) return sendError(res, 404, 'NOT_FOUND', 'User not found');
   if (user.twoFactorEnabled) {
     return sendError(res, 409, 'CONFLICT', '2FA is already enabled');
@@ -130,16 +130,25 @@ router.post('/2fa/setup', authenticateJWT, async (req: AuthenticatedRequest, res
   const secret = generateSecret();
   const qrCode = await generateQRCodeDataURL(secret, user.email);
 
-  store.users.set(user.id, { ...user, twoFactorPendingSecret: secret, updatedAt: new Date().toISOString() });
+  store.users.set(user.id, {
+    ...user,
+    twoFactorPendingSecret: secret,
+    updatedAt: new Date().toISOString(),
+  });
 
   // Never expose the raw secret in logs — only return it once for authenticator app entry
-  return res.json(ok({ qrCode, secret }, 'Scan the QR code with your authenticator app, then confirm with /2fa/verify-setup'));
+  return res.json(
+    ok(
+      { qrCode, secret },
+      'Scan the QR code with your authenticator app, then confirm with /2fa/verify-setup',
+    ),
+  );
 });
 
 // ── POST /api/auth/2fa/verify-setup ───────────────────────────────────────
 // Confirms setup by verifying the first TOTP code. Activates 2FA and returns backup codes.
 router.post('/2fa/verify-setup', authenticateJWT, async (req: AuthenticatedRequest, res) => {
-  const user = store.users.get(req.user?.id ?? "");
+  const user = store.users.get(req.user?.id ?? '');
   if (!user) return sendError(res, 404, 'NOT_FOUND', 'User not found');
   if (!user.twoFactorPendingSecret) {
     return sendError(res, 400, 'BAD_REQUEST', 'No pending 2FA setup. Call /2fa/setup first');
@@ -163,13 +172,18 @@ router.post('/2fa/verify-setup', authenticateJWT, async (req: AuthenticatedReque
     updatedAt: new Date().toISOString(),
   });
 
-  return res.json(ok({ backupCodes: plain }, 'Two-factor authentication enabled. Store these backup codes safely — they will not be shown again'));
+  return res.json(
+    ok(
+      { backupCodes: plain },
+      'Two-factor authentication enabled. Store these backup codes safely — they will not be shown again',
+    ),
+  );
 });
 
 // ── POST /api/auth/2fa/verify ─────────────────────────────────────────────
 // Verifies a TOTP code during login (called after password check).
 router.post('/2fa/verify', authenticateJWT, (req: AuthenticatedRequest, res) => {
-  const user = store.users.get(req.user?.id ?? "");
+  const user = store.users.get(req.user?.id ?? '');
   if (!user) return sendError(res, 404, 'NOT_FOUND', 'User not found');
   if (!user.twoFactorEnabled || !user.twoFactorSecret) {
     return sendError(res, 400, 'BAD_REQUEST', '2FA is not enabled for this account');
@@ -194,7 +208,7 @@ router.post('/2fa/verify', authenticateJWT, (req: AuthenticatedRequest, res) => 
 // ── POST /api/auth/2fa/disable ────────────────────────────────────────────
 // Disables 2FA after verifying a valid TOTP code. Admins cannot disable 2FA.
 router.post('/2fa/disable', authenticateJWT, (req: AuthenticatedRequest, res) => {
-  const user = store.users.get(req.user?.id ?? "");
+  const user = store.users.get(req.user?.id ?? '');
   if (!user) return sendError(res, 404, 'NOT_FOUND', 'User not found');
   if (!user.twoFactorEnabled) {
     return sendError(res, 400, 'BAD_REQUEST', '2FA is not enabled');
@@ -225,7 +239,7 @@ router.post('/2fa/disable', authenticateJWT, (req: AuthenticatedRequest, res) =>
 // ── POST /api/auth/2fa/backup-verify ─────────────────────────────────────
 // Verifies a single-use backup code (consumed on success).
 router.post('/2fa/backup-verify', authenticateJWT, async (req: AuthenticatedRequest, res) => {
-  const user = store.users.get(req.user?.id ?? "");
+  const user = store.users.get(req.user?.id ?? '');
   if (!user) return sendError(res, 404, 'NOT_FOUND', 'User not found');
   if (!user.twoFactorEnabled || !user.twoFactorBackupCodes?.length) {
     return sendError(res, 400, 'BAD_REQUEST', '2FA is not enabled or no backup codes remain');
@@ -241,7 +255,11 @@ router.post('/2fa/backup-verify', authenticateJWT, async (req: AuthenticatedRequ
 
   // Remove the used code (single-use)
   const remaining = user.twoFactorBackupCodes.filter((_, i) => i !== idx);
-  store.users.set(user.id, { ...user, twoFactorBackupCodes: remaining, updatedAt: new Date().toISOString() });
+  store.users.set(user.id, {
+    ...user,
+    twoFactorBackupCodes: remaining,
+    updatedAt: new Date().toISOString(),
+  });
 
   return res.json(ok({ codesRemaining: remaining.length }, 'Backup code accepted'));
 });
@@ -249,7 +267,7 @@ router.post('/2fa/backup-verify', authenticateJWT, async (req: AuthenticatedRequ
 // ── POST /api/auth/2fa/backup-regenerate ─────────────────────────────────
 // Regenerates all backup codes after verifying a valid TOTP code.
 router.post('/2fa/backup-regenerate', authenticateJWT, async (req: AuthenticatedRequest, res) => {
-  const user = store.users.get(req.user?.id ?? "");
+  const user = store.users.get(req.user?.id ?? '');
   if (!user) return sendError(res, 404, 'NOT_FOUND', 'User not found');
   if (!user.twoFactorEnabled || !user.twoFactorSecret) {
     return sendError(res, 400, 'BAD_REQUEST', '2FA is not enabled');
@@ -263,7 +281,11 @@ router.post('/2fa/backup-regenerate', authenticateJWT, async (req: Authenticated
   }
 
   const { plain, hashed } = await generateBackupCodes();
-  store.users.set(user.id, { ...user, twoFactorBackupCodes: hashed, updatedAt: new Date().toISOString() });
+  store.users.set(user.id, {
+    ...user,
+    twoFactorBackupCodes: hashed,
+    updatedAt: new Date().toISOString(),
+  });
 
   return res.json(ok({ backupCodes: plain }, 'Backup codes regenerated. Store them safely'));
 });
@@ -277,14 +299,23 @@ router.post('/2fa/recovery/request', async (req, res) => {
   const user = [...store.users.values()].find((u) => u.email.toLowerCase() === email.toLowerCase());
   // Always respond 200 to prevent user enumeration
   if (!user || !user.twoFactorEnabled) {
-    return res.json(ok(null, 'If that account exists and has 2FA enabled, a recovery email has been sent'));
+    return res.json(
+      ok(null, 'If that account exists and has 2FA enabled, a recovery email has been sent'),
+    );
   }
 
   const { token, hashedToken, expiresAt } = await generateRecoveryToken();
-  store.users.set(user.id, { ...user, recoveryToken: hashedToken, recoveryTokenExpiresAt: expiresAt, updatedAt: new Date().toISOString() });
+  store.users.set(user.id, {
+    ...user,
+    recoveryToken: hashedToken,
+    recoveryTokenExpiresAt: expiresAt,
+    updatedAt: new Date().toISOString(),
+  });
 
   // In production this token would be emailed. Returned here for testability.
-  return res.json(ok({ recoveryToken: token, expiresAt }, 'Recovery token issued (send via email in production)'));
+  return res.json(
+    ok({ recoveryToken: token, expiresAt }, 'Recovery token issued (send via email in production)'),
+  );
 });
 
 // ── POST /api/auth/2fa/recovery/verify ───────────────────────────────────
@@ -317,7 +348,9 @@ router.post('/2fa/recovery/verify', async (req, res) => {
     updatedAt: new Date().toISOString(),
   });
 
-  return res.json(ok(null, '2FA has been disabled via account recovery. Please re-enable it after logging in'));
+  return res.json(
+    ok(null, '2FA has been disabled via account recovery. Please re-enable it after logging in'),
+  );
 });
 
 export default router;

@@ -1,5 +1,4 @@
 import { executeSql, getItem, setItem } from './localDB';
-import { executeSql, getItem, setItem } from './localDB';
 import { sendAlertNotification } from './notificationService';
 import syncService, { type SyncAction, type SyncEntityType, type SyncStatus } from './syncService';
 import { networkMonitor } from '../utils/networkMonitor';
@@ -190,7 +189,10 @@ class OfflineQueue {
     if (this.isOnline) {
       await this.processBlockchainQueue();
     } else {
-      await this.notifyUser('📴 Record saved offline', 'Will anchor to blockchain when reconnected.');
+      await this.notifyUser(
+        '📴 Record saved offline',
+        'Will anchor to blockchain when reconnected.',
+      );
     }
   }
 
@@ -219,10 +221,9 @@ class OfflineQueue {
         });
         db.runSync(`DELETE FROM blockchain_anchor_queue WHERE id = ?`, [item.id]);
       } catch {
-        db.runSync(
-          `UPDATE blockchain_anchor_queue SET attempts = attempts + 1 WHERE id = ?`,
-          [item.id],
-        );
+        db.runSync(`UPDATE blockchain_anchor_queue SET attempts = attempts + 1 WHERE id = ?`, [
+          item.id,
+        ]);
       }
     }
 

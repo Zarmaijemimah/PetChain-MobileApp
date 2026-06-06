@@ -129,7 +129,11 @@ describe('Audit trail logging (mutation coverage)', () => {
       updated_at: new Date().toISOString(),
     });
 
-    userRepository.findById.mockResolvedValue({ id: ownerId, name: 'Owner', email: 'owner@test.com' });
+    userRepository.findById.mockResolvedValue({
+      id: ownerId,
+      name: 'Owner',
+      email: 'owner@test.com',
+    });
 
     await request(app)
       .post('/api/pets')
@@ -216,4 +220,3 @@ describe('Audit trail logging (mutation coverage)', () => {
     expectAuditInsert('DELETE', ownerId);
   });
 });
-

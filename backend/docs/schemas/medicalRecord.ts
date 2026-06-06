@@ -39,8 +39,16 @@ export const medicalRecordSchemas = {
       veterinarian: { $ref: '#/components/schemas/Veterinarian' },
 
       // Blockchain fields
-      hash: { type: 'string', example: 'a3f5c8d2e1b4...', description: 'SHA-256 hash of the record payload' },
-      txHash: { type: 'string', example: 'stellar-tx-hash-abc123', description: 'Stellar transaction hash' },
+      hash: {
+        type: 'string',
+        example: 'a3f5c8d2e1b4...',
+        description: 'SHA-256 hash of the record payload',
+      },
+      txHash: {
+        type: 'string',
+        example: 'stellar-tx-hash-abc123',
+        description: 'Stellar transaction hash',
+      },
       isBlockchainVerified: { type: 'boolean', example: true },
       blockchainVerifiedAt: { $ref: '#/components/schemas/ISODateTime' },
 
@@ -54,7 +62,11 @@ export const medicalRecordSchemas = {
     required: ['diagnosisText'],
     properties: {
       diagnosisText: { type: 'string', example: 'Mild seasonal allergies' },
-      code: { type: 'string', example: 'L30.9', description: 'ICD-10 or veterinary diagnosis code' },
+      code: {
+        type: 'string',
+        example: 'L30.9',
+        description: 'ICD-10 or veterinary diagnosis code',
+      },
       severity: {
         type: 'string',
         enum: ['mild', 'moderate', 'severe', 'unknown'],
@@ -80,7 +92,11 @@ export const medicalRecordSchemas = {
       id: { $ref: '#/components/schemas/UUID' },
       medicationName: { type: 'string', example: 'Apoquel' },
       dosage: { type: 'string', example: '16mg' },
-      route: { type: 'string', example: 'oral', description: 'Administration route (oral, topical, injection)' },
+      route: {
+        type: 'string',
+        example: 'oral',
+        description: 'Administration route (oral, topical, injection)',
+      },
       frequency: { type: 'string', example: 'once_daily' },
       startDate: { $ref: '#/components/schemas/ISODate' },
       endDate: { $ref: '#/components/schemas/ISODate' },
@@ -109,7 +125,11 @@ export const medicalRecordSchemas = {
       name: { type: 'string', example: 'blood-panel-results.pdf' },
       mimeType: { type: 'string', example: 'application/pdf' },
       type: { type: 'string', enum: ['pdf', 'image', 'other'], example: 'pdf' },
-      url: { type: 'string', format: 'uri', example: 'https://storage.petchain.app/docs/blood-panel.pdf' },
+      url: {
+        type: 'string',
+        format: 'uri',
+        example: 'https://storage.petchain.app/docs/blood-panel.pdf',
+      },
       sizeBytes: { type: 'integer', example: 204800 },
       createdAt: { $ref: '#/components/schemas/ISODateTime' },
     },

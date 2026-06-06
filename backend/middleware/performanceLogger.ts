@@ -1,12 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 
-type SentryLib = typeof import('@sentry/node');
+type SentryLib = any;
 let sentryLib: SentryLib | null | undefined;
 
 function getSentry(): SentryLib | null {
   if (sentryLib !== undefined) return sentryLib;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     sentryLib = require('@sentry/node') as SentryLib;
   } catch {
     sentryLib = null;
@@ -21,27 +20,18 @@ export function performanceLogger(req: Request, res: Response, next: NextFunctio
     next();
     return;
   }
-  // start a Sentry transaction for server-side request
-  const transaction = Sentry.startTransaction({ name: `${req.method} ${req.path}` });
-  // attach to current scope
-  Sentry.getCurrentHub().configureScope((scope) => scope.setSpan(transaction));
 
   res.on('finish', () => {
     const duration = Date.now() - start;
-    // set measurement
-    try {
-      // @ts-ignore
-      transaction.setMeasurement?.('server.request_ms', duration);
-    } catch (e) {
-      // ignore
-    }
-
-    transaction.setHttpStatus?.(res.statusCode);
-    transaction.finish();
+    Sentry.addBreadcrumb({
+      category: 'http',
+      message: `${req.method} ${req.path}`,
+      data: { duration, status: res.statusCode },
+    });
 
     if (duration > 1000) {
       Sentry.captureMessage(`Slow request ${req.method} ${req.path} ${duration}ms`, {
-        level: Sentry.Severity.Warning,
+        level: 'warning',
         extra: { duration, path: req.path, method: req.method, status: res.statusCode },
       });
     }

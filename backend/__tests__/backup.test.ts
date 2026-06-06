@@ -5,8 +5,8 @@
 import { execFile } from 'child_process';
 import { createReadStream } from 'fs';
 import { unlink, writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 import os from 'os';
+import path from 'path';
 
 // ─── Mock child_process ───────────────────────────────────────────────────────
 
@@ -28,7 +28,7 @@ jest.mock('fs', () => {
   };
 });
 
-const mockCreateReadStream = createReadStream as jest.MockedFunction<typeof createReadStream>;
+const _mockCreateReadStream = createReadStream as jest.MockedFunction<typeof createReadStream>;
 
 // ─── Mock @aws-sdk/client-s3 ─────────────────────────────────────────────────
 
@@ -40,8 +40,12 @@ jest.mock(
     PutObjectCommand: jest.fn().mockImplementation((input) => ({ _type: 'PutObject', ...input })),
     GetObjectCommand: jest.fn().mockImplementation((input) => ({ _type: 'GetObject', ...input })),
     HeadObjectCommand: jest.fn().mockImplementation((input) => ({ _type: 'HeadObject', ...input })),
-    ListObjectsV2Command: jest.fn().mockImplementation((input) => ({ _type: 'ListObjectsV2', ...input })),
-    DeleteObjectCommand: jest.fn().mockImplementation((input) => ({ _type: 'DeleteObject', ...input })),
+    ListObjectsV2Command: jest
+      .fn()
+      .mockImplementation((input) => ({ _type: 'ListObjectsV2', ...input })),
+    DeleteObjectCommand: jest
+      .fn()
+      .mockImplementation((input) => ({ _type: 'DeleteObject', ...input })),
   }),
   { virtual: true },
 );
@@ -61,10 +65,10 @@ function makeAsyncBody(data: Buffer) {
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('backup utilities', () => {
-  let tmpDir: string;
+  let _tmpDir: string;
 
   beforeAll(async () => {
-    tmpDir = await import('fs/promises').then(() => os.tmpdir());
+    _tmpDir = await import('fs/promises').then(() => os.tmpdir());
   });
 
   beforeEach(() => {
@@ -110,7 +114,7 @@ describe('backup utilities', () => {
   describe('dumpDatabase', () => {
     it('calls pg_dump with correct arguments', async () => {
       mockExecFile.mockImplementation((_cmd, _args, _opts, cb) => {
-        if (cb) (cb as Function)(null, '', '');
+        if (cb) cb(null, '', '');
         return {} as ReturnType<typeof execFile>;
       });
 
@@ -127,7 +131,7 @@ describe('backup utilities', () => {
 
     it('rejects when pg_dump fails', async () => {
       mockExecFile.mockImplementation((_cmd, _args, _opts, cb) => {
-        if (cb) (cb as Function)(new Error('pg_dump not found'), '', '');
+        if (cb) cb(new Error('pg_dump not found'), '', '');
         return {} as ReturnType<typeof execFile>;
       });
 
@@ -249,7 +253,12 @@ describe('restore utilities', () => {
       const { sha256Buffer } = await import('./backup');
       const data = Buffer.from('backup data');
       const checksum = sha256Buffer(data);
-      const manifest = JSON.stringify({ key: 'test.dump.gz', sha256: checksum, sizeBytes: data.length, timestamp: '' });
+      const manifest = JSON.stringify({
+        key: 'test.dump.gz',
+        sha256: checksum,
+        sizeBytes: data.length,
+        timestamp: '',
+      });
 
       mockSend.mockResolvedValue({ Body: makeAsyncBody(Buffer.from(manifest)) });
 
@@ -259,11 +268,19 @@ describe('restore utilities', () => {
     });
 
     it('returns false when checksum does not match', async () => {
-      const manifest = JSON.stringify({ key: 'test.dump.gz', sha256: 'wrong'.repeat(12) + 'abcd', sizeBytes: 0, timestamp: '' });
+      const manifest = JSON.stringify({
+        key: 'test.dump.gz',
+        sha256: 'wrong'.repeat(12) + 'abcd',
+        sizeBytes: 0,
+        timestamp: '',
+      });
       mockSend.mockResolvedValue({ Body: makeAsyncBody(Buffer.from(manifest)) });
 
       const { verifyFromManifest } = await import('./restore');
-      const result = await verifyFromManifest('backups/db/test.dump.gz', Buffer.from('actual data'));
+      const result = await verifyFromManifest(
+        'backups/db/test.dump.gz',
+        Buffer.from('actual data'),
+      );
       expect(result).toBe(false);
     });
 

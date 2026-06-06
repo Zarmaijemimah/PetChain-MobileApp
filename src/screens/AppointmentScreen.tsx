@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { v4 as uuid } from 'uuid';
 
+import type { Medication } from '../models/Medication';
 import {
   AppointmentStatus,
   type Appointment,
@@ -33,7 +34,6 @@ import {
   removeAppointmentFromCalendar,
 } from '../services/calendarSyncService';
 import { getMedications } from '../services/medicationService';
-import type { Medication } from '../models/Medication';
 import { formatLocalDate, formatLocalTime } from '../utils/dateLocale';
 import { useSecureScreen } from '../utils/secureScreen';
 
@@ -459,10 +459,7 @@ const AppointmentScreen: React.FC = () => {
                 <Text style={styles.primaryBtnText}>Use Suggested Time</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity
-              style={styles.warningBtn}
-              onPress={() => void handleProceedAnyway()}
-            >
+            <TouchableOpacity style={styles.warningBtn} onPress={() => void handleProceedAnyway()}>
               <Text style={styles.warningBtnText}>Proceed Anyway</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.secondaryBtn} onPress={handleCancelConflict}>

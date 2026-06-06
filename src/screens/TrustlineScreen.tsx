@@ -22,6 +22,12 @@ import {
   View,
 } from 'react-native';
 
+import type {
+  TrustlineState,
+  TrustlineAsset,
+  TrustlineTransaction,
+  PetChainAssetDefinition,
+} from '../models/Trustline';
 import {
   loadTrustlineState,
   addTrustline,
@@ -34,12 +40,6 @@ import {
   XLM_RESERVE_PER_TRUSTLINE,
   TrustlineError,
 } from '../services/trustlineService';
-import type {
-  TrustlineState,
-  TrustlineAsset,
-  TrustlineTransaction,
-  PetChainAssetDefinition,
-} from '../models/Trustline';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -123,13 +123,19 @@ const TrustlineScreen: React.FC<Props> = ({ onBack }) => {
   // ── Add trustline ───────────────────────────────────────────────────────────
 
   const handleAdd = async () => {
-    if (!secretKey) { setKeyModalVisible(true); return; }
+    if (!secretKey) {
+      setKeyModalVisible(true);
+      return;
+    }
 
     let assetCode = '';
     let issuerPublicKey = '';
 
     if (addMode === 'petchain') {
-      if (!selectedAsset) { Alert.alert('Select an asset first.'); return; }
+      if (!selectedAsset) {
+        Alert.alert('Select an asset first.');
+        return;
+      }
       assetCode = selectedAsset.assetCode;
       issuerPublicKey = selectedAsset.issuerPublicKey;
     } else {
@@ -166,7 +172,10 @@ const TrustlineScreen: React.FC<Props> = ({ onBack }) => {
               setView('dashboard');
               await loadAccount(publicKey);
             } catch (err) {
-              Alert.alert('Failed', err instanceof TrustlineError ? err.message : 'Add trustline failed.');
+              Alert.alert(
+                'Failed',
+                err instanceof TrustlineError ? err.message : 'Add trustline failed.',
+              );
             } finally {
               setActionLoading(false);
             }
@@ -179,7 +188,10 @@ const TrustlineScreen: React.FC<Props> = ({ onBack }) => {
   // ── Remove trustline ────────────────────────────────────────────────────────
 
   const handleRemove = (tl: TrustlineAsset) => {
-    if (!secretKey) { setKeyModalVisible(true); return; }
+    if (!secretKey) {
+      setKeyModalVisible(true);
+      return;
+    }
     if (parseFloat(tl.balance) > 0) {
       Alert.alert(
         'Cannot Remove',
@@ -223,7 +235,8 @@ const TrustlineScreen: React.FC<Props> = ({ onBack }) => {
       <View style={styles.tlRow}>
         <View style={styles.tlLeft}>
           <Text style={styles.tlCode}>
-            {item.isPetChainAsset ? '🐾 ' : ''}{item.assetCode}
+            {item.isPetChainAsset ? '🐾 ' : ''}
+            {item.assetCode}
           </Text>
           {item.issuerLabel && <Text style={styles.tlLabel}>{item.issuerLabel}</Text>}
           <Text style={styles.tlIssuer} numberOfLines={1}>
@@ -282,7 +295,9 @@ const TrustlineScreen: React.FC<Props> = ({ onBack }) => {
             keyExtractor={(h) => h.id}
             renderItem={renderHistoryItem}
             contentContainerStyle={history.length === 0 ? styles.emptyContainer : styles.list}
-            ListEmptyComponent={<Text style={styles.emptyText}>No trustline transactions found.</Text>}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No trustline transactions found.</Text>
+            }
           />
         )}
       </View>
@@ -318,7 +333,9 @@ const TrustlineScreen: React.FC<Props> = ({ onBack }) => {
               style={[styles.modeBtn, addMode === 'petchain' && styles.modeBtnActive]}
               onPress={() => setAddMode('petchain')}
             >
-              <Text style={[styles.modeBtnText, addMode === 'petchain' && styles.modeBtnTextActive]}>
+              <Text
+                style={[styles.modeBtnText, addMode === 'petchain' && styles.modeBtnTextActive]}
+              >
                 PetChain Assets
               </Text>
             </TouchableOpacity>
@@ -338,7 +355,10 @@ const TrustlineScreen: React.FC<Props> = ({ onBack }) => {
               {PETCHAIN_ASSETS.map((asset) => (
                 <TouchableOpacity
                   key={asset.assetCode}
-                  style={[styles.assetCard, selectedAsset?.assetCode === asset.assetCode && styles.assetCardSelected]}
+                  style={[
+                    styles.assetCard,
+                    selectedAsset?.assetCode === asset.assetCode && styles.assetCardSelected,
+                  ]}
                   onPress={() => setSelectedAsset(asset)}
                   accessibilityRole="button"
                 >
@@ -532,7 +552,10 @@ const TrustlineScreen: React.FC<Props> = ({ onBack }) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.cancelBtn}
-              onPress={() => { setKeyModalVisible(false); setKeyInput(''); }}
+              onPress={() => {
+                setKeyModalVisible(false);
+                setKeyInput('');
+              }}
             >
               <Text style={styles.cancelBtnText}>Cancel</Text>
             </TouchableOpacity>
@@ -571,7 +594,13 @@ const styles = StyleSheet.create({
   },
   backText: { color: '#10B981', fontSize: 16, fontWeight: '600', minWidth: 50 },
   headerTitle: { color: '#fff', fontSize: 17, fontWeight: '700', flex: 1, textAlign: 'center' },
-  addHeaderBtn: { color: '#10B981', fontSize: 15, fontWeight: '700', minWidth: 50, textAlign: 'right' },
+  addHeaderBtn: {
+    color: '#10B981',
+    fontSize: 15,
+    fontWeight: '700',
+    minWidth: 50,
+    textAlign: 'right',
+  },
   loader: { marginTop: 40 },
   list: { padding: 12 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
@@ -580,8 +609,20 @@ const styles = StyleSheet.create({
   // Connect screen
   connectContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   connectIcon: { fontSize: 52, marginBottom: 16 },
-  connectTitle: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 8, textAlign: 'center' },
-  connectSubtitle: { fontSize: 14, color: '#6B7280', textAlign: 'center', lineHeight: 20, marginBottom: 28 },
+  connectTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  connectSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 28,
+  },
   connectBtn: {
     backgroundColor: '#10B981',
     borderRadius: 10,

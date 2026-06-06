@@ -61,50 +61,62 @@ export const BlockchainEventExample: React.FC = () => {
       timestamp: new Date().toISOString(),
       data,
     };
-    
-    setEventLogs(prev => [newLog, ...prev.slice(0, 49)]); // Keep last 50 events
+
+    setEventLogs((prev) => [newLog, ...prev.slice(0, 49)]); // Keep last 50 events
   }, []);
 
-  const handleTransactionEvent = useCallback((transaction: any) => {
-    addEventLog(
-      'transaction',
-      `Transaction ${transaction.transactionHash.slice(0, 8)}... ${
-        transaction.successful ? 'succeeded' : 'failed'
-      }`,
-      transaction
-    );
-    
-    // Update verification statuses
-    setVerificationStatuses(blockchainIntegration.getAllVerificationStatuses());
-  }, [addEventLog]);
+  const handleTransactionEvent = useCallback(
+    (transaction: any) => {
+      addEventLog(
+        'transaction',
+        `Transaction ${transaction.transactionHash.slice(0, 8)}... ${
+          transaction.successful ? 'succeeded' : 'failed'
+        }`,
+        transaction,
+      );
 
-  const handleVerificationUpdate = useCallback((update: any) => {
-    addEventLog(
-      'verification',
-      `Record ${update.recordId} ${update.verified ? 'verified' : 'verification failed'}`,
-      update
-    );
-    
-    // Update verification statuses
-    setVerificationStatuses(blockchainIntegration.getAllVerificationStatuses());
-  }, [addEventLog]);
+      // Update verification statuses
+      setVerificationStatuses(blockchainIntegration.getAllVerificationStatuses());
+    },
+    [addEventLog],
+  );
 
-  const handleConnectionStatus = useCallback((status: any) => {
-    addEventLog(
-      'connection',
-      `Connection ${status.connected ? 'established' : 'lost'}${
-        status.error ? `: ${status.error}` : ''
-      }`,
-      status
-    );
-    
-    // Update integration status
-    setIntegrationStatus(blockchainIntegration.getStatus());
-  }, [addEventLog]);
+  const handleVerificationUpdate = useCallback(
+    (update: any) => {
+      addEventLog(
+        'verification',
+        `Record ${update.recordId} ${update.verified ? 'verified' : 'verification failed'}`,
+        update,
+      );
 
-  const handleError = useCallback((error: any) => {
-    addEventLog('error', `Error: ${error.message || 'Unknown error'}`, error);
-  }, [addEventLog]);
+      // Update verification statuses
+      setVerificationStatuses(blockchainIntegration.getAllVerificationStatuses());
+    },
+    [addEventLog],
+  );
+
+  const handleConnectionStatus = useCallback(
+    (status: any) => {
+      addEventLog(
+        'connection',
+        `Connection ${status.connected ? 'established' : 'lost'}${
+          status.error ? `: ${status.error}` : ''
+        }`,
+        status,
+      );
+
+      // Update integration status
+      setIntegrationStatus(blockchainIntegration.getStatus());
+    },
+    [addEventLog],
+  );
+
+  const handleError = useCallback(
+    (error: any) => {
+      addEventLog('error', `Error: ${error.message || 'Unknown error'}`, error);
+    },
+    [addEventLog],
+  );
 
   // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -112,23 +124,22 @@ export const BlockchainEventExample: React.FC = () => {
     const initializeIntegration = async () => {
       try {
         loggerService.info('Initializing blockchain integration example');
-        
+
         // Set up event listeners
         blockchainIntegration.on('transactionProcessed', handleTransactionEvent);
         blockchainIntegration.on('verificationUpdated', handleVerificationUpdate);
         blockchainIntegration.on('connectionStatus', handleConnectionStatus);
         blockchainIntegration.on('error', handleError);
-        
+
         // Initialize the integration service
         await blockchainIntegration.initialize(SAMPLE_ACCOUNTS);
-        
+
         // Update initial state
         setIntegrationStatus(blockchainIntegration.getStatus());
         setVerificationStatuses(blockchainIntegration.getAllVerificationStatuses());
         setIsInitialized(true);
-        
+
         addEventLog('connection', 'Blockchain integration initialized');
-        
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Initialization failed';
         addEventLog('error', `Initialization failed: ${errorMessage}`);
@@ -143,7 +154,13 @@ export const BlockchainEventExample: React.FC = () => {
       blockchainIntegration.removeAllListeners();
       blockchainIntegration.disconnect();
     };
-  }, [handleTransactionEvent, handleVerificationUpdate, handleConnectionStatus, handleError, addEventLog]);
+  }, [
+    handleTransactionEvent,
+    handleVerificationUpdate,
+    handleConnectionStatus,
+    handleError,
+    addEventLog,
+  ]);
 
   // ─── Actions ──────────────────────────────────────────────────────────────────
 
@@ -151,12 +168,11 @@ export const BlockchainEventExample: React.FC = () => {
     try {
       const recordId = `record_${Date.now()}`;
       const sampleHash = `hash_${Math.random().toString(36).substring(7)}`;
-      
+
       await blockchainIntegration.addRecordForVerification(recordId, sampleHash);
-      
+
       setVerificationStatuses(blockchainIntegration.getAllVerificationStatuses());
       addEventLog('verification', `Added record ${recordId} for verification`);
-      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to add record';
       addEventLog('error', errorMessage);
@@ -164,23 +180,25 @@ export const BlockchainEventExample: React.FC = () => {
     }
   }, [addEventLog]);
 
-  const checkRecordVerification = useCallback(async (recordId: string) => {
-    try {
-      const sampleHash = `hash_${Math.random().toString(36).substring(7)}`;
-      const verified = await blockchainIntegration.checkRecordVerification(recordId, sampleHash);
-      
-      setVerificationStatuses(blockchainIntegration.getAllVerificationStatuses());
-      addEventLog(
-        'verification',
-        `Manual verification check for ${recordId}: ${verified ? 'verified' : 'not verified'}`
-      );
-      
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Verification check failed';
-      addEventLog('error', errorMessage);
-      Alert.alert('Error', errorMessage);
-    }
-  }, [addEventLog]);
+  const checkRecordVerification = useCallback(
+    async (recordId: string) => {
+      try {
+        const sampleHash = `hash_${Math.random().toString(36).substring(7)}`;
+        const verified = await blockchainIntegration.checkRecordVerification(recordId, sampleHash);
+
+        setVerificationStatuses(blockchainIntegration.getAllVerificationStatuses());
+        addEventLog(
+          'verification',
+          `Manual verification check for ${recordId}: ${verified ? 'verified' : 'not verified'}`,
+        );
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Verification check failed';
+        addEventLog('error', errorMessage);
+        Alert.alert('Error', errorMessage);
+      }
+    },
+    [addEventLog],
+  );
 
   const clearData = useCallback(async () => {
     try {
@@ -215,7 +233,12 @@ export const BlockchainEventExample: React.FC = () => {
       <Text style={styles.cardTitle}>Connection Status</Text>
       <View style={styles.statusRow}>
         <Text style={styles.statusLabel}>Connected:</Text>
-        <Text style={[styles.statusValue, { color: integrationStatus.connected ? '#4CAF50' : '#F44336' }]}>
+        <Text
+          style={[
+            styles.statusValue,
+            { color: integrationStatus.connected ? '#4CAF50' : '#F44336' },
+          ]}
+        >
           {integrationStatus.connected ? 'Yes' : 'No'}
         </Text>
       </View>
@@ -246,10 +269,12 @@ export const BlockchainEventExample: React.FC = () => {
           <View key={status.recordId} style={styles.recordItem}>
             <View style={styles.recordHeader}>
               <Text style={styles.recordId}>{status.recordId}</Text>
-              <Text style={[
-                styles.verificationBadge,
-                { backgroundColor: status.verified ? '#4CAF50' : '#FF9800' }
-              ]}>
+              <Text
+                style={[
+                  styles.verificationBadge,
+                  { backgroundColor: status.verified ? '#4CAF50' : '#FF9800' },
+                ]}
+              >
                 {status.verified ? 'Verified' : 'Pending'}
               </Text>
             </View>
@@ -257,9 +282,7 @@ export const BlockchainEventExample: React.FC = () => {
               Last checked: {new Date(status.lastChecked).toLocaleTimeString()}
             </Text>
             {status.transactionHash && (
-              <Text style={styles.recordDetail}>
-                TX: {status.transactionHash.slice(0, 16)}...
-              </Text>
+              <Text style={styles.recordDetail}>TX: {status.transactionHash.slice(0, 16)}...</Text>
             )}
             <TouchableOpacity
               style={styles.checkButton}
@@ -285,9 +308,7 @@ export const BlockchainEventExample: React.FC = () => {
               <Text style={[styles.logType, { color: getLogTypeColor(log.type) }]}>
                 {log.type.toUpperCase()}
               </Text>
-              <Text style={styles.logTime}>
-                {new Date(log.timestamp).toLocaleTimeString()}
-              </Text>
+              <Text style={styles.logTime}>{new Date(log.timestamp).toLocaleTimeString()}</Text>
             </View>
             <Text style={styles.logMessage}>{log.message}</Text>
           </View>
@@ -298,11 +319,16 @@ export const BlockchainEventExample: React.FC = () => {
 
   const getLogTypeColor = (type: EventLog['type']) => {
     switch (type) {
-      case 'transaction': return '#2196F3';
-      case 'verification': return '#4CAF50';
-      case 'connection': return '#FF9800';
-      case 'error': return '#F44336';
-      default: return '#757575';
+      case 'transaction':
+        return '#2196F3';
+      case 'verification':
+        return '#4CAF50';
+      case 'connection':
+        return '#FF9800';
+      case 'error':
+        return '#F44336';
+      default:
+        return '#757575';
     }
   };
 
@@ -319,24 +345,22 @@ export const BlockchainEventExample: React.FC = () => {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={refreshData} />
-      }
+      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refreshData} />}
     >
       <Text style={styles.title}>Blockchain Event Integration</Text>
-      
+
       {renderConnectionStatus()}
-      
+
       <View style={styles.actionButtons}>
         <TouchableOpacity style={styles.actionButton} onPress={addSampleRecord}>
           <Text style={styles.actionButtonText}>Add Sample Record</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={[styles.actionButton, styles.dangerButton]} onPress={clearData}>
           <Text style={styles.actionButtonText}>Clear Data</Text>
         </TouchableOpacity>
       </View>
-      
+
       {renderVerificationStatuses()}
       {renderEventLogs()}
     </ScrollView>

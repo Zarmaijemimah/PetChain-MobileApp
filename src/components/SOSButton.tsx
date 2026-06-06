@@ -123,7 +123,9 @@ const SOSButton: React.FC<SOSButtonProps> = ({ onSOSSent, style }) => {
       >
         <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
           <Text style={styles.countdownText}>{countdown}</Text>
-          <Text style={styles.cancelText} testID="sos-cancel-button">TAP TO CANCEL</Text>
+          <Text style={styles.cancelText} testID="sos-cancel-button">
+            TAP TO CANCEL
+          </Text>
         </Animated.View>
       </TouchableOpacity>
     );

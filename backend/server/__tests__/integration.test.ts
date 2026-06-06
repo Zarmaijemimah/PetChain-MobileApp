@@ -64,15 +64,9 @@ describe('API Integration Tests', () => {
     });
 
     // Generate tokens
-    ownerToken = jwt.sign(
-      { sub: ownerId, email: 'owner@test.com', role: UserRole.OWNER },
-      secret,
-    );
+    ownerToken = jwt.sign({ sub: ownerId, email: 'owner@test.com', role: UserRole.OWNER }, secret);
     vetToken = jwt.sign({ sub: vetId, email: 'vet@test.com', role: UserRole.VET }, secret);
-    adminToken = jwt.sign(
-      { sub: adminId, email: 'admin@test.com', role: UserRole.ADMIN },
-      secret,
-    );
+    adminToken = jwt.sign({ sub: adminId, email: 'admin@test.com', role: UserRole.ADMIN }, secret);
 
     // Create test pet
     petId = 'pet-1';

@@ -51,7 +51,10 @@ const OwnershipTransferScreen: React.FC<Props> = ({
   const handleSubmit = async () => {
     const trimmedKey = newOwnerPublicKey.trim();
     if (!isValidStellarKey(trimmedKey)) {
-      Alert.alert('Invalid Public Key', 'Enter a valid Stellar public key (starts with G, 56 chars).');
+      Alert.alert(
+        'Invalid Public Key',
+        'Enter a valid Stellar public key (starts with G, 56 chars).',
+      );
       return;
     }
     if (!newOwnerUserId.trim()) {
@@ -122,7 +125,10 @@ const OwnershipTransferScreen: React.FC<Props> = ({
             <Text style={styles.warningBody}>
               Transferring ownership of <Text style={styles.bold}>{petName}</Text> is irreversible
               once all co-owners sign. This requires{' '}
-              <Text style={styles.bold}>{requiredWeight}/{totalWeight}</Text> weight in signatures.
+              <Text style={styles.bold}>
+                {requiredWeight}/{totalWeight}
+              </Text>{' '}
+              weight in signatures.
             </Text>
           </View>
         </View>

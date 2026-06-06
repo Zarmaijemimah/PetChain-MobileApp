@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import DataLoader from 'dataloader';
 import { GraphQLError } from 'graphql';
 

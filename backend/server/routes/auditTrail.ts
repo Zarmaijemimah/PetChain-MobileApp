@@ -1,8 +1,8 @@
 import express from 'express';
 
 import { authenticateJWT, type AuthenticatedRequest } from '../../middleware/auth';
-import { UserRole } from '../../models/UserRole';
 import type { AuditTrailAction } from '../../models/AuditTrail';
+import { UserRole } from '../../models/UserRole';
 import { query } from '../../src/db';
 import { ok, sendError } from '../response';
 import { store } from '../store';
@@ -72,7 +72,10 @@ router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res) => {
 
   const whereSql = `WHERE ${where.join(' AND ')}`;
 
-  const totalRes = await query(`SELECT COUNT(*)::int AS total FROM audit_trail ${whereSql}`, params);
+  const totalRes = await query(
+    `SELECT COUNT(*)::int AS total FROM audit_trail ${whereSql}`,
+    params,
+  );
   const total = totalRes.rows[0]?.total ?? 0;
   const totalPages = Math.ceil(total / limit) || 1;
 
@@ -176,4 +179,3 @@ router.get('/export', authenticateJWT, async (req: AuthenticatedRequest, res) =>
 });
 
 export default router;
-

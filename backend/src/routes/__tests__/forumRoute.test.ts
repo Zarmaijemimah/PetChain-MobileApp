@@ -9,8 +9,8 @@ jest.mock('../../src/services/moderationService', () => ({
   isLikelySpam: jest.fn(() => false),
 }));
 
-import forumRouter from '../forum';
 import { query } from '../../src/db';
+import forumRouter from '../forum';
 
 const app = express();
 app.use(express.json());

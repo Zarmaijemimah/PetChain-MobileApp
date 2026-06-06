@@ -37,7 +37,11 @@ export const medicationPaths = {
               schema: {
                 allOf: [
                   { $ref: '#/components/schemas/ApiResponse' },
-                  { properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Medication' } } } },
+                  {
+                    properties: {
+                      data: { type: 'array', items: { $ref: '#/components/schemas/Medication' } },
+                    },
+                  },
                 ],
               },
             },
@@ -107,7 +111,8 @@ export const medicationPaths = {
     put: {
       tags: ['Medications'],
       summary: 'Update a medication',
-      description: 'Updates a medication schedule. Use `status: "discontinued"` to stop a medication early.',
+      description:
+        'Updates a medication schedule. Use `status: "discontinued"` to stop a medication early.',
       operationId: 'updateMedication',
       security: [{ BearerAuth: [] }],
       parameters: [{ $ref: '#/components/parameters/MedicationIdParam' }],

@@ -8,6 +8,7 @@
 
 import { Router, type Request, type Response } from 'express';
 
+import { AppError } from '../../middleware/errorHandler';
 import {
   ActivityLevel,
   FoodUnit,
@@ -22,7 +23,6 @@ import {
   getDietaryRecommendations,
   getFeedingStatus,
 } from '../../services/nutritionService';
-import { AppError } from '../../middleware/errorHandler';
 
 const router = Router();
 
@@ -455,7 +455,12 @@ router.put('/goals/:petId', (req: Request, res: Response) => {
  * Body: { weightKg, species, activityLevel, healthConditions? }
  */
 router.post('/calculate-calories', (req: Request, res: Response) => {
-  const { weightKg, species, activityLevel, healthConditions = [] } = req.body as {
+  const {
+    weightKg,
+    species,
+    activityLevel,
+    healthConditions = [],
+  } = req.body as {
     weightKg: number;
     species: string;
     activityLevel: string;
@@ -465,7 +470,10 @@ router.post('/calculate-calories', (req: Request, res: Response) => {
   if (!weightKg || !species || !activityLevel) {
     res.status(400).json({
       success: false,
-      error: { code: 'VALIDATION_ERROR', message: 'weightKg, species, and activityLevel are required' },
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'weightKg, species, and activityLevel are required',
+      },
       timestamp: new Date().toISOString(),
     });
     return;
@@ -508,7 +516,11 @@ router.post('/calculate-calories', (req: Request, res: Response) => {
  * Query params: species, breed, healthConditions (comma-separated)
  */
 router.get('/recommendations', (req: Request, res: Response) => {
-  const { species, breed = '', healthConditions = '' } = req.query as {
+  const {
+    species,
+    breed = '',
+    healthConditions = '',
+  } = req.query as {
     species?: string;
     breed?: string;
     healthConditions?: string;
@@ -524,7 +536,10 @@ router.get('/recommendations', (req: Request, res: Response) => {
   }
 
   const conditions = healthConditions
-    ? healthConditions.split(',').map((c) => c.trim()).filter(Boolean)
+    ? healthConditions
+        .split(',')
+        .map((c) => c.trim())
+        .filter(Boolean)
     : [];
 
   const recommendations = getDietaryRecommendations(species, breed, conditions);

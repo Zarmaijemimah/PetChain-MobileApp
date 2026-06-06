@@ -1,14 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
+import ErrorFallback from './ErrorFallback';
 import crashReporting from '../services/crashReporting';
 import errorLogger from '../services/errorLogger';
-import ErrorFallback from './ErrorFallback';
 import updateService from '../services/updateService';
 import { encryptedAsyncStorage } from '../utils/encryptedAsyncStorage';
 
 interface Props {
   children: React.ReactNode;
+  context?: { screenName?: string; petId?: string; userId?: string };
 }
 
 interface State {

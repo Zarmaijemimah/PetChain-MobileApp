@@ -26,7 +26,10 @@ export const blockchainPaths = {
             example: {
               recordId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
               hash: 'a3f5c8d2e1b4f7a9c2d5e8f1b4c7d0e3f6a9b2c5d8e1f4a7b0c3d6e9f2a5b8',
-              metadata: { petId: 'b2c3d4e5-f6a7-8901-bcde-f12345678901', recordType: 'vaccination' },
+              metadata: {
+                petId: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
+                recordType: 'vaccination',
+              },
             },
           },
         },
@@ -39,7 +42,11 @@ export const blockchainPaths = {
               schema: {
                 allOf: [
                   { $ref: '#/components/schemas/ApiResponse' },
-                  { properties: { data: { $ref: '#/components/schemas/StellarTransactionDetails' } } },
+                  {
+                    properties: {
+                      data: { $ref: '#/components/schemas/StellarTransactionDetails' },
+                    },
+                  },
                 ],
               },
             },
@@ -60,7 +67,10 @@ export const blockchainPaths = {
               schema: { $ref: '#/components/schemas/ApiError' },
               example: {
                 success: false,
-                error: { code: 'SERVICE_UNAVAILABLE', message: 'Blockchain service is temporarily unavailable' },
+                error: {
+                  code: 'SERVICE_UNAVAILABLE',
+                  message: 'Blockchain service is temporarily unavailable',
+                },
                 timestamp: '2024-01-15T10:30:00Z',
               },
             },
@@ -98,7 +108,11 @@ export const blockchainPaths = {
               schema: {
                 allOf: [
                   { $ref: '#/components/schemas/ApiResponse' },
-                  { properties: { data: { $ref: '#/components/schemas/StellarRecordVerification' } } },
+                  {
+                    properties: {
+                      data: { $ref: '#/components/schemas/StellarRecordVerification' },
+                    },
+                  },
                 ],
               },
               examples: {
@@ -106,7 +120,13 @@ export const blockchainPaths = {
                   summary: 'Record is authentic',
                   value: {
                     success: true,
-                    data: { verified: true, recordId: 'a1b2c3d4-...', onChainHash: 'a3f5c8d2...', txHash: 'stellar-tx-...', ledger: 48234567 },
+                    data: {
+                      verified: true,
+                      recordId: 'a1b2c3d4-...',
+                      onChainHash: 'a3f5c8d2...',
+                      txHash: 'stellar-tx-...',
+                      ledger: 48234567,
+                    },
                     timestamp: '2024-01-15T10:30:00Z',
                   },
                 },
@@ -114,7 +134,12 @@ export const blockchainPaths = {
                   summary: 'Record has been tampered with',
                   value: {
                     success: true,
-                    data: { verified: false, recordId: 'a1b2c3d4-...', onChainHash: 'a3f5c8d2...', txHash: 'stellar-tx-...' },
+                    data: {
+                      verified: false,
+                      recordId: 'a1b2c3d4-...',
+                      onChainHash: 'a3f5c8d2...',
+                      txHash: 'stellar-tx-...',
+                    },
                     timestamp: '2024-01-15T10:30:00Z',
                   },
                 },
@@ -137,7 +162,8 @@ export const blockchainPaths = {
     post: {
       tags: ['Blockchain'],
       summary: 'Batch verify multiple record hashes',
-      description: 'Verifies up to 50 record hashes in a single request. Useful for bulk integrity checks.',
+      description:
+        'Verifies up to 50 record hashes in a single request. Useful for bulk integrity checks.',
       operationId: 'batchVerifyRecords',
       security: [{ BearerAuth: [] }],
       requestBody: {
@@ -187,7 +213,8 @@ export const blockchainPaths = {
     get: {
       tags: ['Blockchain'],
       summary: 'Retrieve anchored hash for a record',
-      description: 'Fetches the hash and transaction details that were anchored on Stellar for a specific record.',
+      description:
+        'Fetches the hash and transaction details that were anchored on Stellar for a specific record.',
       operationId: 'retrieveRecordHash',
       security: [{ BearerAuth: [] }],
       parameters: [
@@ -208,7 +235,11 @@ export const blockchainPaths = {
               schema: {
                 allOf: [
                   { $ref: '#/components/schemas/ApiResponse' },
-                  { properties: { data: { $ref: '#/components/schemas/RetrieveRecordHashResponse' } } },
+                  {
+                    properties: {
+                      data: { $ref: '#/components/schemas/RetrieveRecordHashResponse' },
+                    },
+                  },
                 ],
               },
             },
@@ -246,7 +277,11 @@ export const blockchainPaths = {
               schema: {
                 allOf: [
                   { $ref: '#/components/schemas/ApiResponse' },
-                  { properties: { data: { $ref: '#/components/schemas/StellarTransactionDetails' } } },
+                  {
+                    properties: {
+                      data: { $ref: '#/components/schemas/StellarTransactionDetails' },
+                    },
+                  },
                 ],
               },
             },

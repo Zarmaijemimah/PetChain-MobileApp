@@ -98,7 +98,8 @@ class HealthScoringServiceV2 {
       };
 
       for (const [factorName, weight] of Object.entries(weights.weights)) {
-        const mappedFactorName = factorKeyMap[factorName] || (factorName as keyof HealthScoreFactors);
+        const mappedFactorName =
+          factorKeyMap[factorName] || (factorName as keyof HealthScoreFactors);
         const factorScore = factors[mappedFactorName] || 0;
         const contribution = factorScore * weight;
         weightedScore += contribution;
@@ -179,7 +180,14 @@ class HealthScoringServiceV2 {
       await query(
         `INSERT INTO species_health_weights (id, species, breed, weights, data_points, created_at)
          VALUES ($1, $2, $3, $4, $5, $6)`,
-        [id, species, breed || null, JSON.stringify(derivedWeights), data.pet_count || 0, new Date()],
+        [
+          id,
+          species,
+          breed || null,
+          JSON.stringify(derivedWeights),
+          data.pet_count || 0,
+          new Date(),
+        ],
       );
 
       return {
@@ -221,9 +229,10 @@ class HealthScoringServiceV2 {
           : row.weights
         : null;
 
-      const validWeights = parsedWeights && typeof parsedWeights === 'object' && Object.keys(parsedWeights).length > 0
-        ? parsedWeights
-        : this.DEFAULT_WEIGHTS;
+      const validWeights =
+        parsedWeights && typeof parsedWeights === 'object' && Object.keys(parsedWeights).length > 0
+          ? parsedWeights
+          : this.DEFAULT_WEIGHTS;
 
       return {
         species,
@@ -247,7 +256,10 @@ class HealthScoringServiceV2 {
   /**
    * Update health score incrementally as new data arrives
    */
-  async updateHealthScoreIncremental(petId: string, newFactor: Partial<HealthScoreFactors>): Promise<HealthScoreExplanation> {
+  async updateHealthScoreIncremental(
+    petId: string,
+    newFactor: Partial<HealthScoreFactors>,
+  ): Promise<HealthScoreExplanation> {
     try {
       // Get current health metrics for the pet
       const metricsResult = await query(
@@ -260,10 +272,11 @@ class HealthScoringServiceV2 {
         const currentMetrics = metricsResult.rows[0];
         const updatedMetrics = { ...currentMetrics, ...newFactor };
 
-        await query(
-          `UPDATE health_metrics SET data = $1, updated_at = $2 WHERE id = $3`,
-          [JSON.stringify(updatedMetrics), new Date(), currentMetrics.id],
-        );
+        await query(`UPDATE health_metrics SET data = $1, updated_at = $2 WHERE id = $3`, [
+          JSON.stringify(updatedMetrics),
+          new Date(),
+          currentMetrics.id,
+        ]);
       }
 
       // Recalculate score
@@ -312,10 +325,7 @@ class HealthScoringServiceV2 {
 
   // Private helper methods
 
-  private async calculateHealthFactors(
-    petId: string,
-    pet: any,
-  ): Promise<HealthScoreFactors> {
+  private async calculateHealthFactors(petId: string, pet: any): Promise<HealthScoreFactors> {
     // Get health metrics for the pet
     const metricsResult = await query(
       'SELECT * FROM health_metrics WHERE pet_id = $1 ORDER BY created_at DESC',
@@ -368,7 +378,10 @@ class HealthScoringServiceV2 {
 
     let score = 50;
     if (vaccinationsUpToDate) score += 40;
-    if (lastVaccineDate && (new Date().getTime() - lastVaccineDate.getTime()) < 365 * 24 * 60 * 60 * 1000) {
+    if (
+      lastVaccineDate &&
+      new Date().getTime() - lastVaccineDate.getTime() < 365 * 24 * 60 * 60 * 1000
+    ) {
       score += 10;
     }
 
@@ -393,7 +406,7 @@ class HealthScoringServiceV2 {
 
     const recentCheckups = metrics.filter((m) => {
       const date = new Date(m.created_at);
-      return (new Date().getTime() - date.getTime()) < 365 * 24 * 60 * 60 * 1000;
+      return new Date().getTime() - date.getTime() < 365 * 24 * 60 * 60 * 1000;
     }).length;
 
     return Math.min(100, 50 + recentCheckups * 15);
@@ -489,7 +502,10 @@ class HealthScoringServiceV2 {
     }
   }
 
-  private async calculateConfidenceInterval(petId: string, score: number): Promise<{ min: number; max: number }> {
+  private async calculateConfidenceInterval(
+    petId: string,
+    score: number,
+  ): Promise<{ min: number; max: number }> {
     // Get number of data points for this pet
     const dataPointsResult = await query(
       'SELECT COUNT(*) as count FROM health_metrics WHERE pet_id = $1',
@@ -510,7 +526,11 @@ class HealthScoringServiceV2 {
     };
   }
 
-  private async deriveWeightsFromData(data: any, species: string, breed?: string): Promise<typeof this.DEFAULT_WEIGHTS> {
+  private async deriveWeightsFromData(
+    data: any,
+    species: string,
+    breed?: string,
+  ): Promise<typeof this.DEFAULT_WEIGHTS> {
     // Simple weight derivation based on data statistics
     // In production, use proper ML model like random forest or gradient boosting
 

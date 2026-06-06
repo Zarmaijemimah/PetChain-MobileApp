@@ -1,7 +1,3 @@
-import CryptoJS from 'crypto-js';
-
-// ─── Mocks ────────────────────────────────────────────────────────────────────
-
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(),
   setItemAsync: jest.fn().mockResolvedValue(undefined),
@@ -48,13 +44,14 @@ jest.mock('../apiClient', () => ({
 
 // ─── Imports (after mocks) ────────────────────────────────────────────────────
 
-import * as SecureStore from 'expo-secure-store';
-import * as FileSystem from 'expo-file-system';
+import CryptoJS from 'crypto-js';
 import * as DocumentPicker from 'expo-document-picker';
-import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import * as ImageManipulator from 'expo-image-manipulator';
-import apiClient from '../apiClient';
+import * as ImagePicker from 'expo-image-picker';
+import * as SecureStore from 'expo-secure-store';
 
+import apiClient from '../apiClient';
 import {
   provisionDocumentKey,
   uploadDocument,
@@ -354,26 +351,20 @@ describe('listDocuments', () => {
     });
 
     const docs = await listDocuments('pet-1');
-    expect(mockApiClient.get).toHaveBeenCalledWith(
-      expect.stringContaining('petId=pet-1'),
-    );
+    expect(mockApiClient.get).toHaveBeenCalledWith(expect.stringContaining('petId=pet-1'));
     expect(docs.length).toBe(1);
   });
 
   it('passes category filter', async () => {
     mockApiClient.get.mockResolvedValue({ data: { success: true, data: [] } });
     await listDocuments('pet-1', { category: 'vaccination' });
-    expect(mockApiClient.get).toHaveBeenCalledWith(
-      expect.stringContaining('category=vaccination'),
-    );
+    expect(mockApiClient.get).toHaveBeenCalledWith(expect.stringContaining('category=vaccination'));
   });
 
   it('passes includeDeleted flag', async () => {
     mockApiClient.get.mockResolvedValue({ data: { success: true, data: [] } });
     await listDocuments('pet-1', { includeDeleted: true });
-    expect(mockApiClient.get).toHaveBeenCalledWith(
-      expect.stringContaining('includeDeleted=true'),
-    );
+    expect(mockApiClient.get).toHaveBeenCalledWith(expect.stringContaining('includeDeleted=true'));
   });
 });
 

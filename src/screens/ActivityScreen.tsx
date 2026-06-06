@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Button } from 'react-native';
+
 import LazyScreen from '../components/LazyScreen';
 import PetSelectorBar from '../components/PetSelectorBar';
+import { usePetContext } from '../context/PetContext';
 
 interface SummaryRow {
   metric_type: string;
@@ -10,7 +12,8 @@ interface SummaryRow {
 }
 
 export default function ActivityScreen() {
-  const [petId, setPetId] = useState<string | null>(null);
+  const { activePet } = usePetContext();
+  const petId = activePet?.id ?? null;
   const [summary, setSummary] = useState<SummaryRow[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -29,10 +32,20 @@ export default function ActivityScreen() {
   return (
     <LazyScreen screenName="Activity">
       <View style={styles.container}>
-        <PetSelectorBar onSelect={(id: string) => setPetId(id)} />
+        <PetSelectorBar />
         <View style={styles.header}>
           <Text style={styles.title}>Activity</Text>
-          <Button title="Sync now" onPress={() => petId && fetch('/api/activity/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ petId, providerKey: 'mockfit' }) })} />
+          <Button
+            title="Sync now"
+            onPress={() =>
+              petId &&
+              fetch('/api/activity/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ petId, providerKey: 'mockfit' }),
+              })
+            }
+          />
         </View>
 
         <ScrollView style={styles.body}>
@@ -53,7 +66,12 @@ export default function ActivityScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  header: {
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   title: { fontSize: 20, fontWeight: '600' },
   body: { padding: 16 },
   row: { marginBottom: 12 },

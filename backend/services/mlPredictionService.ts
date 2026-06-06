@@ -127,9 +127,7 @@ function buildFeatures(vitals: VitalReading[]): { features: FeatureVector; facto
   if (weightGainPct >= 0.1) factors.push('weight gain');
 
   const latestTemp = byType.temperature[byType.temperature.length - 1]?.value;
-  const temperatureRisk = latestTemp
-    ? clamp(Math.abs(latestTemp - 38.6) / 2.2, 0, 1)
-    : 0.15;
+  const temperatureRisk = latestTemp ? clamp(Math.abs(latestTemp - 38.6) / 2.2, 0, 1) : 0.15;
   if (latestTemp && (latestTemp > 39.4 || latestTemp < 37.8)) factors.push('abnormal temperature');
 
   const recentActivity = recent(byType.activity_level, 14);

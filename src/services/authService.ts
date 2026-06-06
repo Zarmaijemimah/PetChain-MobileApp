@@ -1,7 +1,6 @@
 import axios, { type AxiosInstance } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-import { hashPassword } from '../utils/encryption';
 import type {
   LoginRequest,
   LoginResponse,
@@ -11,6 +10,7 @@ import type {
 } from '../../backend/types/api';
 import { API_ENDPOINTS } from '../../backend/types/api';
 import config from '../config';
+import { hashPassword } from '../utils/encryption';
 import {
   authenticateWithBiometricGate,
   clearSecureTokens,
@@ -339,7 +339,8 @@ export async function isAuthenticated(): Promise<boolean> {
 export async function authenticateWithBiometrics(): Promise<StoredSession> {
   const available = await isBiometricAuthenticationAvailable();
   const enabled = await isBiometricAuthenticationEnabled();
-  if (!available || !enabled) throw new AuthError('Biometric authentication is unavailable', 'BIOMETRIC_UNAVAILABLE');
+  if (!available || !enabled)
+    throw new AuthError('Biometric authentication is unavailable', 'BIOMETRIC_UNAVAILABLE');
   const ok = await authenticateWithBiometric();
   if (!ok) throw new AuthError('Biometric authentication failed', 'BIOMETRIC_AUTH_FAILED');
   const session = await getSession();
@@ -378,7 +379,9 @@ export async function shouldPromptOnForeground(idleTimeoutMs = 5 * 60 * 1000): P
   return elapsed >= idleTimeoutMs && (await isAuthenticated());
 }
 
-export async function authenticateOnForeground(idleTimeoutMs?: number): Promise<'unlocked' | 'pin_required' | 'not_required'> {
+export async function authenticateOnForeground(
+  idleTimeoutMs?: number,
+): Promise<'unlocked' | 'pin_required' | 'not_required'> {
   if (!(await shouldPromptOnForeground(idleTimeoutMs))) return 'not_required';
   if (!(await isBiometricAuthenticationEnabled())) return 'pin_required';
   const ok = await authenticateWithBiometric();
@@ -395,10 +398,7 @@ export async function authenticateOnForeground(idleTimeoutMs?: number): Promise<
 const FALLBACK_PREF_KEY = 'com.petchain.auth.biometric.fallback.pref';
 const MAX_BIOMETRIC_ATTEMPTS = 3;
 
-export type BiometricFallbackReason =
-  | 'unavailable'
-  | 'max_attempts_reached'
-  | 'user_preference';
+export type BiometricFallbackReason = 'unavailable' | 'max_attempts_reached' | 'user_preference';
 
 export interface BiometricLoginResult {
   success: boolean;

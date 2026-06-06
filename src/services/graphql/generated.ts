@@ -360,58 +360,6 @@ export enum UserRole {
   Vet = 'vet',
 }
 
-export type AppointmentStatus =
-  | 'CANCELLED'
-  | 'COMPLETED'
-  | 'CONFIRMED'
-  | 'NO_SHOW'
-  | 'PENDING'
-  | 'RESCHEDULED';
-
-export type AppointmentType =
-  | 'DENTAL'
-  | 'DIAGNOSTIC'
-  | 'EMERGENCY'
-  | 'FOLLOW_UP'
-  | 'GROOMING'
-  | 'NUTRITION_CONSULTATION'
-  | 'ROUTINE_CHECKUP'
-  | 'SPECIALIST_REFERRAL'
-  | 'SURGERY'
-  | 'VACCINATION';
-
-export type CreatePetInput = {
-  breed?: string | null | undefined;
-  dateOfBirth?: string | null | undefined;
-  microchipId?: string | null | undefined;
-  name: string;
-  photoUrl?: string | null | undefined;
-  species: Species;
-};
-
-export type MedicalRecordType = 'checkup' | 'other' | 'surgery' | 'treatment' | 'vaccination';
-
-export type MedicationFrequency =
-  | 'as_needed'
-  | 'every_other_day'
-  | 'once_daily'
-  | 'three_times_daily'
-  | 'twice_daily'
-  | 'weekly';
-
-export type MedicationStatus = 'active' | 'completed' | 'discontinued' | 'paused';
-
-export type Species = 'bird' | 'cat' | 'dog' | 'other' | 'rabbit';
-
-export type TriggerSosInput = {
-  latitude?: number | null | undefined;
-  longitude?: number | null | undefined;
-  message: string;
-  petId?: string | number | null | undefined;
-};
-
-export type UserRole = 'admin' | 'owner' | 'vet';
-
 export type GetMeQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GetMeQuery = { me: { id: string; email: string; name: string; role: UserRole } };

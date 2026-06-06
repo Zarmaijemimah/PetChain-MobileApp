@@ -13,16 +13,16 @@ import {
 
 import { scheduleVaccinationReminder } from '../services/notificationService';
 import {
-  type VaccinationReminder,
-  getVaccinationReminders,
-  markVaccinationAdministered,
-} from '../services/vaccinationService';
-import {
   anchorCertificateToStellar,
   generateVaccinationCertificate,
   shareCertificate,
   type PetCertificateInfo,
 } from '../services/pdfService';
+import {
+  type VaccinationReminder,
+  getVaccinationReminders,
+  markVaccinationAdministered,
+} from '../services/vaccinationService';
 import { formatLocalDate } from '../utils/dateLocale';
 import { useSecureScreen } from '../utils/secureScreen';
 

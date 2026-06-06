@@ -6,19 +6,8 @@ import {
   Transaction,
   Memo,
   Horizon,
-  xdr,
+  type xdr,
 } from '@stellar/stellar-sdk';
-
-type StellarServer = Horizon.Server;
-// The TransactionBuilder.addOperation accepts xdr.Operation at the type level
-type StellarOperation = xdr.Operation;
-
-// Support both legacy top-level Server export (mocks) and current Horizon.Server
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _sdk = require('@stellar/stellar-sdk') as any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _StellarServer: new (url: string) => StellarServer =
-  _sdk.Server ?? _sdk.Horizon?.Server ?? _sdk.default?.Horizon?.Server;
 import CryptoJS from 'crypto-js';
 
 import config from '../config';
@@ -30,6 +19,17 @@ import type {
   CoOwnerInvite,
   KeyRotationRequest,
 } from '../models/JointOwnership';
+
+type StellarServer = Horizon.Server;
+// The TransactionBuilder.addOperation accepts xdr.Operation at the type level
+type StellarOperation = xdr.Operation;
+
+// Support both legacy top-level Server export (mocks) and current Horizon.Server
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _sdk = require('@stellar/stellar-sdk') as any;
+
+const _StellarServer: new (url: string) => StellarServer =
+  _sdk.Server ?? _sdk.Horizon?.Server ?? _sdk.default?.Horizon?.Server;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -113,9 +113,7 @@ export interface RejectTransactionInput {
 // ─── Configuration ────────────────────────────────────────────────────────────
 
 const STELLAR_CONFIG = {
-  horizonUrl: config.isDev
-    ? 'https://horizon-testnet.stellar.org'
-    : 'https://horizon.stellar.org',
+  horizonUrl: config.isDev ? 'https://horizon-testnet.stellar.org' : 'https://horizon.stellar.org',
   networkPassphrase: config.isDev ? Networks.TESTNET : Networks.PUBLIC,
   baseFee: '100000', // 0.01 XLM
   timeout: 300, // 5 minutes
@@ -136,10 +134,10 @@ export class MultisigService {
   private coOwnerInvites = new Map<string, CoOwnerInvite>();
 
   constructor() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ServerCtor: new (url: string) => StellarServer =
       (Horizon as any).Server ?? (Horizon as any).default?.Server ?? Horizon.Server;
-    this.server = new ServerCtor(STELLAR_CONFIG.horizonUrl);  }
+    this.server = new ServerCtor(STELLAR_CONFIG.horizonUrl);
+  }
 
   // ─── Account Creation ───────────────────────────────────────────────────────
 
@@ -368,7 +366,9 @@ export class MultisigService {
   // ─── Transaction Management ─────────────────────────────────────────────────
 
   /** Build and store a pending multisig transaction awaiting co-signatures */
-  async createPendingTransaction(input: MultisigTransactionInput): Promise<PendingMultisigTransaction> {
+  async createPendingTransaction(
+    input: MultisigTransactionInput,
+  ): Promise<PendingMultisigTransaction> {
     try {
       const multisigAccount = this.multisigAccounts.get(input.multisigAccountId);
       if (!multisigAccount) throw new Error('Multisig account not found');
@@ -599,7 +599,13 @@ export class MultisigService {
   /** Add a new co-owner signer — requires medium-threshold approval */
   async addSigner(
     multisigAccountId: string,
-    newSigner: { publicKey: string; weight: number; userId?: string; name?: string; email?: string },
+    newSigner: {
+      publicKey: string;
+      weight: number;
+      userId?: string;
+      name?: string;
+      email?: string;
+    },
     createdBy: string,
   ): Promise<PendingMultisigTransaction> {
     const op = Operation.setOptions({

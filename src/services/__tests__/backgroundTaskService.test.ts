@@ -2,7 +2,6 @@ import * as BackgroundFetch from 'expo-background-fetch';
 import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 
-import * as medicationService from '../../services/medicationService';
 import {
   BACKGROUND_MEDICATION_TASK,
   cancelMedicationNotifications,
@@ -11,6 +10,7 @@ import {
   scheduleMedicationNotification,
   unregisterBackgroundMedicationTask,
 } from '../../services/backgroundTaskService';
+import * as medicationService from '../../services/medicationService';
 
 jest.mock('expo-background-fetch', () => ({
   BackgroundFetchResult: { NewData: 'newData', NoData: 'noData', Failed: 'failed' },

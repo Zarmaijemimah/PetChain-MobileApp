@@ -244,8 +244,6 @@ export const enableBiometricAuthentication = async (
       accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
       accessControl: getBiometricAccessControl() as unknown as Keychain.ACCESS_CONTROL,
       securityLevel: getSecurityLevel() as unknown as Keychain.SECURITY_LEVEL,
-      accessControl: getBiometricAccessControl(),
-      securityLevel: getSecurityLevel(),
     });
 
     const credentials = await Keychain.getGenericPassword({
@@ -282,7 +280,6 @@ export const authenticateWithBiometricGate = async (
     });
 
     return !!(credentials && 'password' in credentials && credentials.password);
-    return typeof credentials === 'object' && !!credentials && !!credentials.password;
   } catch {
     return false;
   }

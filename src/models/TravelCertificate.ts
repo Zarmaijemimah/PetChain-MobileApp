@@ -46,12 +46,7 @@ export interface CountryTravelRequirements {
 
 // ─── Certificate ──────────────────────────────────────────────────────────────
 
-export type CertificateStatus =
-  | 'draft'
-  | 'ready'
-  | 'incomplete'
-  | 'anchored'
-  | 'anchor_failed';
+export type CertificateStatus = 'draft' | 'ready' | 'incomplete' | 'anchored' | 'anchor_failed';
 
 export interface CertificateRequirementCheck {
   requirementType: 'vaccination' | 'health_check' | 'document';

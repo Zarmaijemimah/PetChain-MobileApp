@@ -325,9 +325,7 @@ const DocumentVaultScreen: React.FC<DocumentVaultScreenProps> = ({
           data={documents}
           keyExtractor={(item) => item.id}
           renderItem={renderDocument}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No documents found</Text>
-          }
+          ListEmptyComponent={<Text style={styles.emptyText}>No documents found</Text>}
           contentContainerStyle={styles.listContent}
         />
       )}

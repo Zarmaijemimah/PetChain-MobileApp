@@ -23,8 +23,6 @@ jest.mock('../../utils/encryption/keychain', () => ({
   storeSecureTokens: jest.fn().mockResolvedValue(undefined),
 }));
 
-const SecureStore = require('expo-secure-store');
-
 import {
   clearBiometricFallbackPreference,
   isBiometricAuthenticationAvailable,
@@ -34,12 +32,13 @@ import {
   shouldPromptBiometricSetup,
   verifyPin,
 } from '../../services/authService';
-
 import {
   getBiometricAvailability,
   isBiometricAuthenticationEnabled as isBiometricStorageEnabled,
   authenticateWithBiometricGate,
 } from '../../utils/encryption/keychain';
+
+const SecureStore = require('expo-secure-store');
 
 const mockGetBiometricAvailability = getBiometricAvailability as jest.Mock;
 const mockIsBiometricEnabled = isBiometricStorageEnabled as jest.Mock;

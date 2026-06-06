@@ -7,7 +7,8 @@ export const petPaths = {
     get: {
       tags: ['Pets'],
       summary: 'List pets',
-      description: 'Returns a paginated list of pets. Owners see only their own pets; vets and admins can see all pets.',
+      description:
+        'Returns a paginated list of pets. Owners see only their own pets; vets and admins can see all pets.',
       operationId: 'listPets',
       security: [{ BearerAuth: [] }],
       parameters: [
@@ -44,7 +45,11 @@ export const petPaths = {
               schema: {
                 allOf: [
                   { $ref: '#/components/schemas/PaginatedResponse' },
-                  { properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Pet' } } } },
+                  {
+                    properties: {
+                      data: { type: 'array', items: { $ref: '#/components/schemas/Pet' } },
+                    },
+                  },
                 ],
               },
             },
@@ -58,7 +63,8 @@ export const petPaths = {
     post: {
       tags: ['Pets'],
       summary: 'Create a new pet',
-      description: 'Registers a new pet. The `ownerId` must match the authenticated user\'s ID (or the user must be an admin).',
+      description:
+        "Registers a new pet. The `ownerId` must match the authenticated user's ID (or the user must be an admin).",
       operationId: 'createPet',
       security: [{ BearerAuth: [] }],
       requestBody: {
@@ -169,7 +175,8 @@ export const petPaths = {
     delete: {
       tags: ['Pets'],
       summary: 'Delete a pet',
-      description: 'Permanently deletes a pet and all associated records. Only the pet owner or an admin can delete a pet.',
+      description:
+        'Permanently deletes a pet and all associated records. Only the pet owner or an admin can delete a pet.',
       operationId: 'deletePet',
       security: [{ BearerAuth: [] }],
       parameters: [{ $ref: '#/components/parameters/PetIdParam' }],
@@ -197,7 +204,7 @@ export const petPaths = {
           in: 'path',
           required: true,
           schema: { type: 'string' },
-          description: 'URL-encoded QR code value from the pet\'s QR tag',
+          description: "URL-encoded QR code value from the pet's QR tag",
           example: 'petchain%3A%2F%2Fpet%2Fa1b2c3d4-e5f6-7890-abcd-ef1234567890',
         },
       ],
@@ -260,7 +267,11 @@ export const petPaths = {
               schema: {
                 allOf: [
                   { $ref: '#/components/schemas/ApiResponse' },
-                  { properties: { data: { type: 'array', items: { $ref: '#/components/schemas/Pet' } } } },
+                  {
+                    properties: {
+                      data: { type: 'array', items: { $ref: '#/components/schemas/Pet' } },
+                    },
+                  },
                 ],
               },
             },

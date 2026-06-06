@@ -54,7 +54,10 @@ interface ClinicalNotesScreenProps {
   onBack?: () => void;
 }
 
-const ClinicalNotesScreen: React.FC<ClinicalNotesScreenProps> = ({ petId: initialPetId = '', onBack }) => {
+const ClinicalNotesScreen: React.FC<ClinicalNotesScreenProps> = ({
+  petId: initialPetId = '',
+  onBack,
+}) => {
   const [petId, setPetId] = useState(initialPetId);
   const [vetId, setVetId] = useState('');
   const [subjective, setSubjective] = useState('');
@@ -130,7 +133,10 @@ const ClinicalNotesScreen: React.FC<ClinicalNotesScreenProps> = ({ petId: initia
       return;
     }
     if (!subjective.trim() || !objective.trim() || !assessment.trim() || !plan.trim()) {
-      Alert.alert('Validation', 'Subjective, Objective, Assessment, and Plan fields are all required.');
+      Alert.alert(
+        'Validation',
+        'Subjective, Objective, Assessment, and Plan fields are all required.',
+      );
       return;
     }
 
@@ -167,7 +173,10 @@ const ClinicalNotesScreen: React.FC<ClinicalNotesScreenProps> = ({ petId: initia
       setAttachments([]);
       setAllowVetAccess(true);
     } catch (error) {
-      Alert.alert('Submit failed', error instanceof Error ? error.message : 'An unexpected error occurred');
+      Alert.alert(
+        'Submit failed',
+        error instanceof Error ? error.message : 'An unexpected error occurred',
+      );
     } finally {
       setSubmitting(false);
     }

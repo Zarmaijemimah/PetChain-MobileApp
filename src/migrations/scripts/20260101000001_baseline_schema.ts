@@ -1,4 +1,5 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
+
 import type { SqliteMigration } from '../sqliteMigrationRunner';
 
 const migration: SqliteMigration = {

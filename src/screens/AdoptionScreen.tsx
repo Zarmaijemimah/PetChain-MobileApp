@@ -1,3 +1,4 @@
+import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -14,7 +15,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation, type NavigationProp } from '@react-navigation/native';
 
 import type { PetStackParamList } from '../navigation/types';
 import shelterIntegrationService, {
@@ -188,7 +188,9 @@ const AdoptionScreen: React.FC = () => {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.hero}>
         <Text style={styles.kicker}>Shelter adoption</Text>
-        <Text style={styles.title}>Find a pet, create their profile, and bring their records with them.</Text>
+        <Text style={styles.title}>
+          Find a pet, create their profile, and bring their records with them.
+        </Text>
         <Text style={styles.subtitle}>
           Browse mock Petfinder and Adopt-a-Pet feeds in development, then transfer shelter
           vaccination and medical records into PetChain with Stellar anchoring.

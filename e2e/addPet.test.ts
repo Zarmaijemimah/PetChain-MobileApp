@@ -7,7 +7,9 @@ describe('Add Pet', () => {
       launchArgs: { detoxSeed: 'test', detoxSkipOnboarding: 'true' },
     });
     // Wait for pet list to be ready
-    await waitFor(element(by.id('pet-list-screen'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('pet-list-screen')))
+      .toBeVisible()
+      .withTimeout(10000);
   });
 
   afterAll(async () => {

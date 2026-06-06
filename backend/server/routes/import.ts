@@ -3,10 +3,10 @@ import express from 'express';
 
 import { authenticateJWT, authorizeRoles, type AuthenticatedRequest } from '../../middleware/auth';
 import { UserRole } from '../../models/UserRole';
+import { processPdfFromBase64 } from '../../services/pdfExtractionService';
+import { parseVetRecordText, validateExtractedRecord } from '../../services/pdfParserService';
 import { ok, sendError } from '../response';
 import { store, type StoredPet, type StoredMedicalRecord } from '../store';
-import { parseVetRecordText, validateExtractedRecord } from '../../services/pdfParserService';
-import { processPdfFromBase64 } from '../../services/pdfExtractionService';
 
 const router = express.Router();
 
@@ -268,7 +268,11 @@ router.post(
   express.json({ limit: '10mb' }),
   async (req: AuthenticatedRequest, res) => {
     try {
-      const { pdfBase64, petId, enableOcr = false } = req.body as {
+      const {
+        pdfBase64,
+        petId,
+        enableOcr = false,
+      } = req.body as {
         pdfBase64?: string;
         petId?: string;
         enableOcr?: boolean;
@@ -291,7 +295,12 @@ router.post(
 
       // Check authorization
       if (req.user!.role === UserRole.OWNER && req.user!.id !== pet.ownerId) {
-        return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to import records for this pet');
+        return sendError(
+          res,
+          403,
+          'FORBIDDEN',
+          'You do not have permission to import records for this pet',
+        );
       }
 
       // Extract text from PDF
@@ -409,7 +418,12 @@ router.post(
 
       // Check authorization
       if (req.user!.role === UserRole.OWNER && req.user!.id !== pet.ownerId) {
-        return sendError(res, 403, 'FORBIDDEN', 'You do not have permission to create records for this pet');
+        return sendError(
+          res,
+          403,
+          'FORBIDDEN',
+          'You do not have permission to create records for this pet',
+        );
       }
 
       // Use authenticated user as vet if not specified

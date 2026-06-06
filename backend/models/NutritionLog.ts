@@ -101,6 +101,4 @@ export interface CreateNutritionGoalInput {
   notes?: string;
 }
 
-export type UpdateNutritionGoalInput = Partial<
-  Omit<NutritionGoal, 'id' | 'petId' | 'updatedAt'>
->;
+export type UpdateNutritionGoalInput = Partial<Omit<NutritionGoal, 'id' | 'petId' | 'updatedAt'>>;

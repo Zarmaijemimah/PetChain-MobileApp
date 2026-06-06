@@ -9,22 +9,21 @@
  *   // Pass to swagger-ui-express or write to openapi.json
  */
 
-import { authPaths } from './paths/auth';
-import { userPaths } from './paths/users';
-import { petPaths } from './paths/pets';
-import { medicalRecordPaths } from './paths/medicalRecords';
 import { appointmentPaths } from './paths/appointments';
-import { medicationPaths } from './paths/medications';
+import { authPaths } from './paths/auth';
 import { blockchainPaths } from './paths/blockchain';
-
-import { commonSchemas } from '../schemas/common';
-import { authSchemas } from '../schemas/auth';
-import { userSchemas } from '../schemas/user';
-import { petSchemas } from '../schemas/pet';
-import { medicalRecordSchemas } from '../schemas/medicalRecord';
+import { medicalRecordPaths } from './paths/medicalRecords';
+import { medicationPaths } from './paths/medications';
+import { petPaths } from './paths/pets';
+import { userPaths } from './paths/users';
 import { appointmentSchemas } from '../schemas/appointment';
-import { medicationSchemas } from '../schemas/medication';
+import { authSchemas } from '../schemas/auth';
 import { blockchainSchemas } from '../schemas/blockchain';
+import { commonSchemas } from '../schemas/common';
+import { medicalRecordSchemas } from '../schemas/medicalRecord';
+import { medicationSchemas } from '../schemas/medication';
+import { petSchemas } from '../schemas/pet';
+import { userSchemas } from '../schemas/user';
 
 export const openApiSpec = {
   openapi: '3.0.3',
@@ -177,7 +176,8 @@ Tokens expire after 7 days. Use \`POST /auth/refresh\` to obtain a new token.
         type: 'apiKey',
         in: 'header',
         name: 'X-API-Key',
-        description: 'API key for server-to-server integrations. Contact engineering@petchain.app to obtain a key.',
+        description:
+          'API key for server-to-server integrations. Contact engineering@petchain.app to obtain a key.',
       },
     },
 
@@ -273,7 +273,11 @@ Tokens expire after 7 days. Use \`POST /auth/refresh\` to obtain a new token.
             schema: { $ref: '#/components/schemas/ApiError' },
             example: {
               success: false,
-              error: { code: 'VALIDATION_ERROR', message: 'Invalid input data', details: { field: 'email', issue: 'Invalid email format' } },
+              error: {
+                code: 'VALIDATION_ERROR',
+                message: 'Invalid input data',
+                details: { field: 'email', issue: 'Invalid email format' },
+              },
               timestamp: '2024-01-15T10:30:00Z',
             },
           },

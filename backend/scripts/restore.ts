@@ -26,12 +26,13 @@
 import { execFile } from 'child_process';
 import { createWriteStream } from 'fs';
 import { unlink, writeFile } from 'fs/promises';
-import { createGunzip } from 'zlib';
-import { promisify } from 'util';
 import path from 'path';
 import { Readable } from 'stream';
-import logger from '../utils/logger';
+import { promisify } from 'util';
+import { createGunzip } from 'zlib';
+
 import { sha256Buffer, sendAlert } from './backup';
+import logger from '../utils/logger';
 
 const execFileAsync = promisify(execFile);
 
@@ -93,7 +94,9 @@ async function s3ListObjects(prefix: string): Promise<Array<{ Key: string; LastM
     ListObjectsV2Command: new (input: object) => unknown;
   };
   const client = getS3Client();
-  const resp = (await client.send(new ListObjectsV2Command({ Bucket: S3_BUCKET, Prefix: prefix }))) as {
+  const resp = (await client.send(
+    new ListObjectsV2Command({ Bucket: S3_BUCKET, Prefix: prefix }),
+  )) as {
     Contents?: Array<{ Key: string; LastModified: Date }>;
   };
   return resp.Contents ?? [];
@@ -141,7 +144,10 @@ export async function downloadAndDecompress(s3Key: string, destPath: string): Pr
 
 // ─── Verify checksum against manifest ────────────────────────────────────────
 
-export async function verifyFromManifest(s3Key: string, downloadedBuffer: Buffer): Promise<boolean> {
+export async function verifyFromManifest(
+  s3Key: string,
+  downloadedBuffer: Buffer,
+): Promise<boolean> {
   const manifestKey = s3Key.replace('.dump.gz', '.manifest.json');
   try {
     const manifestBuf = await s3GetBuffer(manifestKey);
@@ -213,7 +219,10 @@ export async function restoreDatabase(dumpPath: string, dropExisting = false): P
 // and instructs the operator to restart PostgreSQL.  Automated PITR in CI uses
 // the pg_dump-based restore above with --target-time approximation.
 
-export async function writePitrRecoveryConfig(targetTime: string, pgDataDir: string): Promise<void> {
+export async function writePitrRecoveryConfig(
+  targetTime: string,
+  pgDataDir: string,
+): Promise<void> {
   const walRestoreCmd = `aws s3 cp s3://${S3_BUCKET}/${S3_PREFIX}/wal/%f %p`;
 
   // PostgreSQL 12+ uses postgresql.auto.conf; older versions use recovery.conf
@@ -297,7 +306,11 @@ export async function runRestore(options: {
 
     await sendAlert('PetChain restore failed', { error: message, s3Key }).catch(() => {});
 
-    try { await unlink(dumpPath); } catch { /* ignore */ }
+    try {
+      await unlink(dumpPath);
+    } catch {
+      /* ignore */
+    }
     throw err;
   }
 }

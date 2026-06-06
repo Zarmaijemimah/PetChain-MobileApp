@@ -124,7 +124,10 @@ const ImportRecordScreen: React.FC<Props> = ({ petId, petName, onBack, onImporte
       setEditedRecord(result.data);
       setCurrentStep('review');
     } catch (error) {
-      Alert.alert('Error', `Failed to parse PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      Alert.alert(
+        'Error',
+        `Failed to parse PDF: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -145,10 +148,7 @@ const ImportRecordScreen: React.FC<Props> = ({ petId, petName, onBack, onImporte
     if (editedRecord) {
       setEditedRecord({
         ...editedRecord,
-        diagnoses: [
-          ...editedRecord.diagnoses,
-          { diagnosisText: '', severity: 'unknown' },
-        ],
+        diagnoses: [...editedRecord.diagnoses, { diagnosisText: '', severity: 'unknown' }],
       });
     }
   };
@@ -228,7 +228,10 @@ const ImportRecordScreen: React.FC<Props> = ({ petId, petName, onBack, onImporte
         },
       ]);
     } catch (error) {
-      Alert.alert('Error', `Failed to save record: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      Alert.alert(
+        'Error',
+        `Failed to save record: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -252,8 +255,8 @@ const ImportRecordScreen: React.FC<Props> = ({ petId, petName, onBack, onImporte
         <ScrollView style={styles.content}>
           <Text style={styles.sectionTitle}>Import Medical Record</Text>
           <Text style={styles.description}>
-            Upload a PDF of a vet record for {petName || 'your pet'}. We'll extract the medical information and
-            present it for your review.
+            Upload a PDF of a vet record for {petName || 'your pet'}. We'll extract the medical
+            information and present it for your review.
           </Text>
 
           <TouchableOpacity style={styles.button} onPress={handleSelectPdf}>
@@ -336,13 +339,12 @@ const ImportRecordScreen: React.FC<Props> = ({ petId, petName, onBack, onImporte
             <Text style={styles.confidenceLabel}>Extraction Confidence</Text>
             <View style={styles.confidenceBar}>
               <View
-                style={[
-                  styles.confidenceFill,
-                  { width: `${(extracted?.confidence || 0) * 100}%` },
-                ]}
+                style={[styles.confidenceFill, { width: `${(extracted?.confidence || 0) * 100}%` }]}
               />
             </View>
-            <Text style={styles.confidenceText}>{Math.round((extracted?.confidence || 0) * 100)}%</Text>
+            <Text style={styles.confidenceText}>
+              {Math.round((extracted?.confidence || 0) * 100)}%
+            </Text>
           </View>
 
           {/* Vet Information */}
@@ -434,7 +436,9 @@ const ImportRecordScreen: React.FC<Props> = ({ petId, petName, onBack, onImporte
           {/* Prescriptions */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionLabel}>Prescriptions ({editedRecord.prescriptions.length})</Text>
+              <Text style={styles.sectionLabel}>
+                Prescriptions ({editedRecord.prescriptions.length})
+              </Text>
               <TouchableOpacity onPress={handleAddPrescription}>
                 <Text style={styles.addButton}>+ Add</Text>
               </TouchableOpacity>
@@ -483,7 +487,9 @@ const ImportRecordScreen: React.FC<Props> = ({ petId, petName, onBack, onImporte
 
           {/* Vaccinations */}
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Vaccinations ({editedRecord.vaccinations.length})</Text>
+            <Text style={styles.sectionLabel}>
+              Vaccinations ({editedRecord.vaccinations.length})
+            </Text>
             {editedRecord.vaccinations.map((vaccination, idx) => (
               <View key={idx} style={styles.itemBox}>
                 <Text style={styles.itemText}>{vaccination.vaccineName}</Text>

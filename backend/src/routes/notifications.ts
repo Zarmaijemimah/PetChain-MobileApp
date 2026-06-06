@@ -4,8 +4,7 @@ import express from 'express';
 
 import { authenticateJWT, authorizeRoles, type AuthenticatedRequest } from '../../middleware/auth';
 import { UserRole } from '../../models/UserRole';
-import { ok, sendError } from '../response';
-import logger from '../../utils/logger';
+import { ok, sendError } from '../../server/response';
 import {
   ALL_TOPICS,
   type NotificationTopic,
@@ -23,6 +22,7 @@ import {
   subscribe,
   unsubscribe,
 } from '../../services/pushService';
+import logger from '../../utils/logger';
 
 const router = express.Router();
 router.use(authenticateJWT);
@@ -39,7 +39,12 @@ router.post('/tokens', async (req: AuthenticatedRequest, res) => {
     logger.info('device_token_registered', { userId: req.user!.id });
     return res.status(201).json(ok(null, 'Token registered'));
   } catch (err) {
-    return sendError(res, 400, 'VALIDATION_ERROR', err instanceof Error ? err.message : 'Invalid token');
+    return sendError(
+      res,
+      400,
+      'VALIDATION_ERROR',
+      err instanceof Error ? err.message : 'Invalid token',
+    );
   }
 });
 
@@ -77,7 +82,12 @@ router.get('/subscriptions', async (req: AuthenticatedRequest, res) => {
 router.put('/subscriptions/:topic', async (req: AuthenticatedRequest, res) => {
   const topic = req.params.topic as NotificationTopic;
   if (!ALL_TOPICS.includes(topic)) {
-    return sendError(res, 400, 'VALIDATION_ERROR', `Unknown topic. Valid: ${ALL_TOPICS.join(', ')}`);
+    return sendError(
+      res,
+      400,
+      'VALIDATION_ERROR',
+      `Unknown topic. Valid: ${ALL_TOPICS.join(', ')}`,
+    );
   }
   await subscribe(req.user!.id, topic);
   return res.json(ok(null, `Subscribed to ${topic}`));
@@ -87,7 +97,12 @@ router.put('/subscriptions/:topic', async (req: AuthenticatedRequest, res) => {
 router.delete('/subscriptions/:topic', async (req: AuthenticatedRequest, res) => {
   const topic = req.params.topic as NotificationTopic;
   if (!ALL_TOPICS.includes(topic)) {
-    return sendError(res, 400, 'VALIDATION_ERROR', `Unknown topic. Valid: ${ALL_TOPICS.join(', ')}`);
+    return sendError(
+      res,
+      400,
+      'VALIDATION_ERROR',
+      `Unknown topic. Valid: ${ALL_TOPICS.join(', ')}`,
+    );
   }
   await unsubscribe(req.user!.id, topic);
   return res.json(ok(null, `Unsubscribed from ${topic}`));
@@ -103,7 +118,10 @@ router.get('/preferences', async (req: AuthenticatedRequest, res) => {
 
 /** PATCH /api/notifications/preferences */
 router.patch('/preferences', async (req: AuthenticatedRequest, res) => {
-  const body = req.body as { enabled?: boolean; topics?: Partial<Record<NotificationTopic, boolean>> };
+  const body = req.body as {
+    enabled?: boolean;
+    topics?: Partial<Record<NotificationTopic, boolean>>;
+  };
 
   if (body.enabled !== undefined && typeof body.enabled !== 'boolean') {
     return sendError(res, 400, 'VALIDATION_ERROR', 'enabled must be a boolean');
@@ -124,35 +142,36 @@ router.patch('/preferences', async (req: AuthenticatedRequest, res) => {
 // ─── Send (internal / admin) ──────────────────────────────────────────────────
 
 /** POST /api/notifications/send — send a push to a user (admin only) */
-router.post(
-  '/send',
-  authorizeRoles(UserRole.ADMIN),
-  async (req: AuthenticatedRequest, res) => {
-    const { userId, topic, title, body, data } = req.body as {
-      userId?: string;
-      topic?: string;
-      title?: string;
-      body?: string;
-      data?: Record<string, unknown>;
-    };
+router.post('/send', authorizeRoles(UserRole.ADMIN), async (req: AuthenticatedRequest, res) => {
+  const { userId, topic, title, body, data } = req.body as {
+    userId?: string;
+    topic?: string;
+    title?: string;
+    body?: string;
+    data?: Record<string, unknown>;
+  };
 
-    if (!userId?.trim()) return sendError(res, 400, 'VALIDATION_ERROR', 'userId is required');
-    if (!topic || !ALL_TOPICS.includes(topic as NotificationTopic)) {
-      return sendError(res, 400, 'VALIDATION_ERROR', `topic must be one of: ${ALL_TOPICS.join(', ')}`);
-    }
-    if (!title?.trim()) return sendError(res, 400, 'VALIDATION_ERROR', 'title is required');
-    if (!body?.trim()) return sendError(res, 400, 'VALIDATION_ERROR', 'body is required');
-
-    const enqueued = await sendToUser(
-      userId.trim(),
-      topic as NotificationTopic,
-      title.trim(),
-      body.trim(),
-      data,
+  if (!userId?.trim()) return sendError(res, 400, 'VALIDATION_ERROR', 'userId is required');
+  if (!topic || !ALL_TOPICS.includes(topic as NotificationTopic)) {
+    return sendError(
+      res,
+      400,
+      'VALIDATION_ERROR',
+      `topic must be one of: ${ALL_TOPICS.join(', ')}`,
     );
-    return res.json(ok({ enqueued }));
-  },
-);
+  }
+  if (!title?.trim()) return sendError(res, 400, 'VALIDATION_ERROR', 'title is required');
+  if (!body?.trim()) return sendError(res, 400, 'VALIDATION_ERROR', 'body is required');
+
+  const enqueued = await sendToUser(
+    userId.trim(),
+    topic as NotificationTopic,
+    title.trim(),
+    body.trim(),
+    data,
+  );
+  return res.json(ok({ enqueued }));
+});
 
 // ─── Metrics (admin) ──────────────────────────────────────────────────────────
 

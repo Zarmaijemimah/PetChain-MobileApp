@@ -7,7 +7,8 @@ export const appointmentPaths = {
     get: {
       tags: ['Appointments'],
       summary: 'List appointments',
-      description: 'Returns appointments. Owners see their pets\' appointments; vets see their own appointments; admins see all.',
+      description:
+        "Returns appointments. Owners see their pets' appointments; vets see their own appointments; admins see all.",
       operationId: 'listAppointments',
       security: [{ BearerAuth: [] }],
       parameters: [
@@ -38,8 +39,16 @@ export const appointmentPaths = {
           schema: {
             type: 'string',
             enum: [
-              'ROUTINE_CHECKUP', 'VACCINATION', 'SURGERY', 'DENTAL', 'GROOMING',
-              'EMERGENCY', 'FOLLOW_UP', 'DIAGNOSTIC', 'SPECIALIST_REFERRAL', 'NUTRITION_CONSULTATION',
+              'ROUTINE_CHECKUP',
+              'VACCINATION',
+              'SURGERY',
+              'DENTAL',
+              'GROOMING',
+              'EMERGENCY',
+              'FOLLOW_UP',
+              'DIAGNOSTIC',
+              'SPECIALIST_REFERRAL',
+              'NUTRITION_CONSULTATION',
             ],
           },
         },
@@ -128,7 +137,10 @@ export const appointmentPaths = {
               schema: { $ref: '#/components/schemas/ApiError' },
               example: {
                 success: false,
-                error: { code: 'SLOT_UNAVAILABLE', message: 'The requested time slot is already booked' },
+                error: {
+                  code: 'SLOT_UNAVAILABLE',
+                  message: 'The requested time slot is already booked',
+                },
                 timestamp: '2024-01-15T10:30:00Z',
               },
             },
@@ -172,7 +184,8 @@ export const appointmentPaths = {
     put: {
       tags: ['Appointments'],
       summary: 'Update an appointment',
-      description: 'Updates appointment details. To cancel, set `status` to `CANCELLED` and provide `cancellationReason`.',
+      description:
+        'Updates appointment details. To cancel, set `status` to `CANCELLED` and provide `cancellationReason`.',
       operationId: 'updateAppointment',
       security: [{ BearerAuth: [] }],
       parameters: [{ $ref: '#/components/parameters/AppointmentIdParam' }],

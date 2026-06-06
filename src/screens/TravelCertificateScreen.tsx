@@ -25,6 +25,11 @@ import {
   View,
 } from 'react-native';
 
+import { getSupportedCountries } from '../data/countryTravelRequirements';
+import type {
+  TravelHealthCertificate,
+  CertificateRequirementCheck,
+} from '../models/TravelCertificate';
 import {
   generateTravelCertificate,
   getPetTravelCertificates,
@@ -34,11 +39,6 @@ import {
   getComplianceSummary,
   TravelCertificateError,
 } from '../services/travelCertificateService';
-import { getSupportedCountries } from '../data/countryTravelRequirements';
-import type {
-  TravelHealthCertificate,
-  CertificateRequirementCheck,
-} from '../models/TravelCertificate';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,7 +61,9 @@ const TravelCertificateScreen: React.FC<Props> = ({ petId, petName, onBack }) =>
 
   // Generate form state
   const [countryPickerVisible, setCountryPickerVisible] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState<{ code: string; name: string } | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<{ code: string; name: string } | null>(
+    null,
+  );
   const [travelDate, setTravelDate] = useState('');
   const [countrySearch, setCountrySearch] = useState('');
 
@@ -182,9 +184,7 @@ const TravelCertificateScreen: React.FC<Props> = ({ petId, petName, onBack }) =>
           <Text style={styles.statusBadgeText}>{item.status.toUpperCase()}</Text>
         </View>
       </View>
-      <Text style={styles.cardMeta}>
-        Travel: {new Date(item.travelDate).toLocaleDateString()}
-      </Text>
+      <Text style={styles.cardMeta}>Travel: {new Date(item.travelDate).toLocaleDateString()}</Text>
       <Text style={styles.cardMeta}>
         Compliance: {item.complianceScore}% · Generated:{' '}
         {new Date(item.generatedAt).toLocaleDateString()}
@@ -202,15 +202,11 @@ const TravelCertificateScreen: React.FC<Props> = ({ petId, petName, onBack }) =>
         <View style={styles.checkContent}>
           <Text style={styles.checkName}>{check.requirementName}</Text>
           <View style={[styles.typePill, typePillStyle(check.requirementType)]}>
-            <Text style={styles.typePillText}>
-              {check.requirementType.replace('_', ' ')}
-            </Text>
+            <Text style={styles.typePillText}>{check.requirementType.replace('_', ' ')}</Text>
           </View>
         </View>
       </View>
-      {check.details ? (
-        <Text style={styles.checkDetails}>{check.details}</Text>
-      ) : null}
+      {check.details ? <Text style={styles.checkDetails}>{check.details}</Text> : null}
       {!check.met && check.actionRequired ? (
         <View style={styles.actionBox}>
           <Text style={styles.actionLabel}>Action required:</Text>
@@ -279,11 +275,10 @@ const TravelCertificateScreen: React.FC<Props> = ({ petId, petName, onBack }) =>
           {selectedCert.isBlockchainAnchored ? (
             <View style={styles.blockchainCard}>
               <Text style={styles.blockchainTitle}>🔗 Anchored on Stellar</Text>
+              <Text style={styles.blockchainMeta}>TX: {selectedCert.blockchainTxHash}</Text>
               <Text style={styles.blockchainMeta}>
-                TX: {selectedCert.blockchainTxHash}
-              </Text>
-              <Text style={styles.blockchainMeta}>
-                Anchored: {selectedCert.blockchainAnchoredAt
+                Anchored:{' '}
+                {selectedCert.blockchainAnchoredAt
                   ? new Date(selectedCert.blockchainAnchoredAt).toLocaleString()
                   : 'N/A'}
               </Text>
@@ -315,8 +310,10 @@ const TravelCertificateScreen: React.FC<Props> = ({ petId, petName, onBack }) =>
           </TouchableOpacity>
 
           <Text style={styles.disclaimer}>
-            Certificate ID: {selectedCert.id}{'\n'}
-            Generated: {new Date(selectedCert.generatedAt).toLocaleString()}{'\n'}
+            Certificate ID: {selectedCert.id}
+            {'\n'}
+            Generated: {new Date(selectedCert.generatedAt).toLocaleString()}
+            {'\n'}
             Always verify requirements with official government sources before travel.
           </Text>
         </ScrollView>
@@ -347,8 +344,14 @@ const TravelCertificateScreen: React.FC<Props> = ({ petId, petName, onBack }) =>
             accessibilityRole="button"
             accessibilityLabel="Select destination country"
           >
-            <Text style={selectedCountry ? styles.countrySelectorText : styles.countrySelectorPlaceholder}>
-              {selectedCountry ? `${selectedCountry.name} (${selectedCountry.code})` : 'Select a country…'}
+            <Text
+              style={
+                selectedCountry ? styles.countrySelectorText : styles.countrySelectorPlaceholder
+              }
+            >
+              {selectedCountry
+                ? `${selectedCountry.name} (${selectedCountry.code})`
+                : 'Select a country…'}
             </Text>
             <Text style={styles.chevron}>›</Text>
           </TouchableOpacity>
@@ -464,9 +467,7 @@ const TravelCertificateScreen: React.FC<Props> = ({ petId, petName, onBack }) =>
           data={certificates}
           keyExtractor={(c) => c.id}
           renderItem={renderCertCard}
-          contentContainerStyle={
-            certificates.length === 0 ? styles.emptyContainer : styles.list
-          }
+          contentContainerStyle={certificates.length === 0 ? styles.emptyContainer : styles.list}
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <Text style={styles.emptyIcon}>✈️</Text>
@@ -539,7 +540,13 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center' },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
   emptyTitle: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 8 },
-  emptySubtitle: { fontSize: 14, color: '#6B7280', textAlign: 'center', marginBottom: 24, lineHeight: 20 },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
 
   // Certificate card
   card: {
@@ -552,7 +559,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  cardRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
   cardCountry: { fontSize: 16, fontWeight: '700', color: '#111827', flex: 1 },
   cardMeta: { fontSize: 12, color: '#6B7280', marginTop: 2 },
   anchoredBadge: { fontSize: 11, color: '#1E40AF', marginTop: 4, fontWeight: '600' },
@@ -590,7 +602,13 @@ const styles = StyleSheet.create({
   alertTitle: { fontSize: 14, fontWeight: '700', color: '#991B1B', marginBottom: 8 },
   alertItem: { fontSize: 13, color: '#7F1D1D', marginBottom: 4, lineHeight: 18 },
 
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#374151', marginBottom: 10, marginTop: 8 },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 10,
+    marginTop: 8,
+  },
 
   // Requirement checks
   checkRow: {

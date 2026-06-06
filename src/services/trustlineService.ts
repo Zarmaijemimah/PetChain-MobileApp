@@ -126,8 +126,7 @@ export async function loadTrustlineState(publicKey: string): Promise<TrustlineSt
       account.balances as StellarSdk.Horizon.HorizonApi.BalanceLine[],
     );
 
-    const totalReservedXlm =
-      BASE_RESERVE_XLM + trustlines.length * XLM_RESERVE_PER_TRUSTLINE;
+    const totalReservedXlm = BASE_RESERVE_XLM + trustlines.length * XLM_RESERVE_PER_TRUSTLINE;
     const available = Math.max(0, parseFloat(xlm) - totalReservedXlm).toFixed(7);
 
     return {
@@ -239,12 +238,7 @@ export async function loadTrustlineHistory(
 ): Promise<TrustlineTransaction[]> {
   try {
     const server = getServer();
-    const ops = await server
-      .operations()
-      .forAccount(publicKey)
-      .limit(limit)
-      .order('desc')
-      .call();
+    const ops = await server.operations().forAccount(publicKey).limit(limit).order('desc').call();
 
     const results: TrustlineTransaction[] = [];
 

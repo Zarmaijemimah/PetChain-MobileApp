@@ -3,11 +3,11 @@ import { randomUUID } from 'crypto';
 
 import express from 'express';
 
-import { authenticateJWT, type AuthenticatedRequest } from '../../middleware/auth';
 import { logAuditTrail } from '../../middleware/auditLogger';
+import { authenticateJWT, type AuthenticatedRequest } from '../../middleware/auth';
 import { UserRole } from '../../models/UserRole';
-import { ok, sendError } from '../response';
-import { store } from '../store';
+import { ok, sendError } from '../../server/response';
+import { store } from '../../server/store';
 import logger from '../../utils/logger';
 
 const router = express.Router();
@@ -43,18 +43,13 @@ export interface StoredDocument {
 // ─── Quota limits (bytes) per subscription tier ───────────────────────────────
 
 const QUOTA: Record<string, number> = {
-  free: 50 * 1024 * 1024,      // 50 MB
-  premium: 500 * 1024 * 1024,  // 500 MB
+  free: 50 * 1024 * 1024, // 50 MB
+  premium: 500 * 1024 * 1024, // 500 MB
   vet: 2 * 1024 * 1024 * 1024, // 2 GB
 };
 const DEFAULT_QUOTA = QUOTA.free;
 
-const ALLOWED_MIME = new Set([
-  'application/pdf',
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-]);
+const ALLOWED_MIME = new Set(['application/pdf', 'image/jpeg', 'image/png', 'image/webp']);
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024; // 20 MB per file
 
 // ─── In-memory store extension ────────────────────────────────────────────────
@@ -162,14 +157,27 @@ router.post('/', (req: AuthenticatedRequest, res) => {
   // Validation
   if (!body.petId?.trim()) return sendError(res, 400, 'VALIDATION_ERROR', 'petId is required');
   if (!body.name?.trim()) return sendError(res, 400, 'VALIDATION_ERROR', 'name is required');
-  if (!body.mimeType?.trim()) return sendError(res, 400, 'VALIDATION_ERROR', 'mimeType is required');
-  if (!body.encryptedContent?.trim()) return sendError(res, 400, 'VALIDATION_ERROR', 'encryptedContent is required');
-  if (!body.iv?.trim() || !body.tag?.trim()) return sendError(res, 400, 'VALIDATION_ERROR', 'iv and tag are required');
+  if (!body.mimeType?.trim())
+    return sendError(res, 400, 'VALIDATION_ERROR', 'mimeType is required');
+  if (!body.encryptedContent?.trim())
+    return sendError(res, 400, 'VALIDATION_ERROR', 'encryptedContent is required');
+  if (!body.iv?.trim() || !body.tag?.trim())
+    return sendError(res, 400, 'VALIDATION_ERROR', 'iv and tag are required');
   if (!ALLOWED_MIME.has(body.mimeType)) {
-    return sendError(res, 415, 'UNSUPPORTED_MEDIA_TYPE', `Allowed types: ${[...ALLOWED_MIME].join(', ')}`);
+    return sendError(
+      res,
+      415,
+      'UNSUPPORTED_MEDIA_TYPE',
+      `Allowed types: ${[...ALLOWED_MIME].join(', ')}`,
+    );
   }
   if (!body.sizeBytes || body.sizeBytes > MAX_UPLOAD_BYTES) {
-    return sendError(res, 413, 'FILE_TOO_LARGE', `Maximum file size is ${MAX_UPLOAD_BYTES / 1024 / 1024} MB`);
+    return sendError(
+      res,
+      413,
+      'FILE_TOO_LARGE',
+      `Maximum file size is ${MAX_UPLOAD_BYTES / 1024 / 1024} MB`,
+    );
   }
 
   // Ownership check
@@ -183,7 +191,12 @@ router.post('/', (req: AuthenticatedRequest, res) => {
   const used = ownerQuotaUsed(req.user!.id);
   const limit = ownerQuotaLimit(req);
   if (used + body.sizeBytes > limit) {
-    return sendError(res, 413, 'QUOTA_EXCEEDED', `Storage quota exceeded. Used: ${used}, Limit: ${limit}`);
+    return sendError(
+      res,
+      413,
+      'QUOTA_EXCEEDED',
+      `Storage quota exceeded. Used: ${used}, Limit: ${limit}`,
+    );
   }
 
   // Versioning: if parentId provided, find latest version
@@ -220,8 +233,20 @@ router.post('/', (req: AuthenticatedRequest, res) => {
   };
   docs().set(id, doc);
 
-  void logAuditTrail({ req, entityType: 'document', entityId: id, action: 'CREATE', before: null, after: safeDoc(doc) });
-  logger.info('document_uploaded', { documentId: id, petId: doc.petId, version, mimeType: doc.mimeType });
+  void logAuditTrail({
+    req,
+    entityType: 'document',
+    entityId: id,
+    action: 'CREATE',
+    before: null,
+    after: safeDoc(doc),
+  });
+  logger.info('document_uploaded', {
+    documentId: id,
+    petId: doc.petId,
+    version,
+    mimeType: doc.mimeType,
+  });
 
   return res.status(201).json({ success: true, data: safeDoc(doc) });
 });
@@ -232,12 +257,24 @@ router.delete('/:id', (req: AuthenticatedRequest, res) => {
   const doc = docs().get(req.params.id);
   if (!doc || doc.deletedAt) return sendError(res, 404, 'NOT_FOUND', 'Document not found');
   if (!canAccess(doc, req)) return sendError(res, 403, 'FORBIDDEN', 'Access denied');
-  if (req.user!.role === UserRole.VET) return sendError(res, 403, 'FORBIDDEN', 'Vets cannot delete documents');
+  if (req.user!.role === UserRole.VET)
+    return sendError(res, 403, 'FORBIDDEN', 'Vets cannot delete documents');
 
-  const deleted = { ...doc, deletedAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const deleted = {
+    ...doc,
+    deletedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
   docs().set(doc.id, deleted);
 
-  void logAuditTrail({ req, entityType: 'document', entityId: doc.id, action: 'DELETE', before: safeDoc(doc), after: safeDoc(deleted) });
+  void logAuditTrail({
+    req,
+    entityType: 'document',
+    entityId: doc.id,
+    action: 'DELETE',
+    before: safeDoc(doc),
+    after: safeDoc(deleted),
+  });
   logger.info('document_soft_deleted', { documentId: doc.id });
 
   return res.json(ok(null, 'Document deleted'));
@@ -250,7 +287,8 @@ router.post('/:id/restore', (req: AuthenticatedRequest, res) => {
   if (!doc) return sendError(res, 404, 'NOT_FOUND', 'Document not found');
   if (!doc.deletedAt) return sendError(res, 400, 'VALIDATION_ERROR', 'Document is not deleted');
   if (!canAccess(doc, req)) return sendError(res, 403, 'FORBIDDEN', 'Access denied');
-  if (req.user!.role === UserRole.VET) return sendError(res, 403, 'FORBIDDEN', 'Vets cannot restore documents');
+  if (req.user!.role === UserRole.VET)
+    return sendError(res, 403, 'FORBIDDEN', 'Vets cannot restore documents');
 
   // Quota check on restore
   const used = ownerQuotaUsed(doc.ownerId);
@@ -262,7 +300,14 @@ router.post('/:id/restore', (req: AuthenticatedRequest, res) => {
   const restored = { ...doc, deletedAt: undefined, updatedAt: new Date().toISOString() };
   docs().set(doc.id, restored);
 
-  void logAuditTrail({ req, entityType: 'document', entityId: doc.id, action: 'UPDATE', before: safeDoc(doc), after: safeDoc(restored) });
+  void logAuditTrail({
+    req,
+    entityType: 'document',
+    entityId: doc.id,
+    action: 'UPDATE',
+    before: safeDoc(doc),
+    after: safeDoc(restored),
+  });
   logger.info('document_restored', { documentId: doc.id });
 
   return res.json({ success: true, data: safeDoc(restored) });

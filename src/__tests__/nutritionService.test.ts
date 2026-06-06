@@ -3,6 +3,7 @@
  * Closes #68
  */
 
+import type { FoodItem, NutritionLog } from '../models/NutritionLog';
 import {
   calculateCaloriesFromFood,
   calculateRecommendedCalories,
@@ -11,7 +12,6 @@ import {
   sumCalories,
   sumMacro,
 } from '../services/nutritionService';
-import type { FoodItem, NutritionLog } from '../models/NutritionLog';
 
 // ─── Mock AsyncStorage ────────────────────────────────────────────────────────
 
@@ -275,32 +275,52 @@ describe('getDietaryRecommendations', () => {
 
   it('includes cat-specific tip for cats', () => {
     const tips = getDietaryRecommendations('cat', 'Persian', []);
-    expect(tips.some((t) => t.toLowerCase().includes('carnivore') || t.toLowerCase().includes('taurine'))).toBe(true);
+    expect(
+      tips.some(
+        (t) => t.toLowerCase().includes('carnivore') || t.toLowerCase().includes('taurine'),
+      ),
+    ).toBe(true);
   });
 
   it('includes obesity tip when obesity is a health condition', () => {
     const tips = getDietaryRecommendations('dog', 'Beagle', ['obesity']);
-    expect(tips.some((t) => t.toLowerCase().includes('obes') || t.toLowerCase().includes('calorie'))).toBe(true);
+    expect(
+      tips.some((t) => t.toLowerCase().includes('obes') || t.toLowerCase().includes('calorie')),
+    ).toBe(true);
   });
 
   it('includes diabetes tip when diabetes is a health condition', () => {
     const tips = getDietaryRecommendations('dog', 'Poodle', ['diabetes']);
-    expect(tips.some((t) => t.toLowerCase().includes('diabet') || t.toLowerCase().includes('blood sugar'))).toBe(true);
+    expect(
+      tips.some(
+        (t) => t.toLowerCase().includes('diabet') || t.toLowerCase().includes('blood sugar'),
+      ),
+    ).toBe(true);
   });
 
   it('includes kidney disease tip when kidney_disease is a health condition', () => {
     const tips = getDietaryRecommendations('dog', 'Shih Tzu', ['kidney_disease']);
-    expect(tips.some((t) => t.toLowerCase().includes('kidney') || t.toLowerCase().includes('phosphorus'))).toBe(true);
+    expect(
+      tips.some(
+        (t) => t.toLowerCase().includes('kidney') || t.toLowerCase().includes('phosphorus'),
+      ),
+    ).toBe(true);
   });
 
   it('includes heart disease tip when heart_disease is a health condition', () => {
     const tips = getDietaryRecommendations('cat', 'Siamese', ['heart_disease']);
-    expect(tips.some((t) => t.toLowerCase().includes('sodium') || t.toLowerCase().includes('heart'))).toBe(true);
+    expect(
+      tips.some((t) => t.toLowerCase().includes('sodium') || t.toLowerCase().includes('heart')),
+    ).toBe(true);
   });
 
   it('includes allergy tip when allergies is a health condition', () => {
     const tips = getDietaryRecommendations('dog', 'Bulldog', ['allergies']);
-    expect(tips.some((t) => t.toLowerCase().includes('allergen') || t.toLowerCase().includes('ingredient'))).toBe(true);
+    expect(
+      tips.some(
+        (t) => t.toLowerCase().includes('allergen') || t.toLowerCase().includes('ingredient'),
+      ),
+    ).toBe(true);
   });
 
   it('returns a generic tip for unknown species with no conditions', () => {

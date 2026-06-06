@@ -44,9 +44,7 @@ export async function generateTravelCertificate(
 }
 
 /** Fetch all travel certificates for a pet */
-export async function getPetTravelCertificates(
-  petId: string,
-): Promise<TravelHealthCertificate[]> {
+export async function getPetTravelCertificates(petId: string): Promise<TravelHealthCertificate[]> {
   try {
     const res = await apiClient.get<{ success: boolean; data: TravelHealthCertificate[] }>(
       `/travel-certificates/pet/${petId}`,

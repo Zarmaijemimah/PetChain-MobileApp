@@ -88,10 +88,7 @@ function rowToTemplate(row: Record<string, unknown>): NotificationTemplate {
  * Fetches a single template row for (key, locale), with Redis caching.
  * Returns null if not found or inactive.
  */
-async function fetchTemplate(
-  key: string,
-  locale: string,
-): Promise<NotificationTemplate | null> {
+async function fetchTemplate(key: string, locale: string): Promise<NotificationTemplate | null> {
   const ck = templateCacheKey(key, locale);
   const cached = await cacheGet<NotificationTemplate>(ck);
   if (cached) return cached;
@@ -156,9 +153,18 @@ export async function listTemplates(opts: {
   const conditions: string[] = [];
   const values: unknown[] = [];
 
-  if (opts.key) { values.push(opts.key); conditions.push(`key = $${values.length}`); }
-  if (opts.locale) { values.push(opts.locale); conditions.push(`locale = $${values.length}`); }
-  if (opts.isActive !== undefined) { values.push(opts.isActive); conditions.push(`is_active = $${values.length}`); }
+  if (opts.key) {
+    values.push(opts.key);
+    conditions.push(`key = $${values.length}`);
+  }
+  if (opts.locale) {
+    values.push(opts.locale);
+    conditions.push(`locale = $${values.length}`);
+  }
+  if (opts.isActive !== undefined) {
+    values.push(opts.isActive);
+    conditions.push(`is_active = $${values.length}`);
+  }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const limit = Math.min(opts.limit ?? 50, 200);
@@ -228,9 +234,18 @@ export async function updateTemplate(
   const sets: string[] = [];
   const values: unknown[] = [];
 
-  if (input.title !== undefined) { values.push(input.title.trim()); sets.push(`title = $${values.length}`); }
-  if (input.body !== undefined) { values.push(input.body.trim()); sets.push(`body = $${values.length}`); }
-  if (input.isActive !== undefined) { values.push(input.isActive); sets.push(`is_active = $${values.length}`); }
+  if (input.title !== undefined) {
+    values.push(input.title.trim());
+    sets.push(`title = $${values.length}`);
+  }
+  if (input.body !== undefined) {
+    values.push(input.body.trim());
+    sets.push(`body = $${values.length}`);
+  }
+  if (input.isActive !== undefined) {
+    values.push(input.isActive);
+    sets.push(`is_active = $${values.length}`);
+  }
 
   if (sets.length === 0) return getTemplateById(id);
 

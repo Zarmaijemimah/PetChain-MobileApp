@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
 import apiClient from '../services/apiClient';
 
 type Post = {
@@ -171,12 +172,7 @@ export default function ForumScreen() {
           placeholder="Species (e.g. dog, cat)"
           style={styles.input}
         />
-        <TextInput
-          value={breed}
-          onChangeText={setBreed}
-          placeholder="Breed"
-          style={styles.input}
-        />
+        <TextInput value={breed} onChangeText={setBreed} placeholder="Breed" style={styles.input} />
         <TextInput
           value={body}
           onChangeText={setBody}
@@ -213,7 +209,9 @@ export default function ForumScreen() {
             {answers.map((answer) => (
               <View key={answer.id} style={styles.answerCard}>
                 <View style={styles.answerHeader}>
-                  <Text style={styles.answerMeta}>{answer.verified ? 'Verified vet' : 'Community'}</Text>
+                  <Text style={styles.answerMeta}>
+                    {answer.verified ? 'Verified vet' : 'Community'}
+                  </Text>
                   <Text style={styles.answerVotes}>Votes: {answer.votes}</Text>
                 </View>
                 <Text style={styles.answerBody}>{answer.body}</Text>
@@ -255,20 +253,48 @@ const styles = StyleSheet.create({
   btn: { backgroundColor: '#1976D2', padding: 14, borderRadius: 10, alignItems: 'center' },
   btnText: { color: '#fff', fontWeight: '700' },
   listContent: { paddingBottom: 24 },
-  post: { borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 12, padding: 14, marginBottom: 12, backgroundColor: '#fafafa' },
+  post: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    backgroundColor: '#fafafa',
+  },
   postHeader: { marginBottom: 8 },
   postTitle: { fontSize: 16, fontWeight: '700', marginBottom: 6 },
   postBody: { fontSize: 14, color: '#333', marginBottom: 10 },
+  answerBody: { fontSize: 14, color: '#444', marginBottom: 8 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap' },
-  tag: { backgroundColor: '#e3f2fd', color: '#0d47a1', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginRight: 6, marginBottom: 6 },
+  tag: {
+    backgroundColor: '#e3f2fd',
+    color: '#0d47a1',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginRight: 6,
+    marginBottom: 6,
+  },
   emptyText: { textAlign: 'center', color: '#777', marginTop: 24 },
   modalContainer: { flex: 1, padding: 16, backgroundColor: '#fff' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   modalTitle: { fontSize: 20, fontWeight: '700', flex: 1, marginRight: 12 },
   closeText: { color: '#1976D2', fontWeight: '700' },
   modalBody: { flex: 1 },
   sectionTitle: { fontSize: 16, fontWeight: '700', marginTop: 16, marginBottom: 8 },
-  answerCard: { borderWidth: 1, borderColor: '#e0e0e0', borderRadius: 12, padding: 12, marginBottom: 12, backgroundColor: '#fdfdfd' },
+  answerCard: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    backgroundColor: '#fdfdfd',
+  },
   answerHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   answerMeta: { fontSize: 12, color: '#555' },
   answerVotes: { fontSize: 12, color: '#555' },

@@ -12,8 +12,8 @@
 
 import { type Request, type Response } from 'express';
 import rateLimit, { type Options, type RateLimitRequestHandler } from 'express-rate-limit';
-import { RedisStore } from 'rate-limit-redis';
 import Redis from 'ioredis';
+import { RedisStore } from 'rate-limit-redis';
 
 import { type AuthenticatedRequest } from './auth';
 
@@ -69,9 +69,7 @@ const sharedOptions: Partial<Options> = {
   standardHeaders: true, // Return RateLimit-* headers
   legacyHeaders: false,
   handler: (req: Request, res: Response) => {
-    const retryAfter = Math.ceil(
-      (res.getHeader('RateLimit-Reset') as number ?? 60),
-    );
+    const retryAfter = Math.ceil((res.getHeader('RateLimit-Reset') as number) ?? 60);
     res.setHeader('Retry-After', retryAfter);
     res.status(429).json({
       error: 'TOO_MANY_REQUESTS',
@@ -84,6 +82,21 @@ const sharedOptions: Partial<Options> = {
     return req.path === '/health' || req.path === '/ready';
   },
 };
+
+// ---------------------------------------------------------------------------
+// Public rate limiter — 30 req / min per IP (unauthenticated traffic)
+// ---------------------------------------------------------------------------
+
+export const publicRateLimiter: RateLimitRequestHandler = rateLimit({
+  ...sharedOptions,
+  windowMs: 60 * 1000,
+  max: 30,
+  keyGenerator: (req: Request) =>
+    (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ??
+    req.socket.remoteAddress ??
+    'unknown',
+  store: makeStore('rl:public:'),
+});
 
 // ---------------------------------------------------------------------------
 // Auth rate limiter — 5 req / min per IP
@@ -124,10 +137,12 @@ export const dataRateLimiter: RateLimitRequestHandler = rateLimit({
   max: 100,
   keyGenerator: (req: Request) => {
     const authed = req as AuthenticatedRequest;
-    return authed.user?.id ??
+    return (
+      authed.user?.id ??
       (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ??
       req.socket.remoteAddress ??
-      'unknown';
+      'unknown'
+    );
   },
   store: makeStore('rl:data:'),
   handler: (req: Request, res: Response) => {

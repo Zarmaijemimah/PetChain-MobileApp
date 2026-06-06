@@ -115,7 +115,9 @@ describe('CRASH_FREE_THRESHOLD', () => {
 
 describe('startSession()', () => {
   it('returns a session ID and sets current session', async () => {
-    mockPost.mockResolvedValue({ data: { success: true, data: { sessionId: 'x', recorded: true } } });
+    mockPost.mockResolvedValue({
+      data: { success: true, data: { sessionId: 'x', recorded: true } },
+    });
 
     const sessionId = await sessionMonitoringService.startSession(MOCK_DEVICE);
 
@@ -234,9 +236,7 @@ describe('trackNavigation()', () => {
 
   it('is a no-op when no session is active', async () => {
     // Should not throw
-    await expect(
-      sessionMonitoringService.trackNavigation('pet_list'),
-    ).resolves.toBeUndefined();
+    await expect(sessionMonitoringService.trackNavigation('pet_list')).resolves.toBeUndefined();
   });
 
   it('tracks multiple navigation steps in order', async () => {
@@ -314,7 +314,9 @@ describe('reportCrash()', () => {
     await sessionMonitoringService.trackNavigation('qr_scan');
     await sessionMonitoringService.reportCrash(new Error('Camera crash'));
 
-    const crashCall = mockPost.mock.calls.find((c) => (c[0] as string).includes('/monitoring/crashes'));
+    const crashCall = mockPost.mock.calls.find((c) =>
+      (c[0] as string).includes('/monitoring/crashes'),
+    );
     expect(crashCall).toBeDefined();
     expect(crashCall?.[1]).toMatchObject({ activeFlow: 'qr_scan' });
   });
@@ -378,16 +380,16 @@ describe('trackUserAction()', () => {
     );
     expect(eventsCalls.length).toBeGreaterThan(0);
 
-    const payload = eventsCalls[0][1] as { events: Array<{ type: string; data: { action?: string } }> };
+    const payload = eventsCalls[0][1] as {
+      events: Array<{ type: string; data: { action?: string } }>;
+    };
     const actionEvent = payload.events.find((e) => e.type === 'user_action');
     expect(actionEvent).toBeDefined();
     expect(actionEvent?.data.action).toBe('tap_add_pet');
   });
 
   it('is a no-op when no session is active', async () => {
-    await expect(
-      sessionMonitoringService.trackUserAction('tap_button'),
-    ).resolves.toBeUndefined();
+    await expect(sessionMonitoringService.trackUserAction('tap_button')).resolves.toBeUndefined();
   });
 });
 
@@ -632,8 +634,6 @@ describe('event buffering', () => {
     mockPost.mockRejectedValue(new Error('Network down'));
 
     // Should not throw
-    await expect(
-      sessionMonitoringService.trackNavigation('pet_detail'),
-    ).resolves.toBeUndefined();
+    await expect(sessionMonitoringService.trackNavigation('pet_detail')).resolves.toBeUndefined();
   });
 });

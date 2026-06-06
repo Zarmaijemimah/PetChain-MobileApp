@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { randomUUID } from 'crypto';
 
 import { AppointmentStatus, AppointmentType } from '../models/Appointment';
@@ -21,7 +20,10 @@ export interface SeedConfig {
   seedBlockchain?: boolean;
 }
 
-export const SEED_PRESETS: Record<SeedPresetName, Required<Omit<SeedConfig, 'preset' | 'cleanup' | 'seedBlockchain'>>> = {
+export const SEED_PRESETS: Record<
+  SeedPresetName,
+  Required<Omit<SeedConfig, 'preset' | 'cleanup' | 'seedBlockchain'>>
+> = {
   minimal: {
     numOwners: 2,
     numVets: 1,
@@ -261,7 +263,11 @@ async function ensureSeedTrackingTables(): Promise<void> {
   `);
 }
 
-async function linkSeedRecord(seedRunId: string, tableName: keyof SeededRecordIds, id: string): Promise<void> {
+async function linkSeedRecord(
+  seedRunId: string,
+  tableName: keyof SeededRecordIds,
+  id: string,
+): Promise<void> {
   const mapping = {
     users: 'seed_run_users',
     pets: 'seed_run_pets',
@@ -279,7 +285,10 @@ async function linkSeedRecord(seedRunId: string, tableName: keyof SeededRecordId
     medications: 'medication_id',
   }[tableName];
 
-  await query(`INSERT INTO ${relationTable} (seed_run_id, ${idColumn}) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [seedRunId, id]);
+  await query(
+    `INSERT INTO ${relationTable} (seed_run_id, ${idColumn}) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+    [seedRunId, id],
+  );
 }
 
 async function cleanupSeedData(seedRunId?: string): Promise<void> {
@@ -296,14 +305,20 @@ async function cleanupSeedData(seedRunId?: string): Promise<void> {
   ] as const;
 
   for (const [relationTable, columnName] of tables) {
-    await query(`DELETE FROM ${relationTable.replace('seed_run_', '')} WHERE id IN (SELECT ${columnName} FROM ${relationTable} WHERE seed_run_id = $1)`, [seedRunId]);
+    await query(
+      `DELETE FROM ${relationTable.replace('seed_run_', '')} WHERE id IN (SELECT ${columnName} FROM ${relationTable} WHERE seed_run_id = $1)`,
+      [seedRunId],
+    );
   }
 
   await query('DELETE FROM seed_runs WHERE id = $1', [seedRunId]);
 }
 
 // Seed functions
-async function seedUsers(config: Required<SeedConfig>, seededIds: SeededRecordIds): Promise<Map<string, string>> {
+async function seedUsers(
+  config: Required<SeedConfig>,
+  seededIds: SeededRecordIds,
+): Promise<Map<string, string>> {
   console.log(`\n📝 Seeding ${config.numOwners} owners and ${config.numVets} vets...`);
 
   const userIds = new Map<string, string>();
@@ -506,7 +521,18 @@ async function seedMedications(
       await query(
         `INSERT INTO medications (id, pet_id, name, dosage, frequency, start_date, end_date, status, duration_days, instructions, created_at, updated_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())`,
-        [id, petId, name, dosage, frequency, startDate, endDate, status, durationDays, instructions],
+        [
+          id,
+          petId,
+          name,
+          dosage,
+          frequency,
+          startDate,
+          endDate,
+          status,
+          durationDays,
+          instructions,
+        ],
       );
 
       seededIds.medications.push(id);
@@ -518,7 +544,10 @@ async function seedMedications(
   console.log(`  Total medications created: ${medicationCount}`);
 }
 
-async function seedBlockchainTransactions(seedRunId: string, medicalRecordIds: string[]): Promise<void> {
+async function seedBlockchainTransactions(
+  seedRunId: string,
+  medicalRecordIds: string[],
+): Promise<void> {
   for (const recordId of medicalRecordIds) {
     try {
       await stellarAnchorService.anchorRecord({
@@ -532,13 +561,21 @@ async function seedBlockchainTransactions(seedRunId: string, medicalRecordIds: s
   }
 }
 
-export async function seed(config: Partial<SeedConfig> = {}): Promise<ReturnType<typeof buildSeedSummary>> {
+export async function seed(
+  config: Partial<SeedConfig> = {},
+): Promise<ReturnType<typeof buildSeedSummary>> {
   const finalConfig = resolveSeedConfig(config);
 
   console.log('\n🌱 Starting PetChain database seeding...');
   console.log('Configuration:', finalConfig);
 
-  const seededIds: SeededRecordIds = { users: [], pets: [], medicalRecords: [], appointments: [], medications: [] };
+  const seededIds: SeededRecordIds = {
+    users: [],
+    pets: [],
+    medicalRecords: [],
+    appointments: [],
+    medications: [],
+  };
 
   try {
     await ensureSeedTrackingTables();
@@ -549,7 +586,10 @@ export async function seed(config: Partial<SeedConfig> = {}): Promise<ReturnType
     }
 
     const seedRunId = randomUUID();
-    await query('INSERT INTO seed_runs (id, label) VALUES ($1, $2)', [seedRunId, `${finalConfig.preset}-${Date.now()}`]);
+    await query('INSERT INTO seed_runs (id, label) VALUES ($1, $2)', [
+      seedRunId,
+      `${finalConfig.preset}-${Date.now()}`,
+    ]);
 
     const userIds = await seedUsers(finalConfig, seededIds);
     const petIds = await seedPets(finalConfig, userIds, seededIds);
@@ -557,7 +597,9 @@ export async function seed(config: Partial<SeedConfig> = {}): Promise<ReturnType
     await seedAppointments(finalConfig, userIds, petIds, seededIds);
     await seedMedications(finalConfig, petIds, seededIds);
 
-    for (const [tableName, ids] of Object.entries(seededIds) as Array<[keyof SeededRecordIds, string[]]>) {
+    for (const [tableName, ids] of Object.entries(seededIds) as Array<
+      [keyof SeededRecordIds, string[]]
+    >) {
       for (const id of ids) {
         await linkSeedRecord(seedRunId, tableName, id);
       }

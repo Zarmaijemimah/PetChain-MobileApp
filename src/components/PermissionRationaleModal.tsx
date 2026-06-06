@@ -47,9 +47,7 @@ const PermissionRationaleModal: React.FC<Props> = ({
             {rationale.benefits.map((benefit) => (
               <View key={benefit} style={styles.benefitRow}>
                 <Text style={[styles.checkmark, { color: colors.success }]}>✓</Text>
-                <Text style={[styles.benefitText, { color: colors.secondaryText }]}>
-                  {benefit}
-                </Text>
+                <Text style={[styles.benefitText, { color: colors.secondaryText }]}>{benefit}</Text>
               </View>
             ))}
           </View>

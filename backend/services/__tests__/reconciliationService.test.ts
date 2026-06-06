@@ -13,9 +13,9 @@
  * - Concurrent run guard works
  */
 
-import { hashRecord, ReconciliationService } from '../reconciliationService';
 import type { StoredMedicalRecord } from '../../server/store';
 import { store } from '../../server/store';
+import { hashRecord, ReconciliationService } from '../reconciliationService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -150,7 +150,11 @@ describe('ReconciliationService', () => {
       // Seed store with known records
       const clean = makeRecord({ id: 'r-clean' });
       const cleanHash = hashRecord(clean);
-      store.medicalRecords.set('r-clean', { ...clean, blockchainHash: cleanHash, blockchainTxHash: 'tx-1' });
+      store.medicalRecords.set('r-clean', {
+        ...clean,
+        blockchainHash: cleanHash,
+        blockchainTxHash: 'tx-1',
+      });
 
       const tampered = makeRecord({ id: 'r-tampered', notes: 'MODIFIED' });
       const originalHash = hashRecord(makeRecord({ id: 'r-tampered' })); // original hash

@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+
 import NetInfo from '@react-native-community/netinfo';
 
 import config from '../config';
@@ -63,8 +64,8 @@ export interface EventServiceStatus {
 // ─── Default Configuration ────────────────────────────────────────────────────
 
 const DEFAULT_CONFIG: EventServiceConfig = {
-  websocketUrl: config.isDev 
-    ? 'ws://localhost:3001/blockchain-events' 
+  websocketUrl: config.isDev
+    ? 'ws://localhost:3001/blockchain-events'
     : 'wss://api.petchain.app/blockchain-events',
   reconnectDelay: 3000,
   maxReconnectAttempts: 10,
@@ -86,7 +87,7 @@ export class BlockchainEventService extends EventEmitter {
   constructor(customConfig?: Partial<EventServiceConfig>) {
     super();
     this.config = { ...DEFAULT_CONFIG, ...customConfig };
-    
+
     this.status = {
       connected: false,
       lastEventTime: null,
@@ -111,7 +112,7 @@ export class BlockchainEventService extends EventEmitter {
 
     this.isManuallyDisconnected = false;
     this.status.subscribedAccounts = accounts;
-    
+
     try {
       await this.createWebSocketConnection();
     } catch (error) {
@@ -131,16 +132,16 @@ export class BlockchainEventService extends EventEmitter {
    */
   disconnect(): void {
     loggerService.info('Manually disconnecting from blockchain events');
-    
+
     this.isManuallyDisconnected = true;
     this.clearReconnectTimeout();
     this.clearHeartbeat();
-    
+
     if (this.websocket) {
       this.websocket.close(1000, 'Manual disconnect');
       this.websocket = null;
     }
-    
+
     this.updateConnectionStatus(false);
   }
 
@@ -149,13 +150,13 @@ export class BlockchainEventService extends EventEmitter {
    */
   subscribeToAccounts(accounts: string[]): void {
     this.status.subscribedAccounts = accounts;
-    
+
     if (this.websocket !== null && this.websocket.readyState === 1 /* OPEN */) {
       this.sendMessage({
         type: 'subscribe',
         accounts,
       });
-      
+
       loggerService.debug('Subscribed to accounts', { accounts });
     }
   }
@@ -184,7 +185,6 @@ export class BlockchainEventService extends EventEmitter {
 
       this.emit('verificationUpdate', verificationEvent);
       return verificationEvent;
-      
     } catch (error) {
       loggerService.error('Failed to check record verification', {
         recordId,
@@ -199,12 +199,13 @@ export class BlockchainEventService extends EventEmitter {
   private async createWebSocketConnection(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        loggerService.info('Connecting to blockchain events', { 
+        loggerService.info('Connecting to blockchain events', {
           url: this.config.websocketUrl,
-          accounts: this.status.subscribedAccounts 
+          accounts: this.status.subscribedAccounts,
         });
 
         // Declare timeout handle first so closures can reference it
+        // eslint-disable-next-line prefer-const
         let timeoutHandle: ReturnType<typeof setTimeout>;
         let settled = false;
 
@@ -256,7 +257,6 @@ export class BlockchainEventService extends EventEmitter {
             reject(new Error('Connection timeout'));
           });
         }, this.config.connectionTimeoutMs);
-
       } catch (error) {
         reject(error);
       }
@@ -272,24 +272,23 @@ export class BlockchainEventService extends EventEmitter {
         case 'transaction':
           this.handleTransactionEvent(message);
           break;
-          
+
         case 'verification_update':
           this.handleVerificationUpdate(message);
           break;
-          
+
         case 'status':
           this.handleStatusUpdate(message);
           break;
-          
+
         case 'pong':
           // Heartbeat response
           loggerService.debug('Received heartbeat pong');
           break;
-          
+
         default:
           loggerService.debug('Unknown message type', { type: message.type });
       }
-      
     } catch (error) {
       loggerService.error('Failed to parse WebSocket message', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -391,7 +390,7 @@ export class BlockchainEventService extends EventEmitter {
 
     this.reconnectTimeout = setTimeout(async () => {
       this.reconnectTimeout = null;
-      
+
       try {
         await this.createWebSocketConnection();
       } catch (error) {
@@ -401,7 +400,7 @@ export class BlockchainEventService extends EventEmitter {
         // Schedule next attempt — onclose may not fire if connection never opened
         this.scheduleReconnection();
       }
-    }, delay);
+    }, delay) as unknown as NodeJS.Timeout;
   }
 
   private updateConnectionStatus(connected: boolean): void {
@@ -436,10 +435,10 @@ export class BlockchainEventService extends EventEmitter {
 
   private startHeartbeat(): void {
     this.clearHeartbeat();
-    
+
     this.heartbeatInterval = setInterval(() => {
       this.sendMessage({ type: 'ping' });
-    }, this.config.heartbeatInterval);
+    }, this.config.heartbeatInterval) as unknown as NodeJS.Timeout;
   }
 
   private clearHeartbeat(): void {
@@ -457,10 +456,10 @@ export class BlockchainEventService extends EventEmitter {
   }
 
   private setupNetworkMonitoring(): void {
-    this.networkListener = NetInfo.addEventListener(state => {
+    this.networkListener = NetInfo.addEventListener((state) => {
       if (state.isConnected && !this.status.connected && !this.isManuallyDisconnected) {
         loggerService.info('Network reconnected, attempting to reconnect to blockchain events');
-        this.connect(this.status.subscribedAccounts).catch(error => {
+        this.connect(this.status.subscribedAccounts).catch((error) => {
           loggerService.error('Failed to reconnect after network recovery', {
             error: error instanceof Error ? error.message : 'Unknown error',
           });
@@ -474,12 +473,12 @@ export class BlockchainEventService extends EventEmitter {
    */
   destroy(): void {
     this.disconnect();
-    
+
     if (this.networkListener) {
       this.networkListener();
       this.networkListener = null;
     }
-    
+
     this.removeAllListeners();
   }
 }

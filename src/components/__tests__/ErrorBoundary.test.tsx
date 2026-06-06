@@ -7,18 +7,16 @@
  * which run in the standard Node/ts-jest environment configured in
  * package.json.
  */
-import { scrubPII } from '../ErrorBoundary';
-import { ErrorBoundary } from '../ErrorBoundary';
 import React from 'react';
+
+import { scrubPII, ErrorBoundary } from '../ErrorBoundary';
 
 // ---------------------------------------------------------------------------
 // scrubPII unit tests
 // ---------------------------------------------------------------------------
 describe('scrubPII', () => {
   it('redacts email addresses', () => {
-    expect(scrubPII('Contact user@example.com for help')).not.toContain(
-      'user@example.com'
-    );
+    expect(scrubPII('Contact user@example.com for help')).not.toContain('user@example.com');
     expect(scrubPII('Contact user@example.com for help')).toContain('[email]');
   });
 

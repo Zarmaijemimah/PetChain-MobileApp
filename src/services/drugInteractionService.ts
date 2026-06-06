@@ -43,14 +43,16 @@ const KNOWN_INTERACTIONS: DrugInteraction[] = [
     drugA: 'carprofen',
     drugB: 'prednisone',
     severity: 'severe',
-    description: 'Concurrent NSAID and corticosteroid use significantly increases risk of GI ulceration and perforation.',
+    description:
+      'Concurrent NSAID and corticosteroid use significantly increases risk of GI ulceration and perforation.',
     recommendation: 'Avoid concurrent use. If necessary, use GI protectants and monitor closely.',
   },
   {
     drugA: 'meloxicam',
     drugB: 'prednisone',
     severity: 'severe',
-    description: 'Concurrent NSAID and corticosteroid use significantly increases risk of GI ulceration.',
+    description:
+      'Concurrent NSAID and corticosteroid use significantly increases risk of GI ulceration.',
     recommendation: 'Avoid concurrent use. Consider alternative pain management.',
   },
   {
@@ -71,14 +73,16 @@ const KNOWN_INTERACTIONS: DrugInteraction[] = [
     drugA: 'enrofloxacin',
     drugB: 'doxycycline',
     severity: 'mild',
-    description: 'Combining two broad-spectrum antibiotics may increase risk of resistance and GI upset.',
+    description:
+      'Combining two broad-spectrum antibiotics may increase risk of resistance and GI upset.',
     recommendation: 'Use only when culture results justify dual therapy.',
   },
   {
     drugA: 'amoxicillin',
     drugB: 'doxycycline',
     severity: 'mild',
-    description: 'Bacteriostatic (doxycycline) may reduce efficacy of bactericidal (amoxicillin) antibiotics.',
+    description:
+      'Bacteriostatic (doxycycline) may reduce efficacy of bactericidal (amoxicillin) antibiotics.',
     recommendation: 'Avoid concurrent use unless specifically indicated.',
   },
 ];
@@ -177,8 +181,10 @@ export async function checkDrugInteractions(
       ) {
         const alreadyFound = interactions.some(
           (i) =>
-            (normalise(i.drugA) === normalise(newDrug) && normalise(i.drugB) === normalise(existing)) ||
-            (normalise(i.drugA) === normalise(existing) && normalise(i.drugB) === normalise(newDrug)),
+            (normalise(i.drugA) === normalise(newDrug) &&
+              normalise(i.drugB) === normalise(existing)) ||
+            (normalise(i.drugA) === normalise(existing) &&
+              normalise(i.drugB) === normalise(newDrug)),
         );
         if (!alreadyFound) {
           interactions.push({
@@ -208,7 +214,10 @@ export async function recordVetOverride(override: Omit<VetOverride, 'timestamp'>
 /**
  * Check if a specific interaction has been overridden by a vet.
  */
-export async function isInteractionOverridden(drugA: string, drugB: string): Promise<VetOverride | null> {
+export async function isInteractionOverridden(
+  drugA: string,
+  drugB: string,
+): Promise<VetOverride | null> {
   const overrides = await getStoredOverrides();
   return (
     overrides.find(

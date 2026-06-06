@@ -64,7 +64,9 @@ export async function verifyRecord(record: MedicalRecord): Promise<VerificationR
   if (cached) return cached;
 
   try {
-    const verification: StellarRecordVerification = await verifyMedicalRecord(record);
+    const verification: StellarRecordVerification = await verifyMedicalRecord(
+      record as import('./blockchainService').MedicalRecordWithChainData,
+    );
 
     let txDetails: StellarTransactionDetails | undefined;
     if (verification.txHash) {

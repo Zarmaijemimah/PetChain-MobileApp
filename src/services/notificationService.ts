@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Linking } from 'react-native';
 
+import apiClient from './apiClient';
 import { getItem, setItem, removeItem } from './localDB';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -95,6 +96,7 @@ const CATEGORY_BY_GROUP: Record<NotificationGroup, NotificationCategory> = {
   vaccination: 'health',
   alert: 'health',
   scheduled: 'general',
+  sos: 'health',
 };
 
 const resolveNotificationCategory = (
@@ -726,8 +728,6 @@ export const cancelScheduledNotification = async (notificationId: string): Promi
 
 // ─── Push token registration ──────────────────────────────────────────────────
 
-import apiClient from './apiClient';
-
 export type PushTopic =
   | 'medication_reminders'
   | 'appointment_alerts'
@@ -779,10 +779,14 @@ export async function getTopicSubscriptions(): Promise<PushTopic[]> {
 }
 
 /** Get push preferences from backend. */
-export async function getServerPreferences(): Promise<{ enabled: boolean; topics: Record<PushTopic, boolean> }> {
-  const res = await apiClient.get<{ success: boolean; data: { enabled: boolean; topics: Record<PushTopic, boolean> } }>(
-    '/api/notifications/preferences',
-  );
+export async function getServerPreferences(): Promise<{
+  enabled: boolean;
+  topics: Record<PushTopic, boolean>;
+}> {
+  const res = await apiClient.get<{
+    success: boolean;
+    data: { enabled: boolean; topics: Record<PushTopic, boolean> };
+  }>('/api/notifications/preferences');
   return res.data.data;
 }
 

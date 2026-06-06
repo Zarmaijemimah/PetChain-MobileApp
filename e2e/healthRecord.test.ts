@@ -6,10 +6,14 @@ describe('Log Health Record', () => {
       newInstance: true,
       launchArgs: { detoxSeed: 'test', detoxSkipOnboarding: 'true' },
     });
-    await waitFor(element(by.id('pet-list-screen'))).toBeVisible().withTimeout(10000);
+    await waitFor(element(by.id('pet-list-screen')))
+      .toBeVisible()
+      .withTimeout(10000);
     // Navigate to the seeded pet
     await element(by.id('pet-list-item-0')).tap();
-    await waitFor(element(by.id('pet-detail-screen'))).toBeVisible().withTimeout(5000);
+    await waitFor(element(by.id('pet-detail-screen')))
+      .toBeVisible()
+      .withTimeout(5000);
   });
 
   afterAll(async () => {
@@ -44,7 +48,9 @@ describe('Log Health Record', () => {
 
   it('searches for the health record', async () => {
     await element(by.id('search-records-button')).tap();
-    await waitFor(element(by.id('search-input'))).toBeVisible().withTimeout(5000);
+    await waitFor(element(by.id('search-input')))
+      .toBeVisible()
+      .withTimeout(5000);
     await element(by.id('search-input')).typeText('Annual');
     await waitFor(element(by.text('Annual checkup — all clear')))
       .toBeVisible()

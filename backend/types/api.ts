@@ -788,7 +788,15 @@ export interface CrashReportResponse {
 export interface SessionEventPayload {
   id: string;
   sessionId: string;
-  type: 'session_start' | 'session_end' | 'navigation' | 'error' | 'crash' | 'user_action' | 'network_error' | 'api_error';
+  type:
+    | 'session_start'
+    | 'session_end'
+    | 'navigation'
+    | 'error'
+    | 'crash'
+    | 'user_action'
+    | 'network_error'
+    | 'api_error';
   flow: string;
   timestamp: number;
   data: Record<string, unknown>;

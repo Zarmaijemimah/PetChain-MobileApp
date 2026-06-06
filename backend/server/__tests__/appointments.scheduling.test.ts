@@ -8,12 +8,13 @@
 
 // ─── Backend route tests ──────────────────────────────────────────────────────
 
-import request from 'supertest';
 import express from 'express';
-import appointmentsRouter from '../../../backend/server/routes/appointments';
-import { store } from '../../../backend/server/store';
+import request from 'supertest';
+
 import { AppointmentStatus, AppointmentType } from '../../../backend/models/Appointment';
 import { UserRole } from '../../../backend/models/UserRole';
+import appointmentsRouter from '../../../backend/server/routes/appointments';
+import { store } from '../../../backend/server/store';
 
 // Mock auth middleware to inject user
 jest.mock('../../../backend/middleware/auth', () => ({
@@ -154,7 +155,7 @@ describe('POST /appointments', () => {
     expect(second.status).toBe(409);
   });
 
-  it('returns 403 when owner tries to book for another owner\'s pet', async () => {
+  it("returns 403 when owner tries to book for another owner's pet", async () => {
     const { date, time } = futureDate(30);
     const res = await request(app)
       .post('/appointments')
@@ -225,9 +226,7 @@ describe('POST /appointments/:id/cancel', () => {
   });
 
   it('returns 400 when cancelling an already-cancelled appointment', async () => {
-    await request(app)
-      .post(`/appointments/${apptId}/cancel`)
-      .set('x-test-user', OWNER_HEADER);
+    await request(app).post(`/appointments/${apptId}/cancel`).set('x-test-user', OWNER_HEADER);
 
     const res = await request(app)
       .post(`/appointments/${apptId}/cancel`)
@@ -246,9 +245,7 @@ describe('POST /appointments/:id/cancel', () => {
 
   it('frees the slot after cancellation', async () => {
     const appt = store.appointments.get(apptId)!;
-    await request(app)
-      .post(`/appointments/${apptId}/cancel`)
-      .set('x-test-user', OWNER_HEADER);
+    await request(app).post(`/appointments/${apptId}/cancel`).set('x-test-user', OWNER_HEADER);
 
     // Same slot should now be bookable
     const res = await request(app)
@@ -322,9 +319,7 @@ describe('POST /appointments/:id/reschedule', () => {
   });
 
   it('returns 400 when rescheduling a cancelled appointment', async () => {
-    await request(app)
-      .post(`/appointments/${apptId}/cancel`)
-      .set('x-test-user', OWNER_HEADER);
+    await request(app).post(`/appointments/${apptId}/cancel`).set('x-test-user', OWNER_HEADER);
 
     const { date, time } = futureDate(75);
     const res = await request(app)

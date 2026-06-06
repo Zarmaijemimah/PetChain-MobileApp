@@ -32,7 +32,8 @@ export type AuditAction =
   | 'rbac.access_granted'
   | 'rbac.token_invalid'
   | 'rbac.token_expired'
-  | 'rbac.token_revoked';
+  | 'rbac.token_revoked'
+  | (string & {});
 
 export type AuditResourceType =
   | 'user'
@@ -40,7 +41,8 @@ export type AuditResourceType =
   | 'medical_record'
   | 'appointment'
   | 'medication'
-  | 'access_grant';
+  | 'access_grant'
+  | (string & {});
 
 export type AuditOutcome = 'success' | 'denied' | 'error';
 

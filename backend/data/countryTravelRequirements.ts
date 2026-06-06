@@ -44,14 +44,34 @@ export const COUNTRY_REQUIREMENTS: CountryTravelRequirements[] = [
     applicableSpecies: ['dog', 'cat'],
     lastUpdated: '2026-01-15',
     vaccinations: [
-      { vaccineName: 'Rabies', minWeeksBeforeTravel: 3, validForMonths: 36, mandatory: true, notes: 'Must be administered after microchipping' },
+      {
+        vaccineName: 'Rabies',
+        minWeeksBeforeTravel: 3,
+        validForMonths: 36,
+        mandatory: true,
+        notes: 'Must be administered after microchipping',
+      },
     ],
     healthChecks: [
-      { checkType: 'tapeworm_treatment', description: 'Tapeworm treatment by a vet (dogs only)', maxDaysBeforeTravel: 5, mandatory: true },
-      { checkType: 'microchip', description: 'ISO 11784/11785 compliant microchip', mandatory: true },
+      {
+        checkType: 'tapeworm_treatment',
+        description: 'Tapeworm treatment by a vet (dogs only)',
+        maxDaysBeforeTravel: 5,
+        mandatory: true,
+      },
+      {
+        checkType: 'microchip',
+        description: 'ISO 11784/11785 compliant microchip',
+        mandatory: true,
+      },
     ],
     documents: [
-      { documentType: 'pet_health_certificate', description: 'Official veterinary health certificate (AHC)', mandatory: true, issuingAuthority: 'Official Veterinarian (OV)' },
+      {
+        documentType: 'pet_health_certificate',
+        description: 'Official veterinary health certificate (AHC)',
+        mandatory: true,
+        issuingAuthority: 'Official Veterinarian (OV)',
+      },
     ],
   },
   {
@@ -63,10 +83,19 @@ export const COUNTRY_REQUIREMENTS: CountryTravelRequirements[] = [
       { vaccineName: 'Rabies', minWeeksBeforeTravel: 3, validForMonths: 36, mandatory: true },
     ],
     healthChecks: [
-      { checkType: 'microchip', description: 'ISO 11784/11785 compliant microchip', mandatory: true },
+      {
+        checkType: 'microchip',
+        description: 'ISO 11784/11785 compliant microchip',
+        mandatory: true,
+      },
     ],
     documents: [
-      { documentType: 'eu_pet_passport', description: 'EU Pet Passport or official health certificate', mandatory: true, issuingAuthority: 'Accredited Veterinarian' },
+      {
+        documentType: 'eu_pet_passport',
+        description: 'EU Pet Passport or official health certificate',
+        mandatory: true,
+        issuingAuthority: 'Accredited Veterinarian',
+      },
     ],
   },
   {
@@ -78,10 +107,19 @@ export const COUNTRY_REQUIREMENTS: CountryTravelRequirements[] = [
       { vaccineName: 'Rabies', minWeeksBeforeTravel: 3, validForMonths: 36, mandatory: true },
     ],
     healthChecks: [
-      { checkType: 'microchip', description: 'ISO 11784/11785 compliant microchip', mandatory: true },
+      {
+        checkType: 'microchip',
+        description: 'ISO 11784/11785 compliant microchip',
+        mandatory: true,
+      },
     ],
     documents: [
-      { documentType: 'eu_pet_passport', description: 'EU Pet Passport or official health certificate', mandatory: true, issuingAuthority: 'Accredited Veterinarian' },
+      {
+        documentType: 'eu_pet_passport',
+        description: 'EU Pet Passport or official health certificate',
+        mandatory: true,
+        issuingAuthority: 'Accredited Veterinarian',
+      },
     ],
   },
   {
@@ -90,13 +128,28 @@ export const COUNTRY_REQUIREMENTS: CountryTravelRequirements[] = [
     applicableSpecies: ['dog', 'cat'],
     lastUpdated: '2026-01-15',
     vaccinations: [
-      { vaccineName: 'Rabies', mandatory: true, validForMonths: 36, notes: 'Required for dogs; cats recommended' },
+      {
+        vaccineName: 'Rabies',
+        mandatory: true,
+        validForMonths: 36,
+        notes: 'Required for dogs; cats recommended',
+      },
     ],
     healthChecks: [
-      { checkType: 'general_health_exam', description: 'General health examination by a licensed vet', maxDaysBeforeTravel: 10, mandatory: true },
+      {
+        checkType: 'general_health_exam',
+        description: 'General health examination by a licensed vet',
+        maxDaysBeforeTravel: 10,
+        mandatory: true,
+      },
     ],
     documents: [
-      { documentType: 'usda_health_certificate', description: 'USDA-endorsed health certificate (APHIS 7001)', mandatory: true, issuingAuthority: 'USDA-accredited veterinarian' },
+      {
+        documentType: 'usda_health_certificate',
+        description: 'USDA-endorsed health certificate (APHIS 7001)',
+        mandatory: true,
+        issuingAuthority: 'USDA-accredited veterinarian',
+      },
     ],
   },
   {
@@ -104,17 +157,39 @@ export const COUNTRY_REQUIREMENTS: CountryTravelRequirements[] = [
     countryName: 'Australia',
     applicableSpecies: ['dog', 'cat'],
     lastUpdated: '2026-01-15',
-    vaccinations: [
-      { vaccineName: 'Rabies', mandatory: true, validForMonths: 12 },
-    ],
+    vaccinations: [{ vaccineName: 'Rabies', mandatory: true, validForMonths: 12 }],
     healthChecks: [
-      { checkType: 'microchip', description: 'ISO 11784/11785 compliant microchip', mandatory: true },
-      { checkType: 'rabies_titre_test', description: 'Rabies neutralising antibody titre test (RNATT)', maxDaysBeforeTravel: 180, mandatory: true },
-      { checkType: 'parasite_treatment', description: 'Treatment for internal and external parasites', maxDaysBeforeTravel: 5, mandatory: true },
+      {
+        checkType: 'microchip',
+        description: 'ISO 11784/11785 compliant microchip',
+        mandatory: true,
+      },
+      {
+        checkType: 'rabies_titre_test',
+        description: 'Rabies neutralising antibody titre test (RNATT)',
+        maxDaysBeforeTravel: 180,
+        mandatory: true,
+      },
+      {
+        checkType: 'parasite_treatment',
+        description: 'Treatment for internal and external parasites',
+        maxDaysBeforeTravel: 5,
+        mandatory: true,
+      },
     ],
     documents: [
-      { documentType: 'import_permit', description: 'Import permit from Australian Department of Agriculture', mandatory: true, issuingAuthority: 'Australian Department of Agriculture' },
-      { documentType: 'health_certificate', description: 'Official veterinary health certificate', mandatory: true, issuingAuthority: 'Government-accredited veterinarian' },
+      {
+        documentType: 'import_permit',
+        description: 'Import permit from Australian Department of Agriculture',
+        mandatory: true,
+        issuingAuthority: 'Australian Department of Agriculture',
+      },
+      {
+        documentType: 'health_certificate',
+        description: 'Official veterinary health certificate',
+        mandatory: true,
+        issuingAuthority: 'Government-accredited veterinarian',
+      },
     ],
     additionalNotes: 'Australia has strict biosecurity laws. Quarantine period may apply.',
   },
@@ -123,17 +198,38 @@ export const COUNTRY_REQUIREMENTS: CountryTravelRequirements[] = [
     countryName: 'Japan',
     applicableSpecies: ['dog', 'cat'],
     lastUpdated: '2026-01-15',
-    vaccinations: [
-      { vaccineName: 'Rabies', mandatory: true, validForMonths: 24 },
-    ],
+    vaccinations: [{ vaccineName: 'Rabies', mandatory: true, validForMonths: 24 }],
     healthChecks: [
-      { checkType: 'microchip', description: 'ISO 11784/11785 compliant microchip', mandatory: true },
-      { checkType: 'rabies_titre_test', description: 'Rabies antibody titre test (≥0.5 IU/mL)', maxDaysBeforeTravel: 180, mandatory: true },
-      { checkType: 'waiting_period', description: '180-day waiting period after titre test', mandatory: true },
+      {
+        checkType: 'microchip',
+        description: 'ISO 11784/11785 compliant microchip',
+        mandatory: true,
+      },
+      {
+        checkType: 'rabies_titre_test',
+        description: 'Rabies antibody titre test (≥0.5 IU/mL)',
+        maxDaysBeforeTravel: 180,
+        mandatory: true,
+      },
+      {
+        checkType: 'waiting_period',
+        description: '180-day waiting period after titre test',
+        mandatory: true,
+      },
     ],
     documents: [
-      { documentType: 'advance_notification', description: 'Advance notification to Animal Quarantine Service (40 days before arrival)', mandatory: true, issuingAuthority: 'Japan Animal Quarantine Service' },
-      { documentType: 'health_certificate', description: 'Official veterinary health certificate', mandatory: true, issuingAuthority: 'Government-accredited veterinarian' },
+      {
+        documentType: 'advance_notification',
+        description: 'Advance notification to Animal Quarantine Service (40 days before arrival)',
+        mandatory: true,
+        issuingAuthority: 'Japan Animal Quarantine Service',
+      },
+      {
+        documentType: 'health_certificate',
+        description: 'Official veterinary health certificate',
+        mandatory: true,
+        issuingAuthority: 'Government-accredited veterinarian',
+      },
     ],
     additionalNotes: 'Quarantine period of up to 180 days may apply if requirements are not met.',
   },
@@ -146,10 +242,20 @@ export const COUNTRY_REQUIREMENTS: CountryTravelRequirements[] = [
       { vaccineName: 'Rabies', mandatory: true, notes: 'Required for dogs 3 months and older' },
     ],
     healthChecks: [
-      { checkType: 'general_health_exam', description: 'General health examination', maxDaysBeforeTravel: 30, mandatory: false },
+      {
+        checkType: 'general_health_exam',
+        description: 'General health examination',
+        maxDaysBeforeTravel: 30,
+        mandatory: false,
+      },
     ],
     documents: [
-      { documentType: 'rabies_vaccination_certificate', description: 'Rabies vaccination certificate signed by a licensed vet', mandatory: true, issuingAuthority: 'Licensed Veterinarian' },
+      {
+        documentType: 'rabies_vaccination_certificate',
+        description: 'Rabies vaccination certificate signed by a licensed vet',
+        mandatory: true,
+        issuingAuthority: 'Licensed Veterinarian',
+      },
     ],
   },
   {
@@ -163,21 +269,48 @@ export const COUNTRY_REQUIREMENTS: CountryTravelRequirements[] = [
       { vaccineName: 'Parvovirus', mandatory: true },
     ],
     healthChecks: [
-      { checkType: 'microchip', description: 'ISO 11784/11785 compliant microchip', mandatory: true },
-      { checkType: 'rabies_titre_test', description: 'Rabies antibody titre test', mandatory: true },
+      {
+        checkType: 'microchip',
+        description: 'ISO 11784/11785 compliant microchip',
+        mandatory: true,
+      },
+      {
+        checkType: 'rabies_titre_test',
+        description: 'Rabies antibody titre test',
+        mandatory: true,
+      },
     ],
     documents: [
-      { documentType: 'import_licence', description: 'Import licence from AVS', mandatory: true, issuingAuthority: 'Singapore AVS' },
-      { documentType: 'health_certificate', description: 'Official veterinary health certificate', mandatory: true, issuingAuthority: 'Government-accredited veterinarian' },
+      {
+        documentType: 'import_licence',
+        description: 'Import licence from AVS',
+        mandatory: true,
+        issuingAuthority: 'Singapore AVS',
+      },
+      {
+        documentType: 'health_certificate',
+        description: 'Official veterinary health certificate',
+        mandatory: true,
+        issuingAuthority: 'Government-accredited veterinarian',
+      },
     ],
     additionalNotes: 'Apply for import licence at least 30 days before travel.',
   },
 ];
 
-export function getCountryRequirements(countryCode: string, species?: string): CountryTravelRequirements | undefined {
-  const req = COUNTRY_REQUIREMENTS.find((r) => r.countryCode.toUpperCase() === countryCode.toUpperCase());
+export function getCountryRequirements(
+  countryCode: string,
+  species?: string,
+): CountryTravelRequirements | undefined {
+  const req = COUNTRY_REQUIREMENTS.find(
+    (r) => r.countryCode.toUpperCase() === countryCode.toUpperCase(),
+  );
   if (!req) return undefined;
-  if (species && req.applicableSpecies.length > 0 && !req.applicableSpecies.includes(species.toLowerCase())) {
+  if (
+    species &&
+    req.applicableSpecies.length > 0 &&
+    !req.applicableSpecies.includes(species.toLowerCase())
+  ) {
     return undefined;
   }
   return req;

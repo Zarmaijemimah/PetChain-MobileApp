@@ -27,15 +27,7 @@ const DEBOUNCE_MS = 300;
 const MAX_RECENT = 10;
 
 /** Highlight matching query text within a string. */
-function HighlightedText({
-  text,
-  query,
-  style,
-}: {
-  text: string;
-  query: string;
-  style?: object;
-}) {
+function HighlightedText({ text, query, style }: { text: string; query: string; style?: object }) {
   if (!query.trim() || !text) return <Text style={style}>{text}</Text>;
 
   const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
@@ -122,11 +114,7 @@ const MedicalRecordSearchScreen: React.FC<Props> = ({ petId, onBack }) => {
           <HighlightedText text={item.notes} query={query} style={styles.notes} />
         ) : null}
         {item.veterinarian ? (
-          <HighlightedText
-            text={`Vet: ${item.veterinarian}`}
-            query={query}
-            style={styles.meta}
-          />
+          <HighlightedText text={`Vet: ${item.veterinarian}`} query={query} style={styles.meta} />
         ) : null}
         {item.documents?.length ? (
           <Text style={styles.meta}>

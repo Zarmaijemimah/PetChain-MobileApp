@@ -7,7 +7,7 @@
  * - Safe to call on every app startup — already-applied migrations are skipped.
  */
 
-import * as SQLite from 'expo-sqlite';
+import type * as SQLite from 'expo-sqlite';
 
 export interface SqliteMigration {
   /** Timestamp-based version string, e.g. "20260101000001". Must be unique and sortable. */
@@ -64,10 +64,9 @@ async function recordMigration(
 }
 
 async function recordRollback(db: SQLite.SQLiteDatabase, version: string): Promise<void> {
-  await db.runAsync(
-    `UPDATE schema_migrations SET status = 'rolled_back' WHERE version = ?`,
-    [version],
-  );
+  await db.runAsync(`UPDATE schema_migrations SET status = 'rolled_back' WHERE version = ?`, [
+    version,
+  ]);
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────────
@@ -126,7 +125,7 @@ export async function runSqliteMigrations(
 }
 
 // Clear in-flight flag when finished or on error
-;(function wrapClear() {
+(function wrapClear() {
   const orig = runSqliteMigrations;
   (runSqliteMigrations as any) = async function (...args: any[]) {
     try {

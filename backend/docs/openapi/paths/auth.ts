@@ -44,7 +44,12 @@ export const authPaths = {
             'application/json': {
               schema: { $ref: '#/components/schemas/LoginResponse' },
               example: {
-                user: { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', email: 'jane.doe@example.com', name: 'Jane Doe', role: 'owner' },
+                user: {
+                  id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+                  email: 'jane.doe@example.com',
+                  name: 'Jane Doe',
+                  role: 'owner',
+                },
                 token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
                 refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
                 expiresIn: 604800,
@@ -99,7 +104,10 @@ export const authPaths = {
               schema: { $ref: '#/components/schemas/ApiError' },
               example: {
                 success: false,
-                error: { code: 'EMAIL_ALREADY_EXISTS', message: 'An account with this email already exists' },
+                error: {
+                  code: 'EMAIL_ALREADY_EXISTS',
+                  message: 'An account with this email already exists',
+                },
                 timestamp: '2024-01-15T10:30:00Z',
               },
             },
@@ -142,7 +150,10 @@ export const authPaths = {
               schema: { $ref: '#/components/schemas/ApiError' },
               example: {
                 success: false,
-                error: { code: 'REFRESH_TOKEN_EXPIRED', message: 'Session expired — please log in again' },
+                error: {
+                  code: 'REFRESH_TOKEN_EXPIRED',
+                  message: 'Session expired — please log in again',
+                },
                 timestamp: '2024-01-15T10:30:00Z',
               },
             },
@@ -173,7 +184,7 @@ export const authPaths = {
     post: {
       tags: ['Authentication'],
       summary: 'Verify email address',
-      description: 'Verifies the user\'s email address using the token sent to their inbox.',
+      description: "Verifies the user's email address using the token sent to their inbox.",
       operationId: 'verifyEmail',
       requestBody: {
         required: true,
@@ -189,7 +200,12 @@ export const authPaths = {
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ApiResponse' },
-              example: { success: true, data: null, message: 'Email verified successfully', timestamp: '2024-01-15T10:30:00Z' },
+              example: {
+                success: true,
+                data: null,
+                message: 'Email verified successfully',
+                timestamp: '2024-01-15T10:30:00Z',
+              },
             },
           },
         },
@@ -221,7 +237,12 @@ export const authPaths = {
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ApiResponse' },
-              example: { success: true, data: null, message: 'If that email is registered, a reset link has been sent', timestamp: '2024-01-15T10:30:00Z' },
+              example: {
+                success: true,
+                data: null,
+                message: 'If that email is registered, a reset link has been sent',
+                timestamp: '2024-01-15T10:30:00Z',
+              },
             },
           },
         },
@@ -236,7 +257,7 @@ export const authPaths = {
     post: {
       tags: ['Authentication'],
       summary: 'Reset password with token',
-      description: 'Resets the user\'s password using the token from the reset email.',
+      description: "Resets the user's password using the token from the reset email.",
       operationId: 'resetPassword',
       requestBody: {
         required: true,

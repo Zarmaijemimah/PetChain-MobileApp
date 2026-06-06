@@ -34,10 +34,13 @@ export async function extractTextFromPdf(
 
   try {
     // Dynamically import pdf-parse to avoid hard dependency
-    let pdfParse: typeof import('pdf-parse');
+    let pdfParse: (
+      buffer: Buffer,
+      options?: Record<string, unknown>,
+    ) => Promise<{ text: string; numpages: number }>;
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      pdfParse = require('pdf-parse');
+      const pdfParseModule = require('pdf-parse');
+      pdfParse = pdfParseModule.default ?? pdfParseModule;
     } catch {
       return {
         success: false,
@@ -70,7 +73,7 @@ export async function extractTextFromPdf(
           return {
             success: false,
             text: '',
-            pageCount: data.numPages || 0,
+            pageCount: data.numpages || 0,
             isScanned: true,
             error: `PDF appears to be scanned and OCR failed: ${ocrError instanceof Error ? ocrError.message : 'Unknown error'}`,
           };
@@ -79,7 +82,7 @@ export async function extractTextFromPdf(
         return {
           success: false,
           text: '',
-          pageCount: data.numPages || 0,
+          pageCount: data.numpages || 0,
           isScanned: true,
           error: 'PDF appears to be scanned. Enable OCR or provide a text-based PDF.',
         };
@@ -88,14 +91,14 @@ export async function extractTextFromPdf(
 
     // Limit to maxPages worth of text
     const lines = text.split('\n');
-    const avgLinesPerPage = Math.max(1, Math.floor(lines.length / (data.numPages || 1)));
+    const avgLinesPerPage = Math.max(1, Math.floor(lines.length / (data.numpages || 1)));
     const maxLines = maxPages * avgLinesPerPage;
     const limitedText = lines.slice(0, maxLines).join('\n');
 
     return {
       success: true,
       text: limitedText,
-      pageCount: Math.min(data.numPages || 0, maxPages),
+      pageCount: Math.min(data.numpages || 0, maxPages),
       isScanned,
     };
   } catch (error) {
@@ -120,7 +123,6 @@ async function extractTextWithOcr(pdfBuffer: Buffer, maxPages: number): Promise<
     // Dynamically import tesseract.js to avoid hard dependency
     let Tesseract: typeof import('tesseract.js');
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       Tesseract = require('tesseract.js');
     } catch {
       throw new Error('tesseract.js library not installed. Install with: npm install tesseract.js');
@@ -138,7 +140,9 @@ async function extractTextWithOcr(pdfBuffer: Buffer, maxPages: number): Promise<
       await worker.terminate();
     }
   } catch (error) {
-    throw new Error(`OCR extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `OCR extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
   }
 }
 

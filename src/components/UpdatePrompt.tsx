@@ -53,10 +53,7 @@ export default function UpdatePrompt({ variant, onUpdate, storeUrl, onDismiss, v
     >
       <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
         <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.surface, shadowColor: colors.shadow },
-          ]}
+          style={[styles.card, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}
         >
           <Text style={[styles.title, { color: colors.text }]}>
             {isForce ? 'Update Required' : 'Update Available'}

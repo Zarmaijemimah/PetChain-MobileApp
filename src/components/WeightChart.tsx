@@ -1,6 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import Svg, { Line, Circle, Rect, Text as SvgText, Path, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, {
+  Line,
+  Circle,
+  Rect,
+  Text as SvgText,
+  Path,
+  Defs,
+  LinearGradient,
+  Stop,
+} from 'react-native-svg';
 
 import { useAppTheme } from '../theme';
 
@@ -70,7 +79,10 @@ const WeightChart: React.FC<Props> = ({ data, vetRecommendedRange, onExport, hei
   const [selectedPoint, setSelectedPoint] = useState<number | null>(null);
 
   const filteredData = useMemo(
-    () => filterDataByRange(data, selectedRange).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+    () =>
+      filterDataByRange(data, selectedRange).sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      ),
     [data, selectedRange],
   );
 
@@ -103,7 +115,10 @@ const WeightChart: React.FC<Props> = ({ data, vetRecommendedRange, onExport, hei
     };
 
     const xScale = (index: number) => {
-      return (index / Math.max(1, filteredData.length - 1)) * (chartWidth - CHART_PADDING.left - CHART_PADDING.right);
+      return (
+        (index / Math.max(1, filteredData.length - 1)) *
+        (chartWidth - CHART_PADDING.left - CHART_PADDING.right)
+      );
     };
 
     return { minWeight: min, maxWeight: max, yScale, xScale };
@@ -113,7 +128,9 @@ const WeightChart: React.FC<Props> = ({ data, vetRecommendedRange, onExport, hei
 
   if (filteredData.length === 0) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
+      <View
+        style={[styles.container, { backgroundColor: colors.card, shadowColor: colors.shadow }]}
+      >
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>Weight & Growth Chart</Text>
         </View>

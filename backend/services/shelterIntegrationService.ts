@@ -277,8 +277,10 @@ function shelterPetMatchesFilters(pet: ShelterPet, filters: BrowseShelterPetsFil
   const location = normalize(filters.location);
   if (location && !normalize(pet.location).includes(location)) return false;
 
-  if (typeof filters.ageMinMonths === 'number' && pet.ageMonths < filters.ageMinMonths) return false;
-  if (typeof filters.ageMaxMonths === 'number' && pet.ageMonths > filters.ageMaxMonths) return false;
+  if (typeof filters.ageMinMonths === 'number' && pet.ageMonths < filters.ageMinMonths)
+    return false;
+  if (typeof filters.ageMaxMonths === 'number' && pet.ageMonths > filters.ageMaxMonths)
+    return false;
 
   return pet.status === 'available';
 }
@@ -441,7 +443,12 @@ export class ShelterIntegrationService {
           type: updated.type,
           blockchainTxHash: updated.blockchainTxHash,
           blockchainHash: updated.blockchainHash,
-          status: anchored.status === 'failed' ? 'failed' : anchored.status === 'pending' ? 'pending' : 'anchored',
+          status:
+            anchored.status === 'failed'
+              ? 'failed'
+              : anchored.status === 'pending'
+                ? 'pending'
+                : 'anchored',
         });
       } catch {
         transferredRecords.push({

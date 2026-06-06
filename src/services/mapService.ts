@@ -394,14 +394,8 @@ class MapService {
     const latLon = `${clinic.latitude},${clinic.longitude}`;
 
     const url = Platform.select({
-      ios:
-        clinic.latitude !== 0
-          ? `maps://?daddr=${latLon}&dirflg=d`
-          : `maps:0,0?q=${encoded}`,
-      android:
-        clinic.latitude !== 0
-          ? `google.navigation:q=${latLon}`
-          : `geo:0,0?q=${encoded}`,
+      ios: clinic.latitude !== 0 ? `maps://?daddr=${latLon}&dirflg=d` : `maps:0,0?q=${encoded}`,
+      android: clinic.latitude !== 0 ? `google.navigation:q=${latLon}` : `geo:0,0?q=${encoded}`,
     });
 
     const fallback = `https://www.google.com/maps/dir/?api=1&destination=${

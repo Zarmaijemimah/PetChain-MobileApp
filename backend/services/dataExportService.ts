@@ -1,7 +1,9 @@
-import { store } from '../server/store';
-import PDFDocument from 'pdfkit';
-import archiver from 'archiver';
 import { Writable } from 'stream';
+
+import archiver from 'archiver';
+import PDFDocument from 'pdfkit';
+
+import { store } from '../server/store';
 
 export interface UserDataExport {
   user: unknown;
@@ -33,15 +35,9 @@ export function exportUserData(userId: string): UserDataExport {
   const pets = [...store.pets.values()].filter((p) => p.ownerId === userId);
   const petIds = new Set(pets.map((p) => p.id));
 
-  const medicalRecords = [...store.medicalRecords.values()].filter((r) =>
-    petIds.has(r.petId),
-  );
-  const appointments = [...store.appointments.values()].filter((a) =>
-    petIds.has(a.petId),
-  );
-  const medications = [...store.medications.values()].filter((m) =>
-    petIds.has(m.petId),
-  );
+  const medicalRecords = [...store.medicalRecords.values()].filter((r) => petIds.has(r.petId));
+  const appointments = [...store.appointments.values()].filter((a) => petIds.has(a.petId));
+  const medications = [...store.medications.values()].filter((m) => petIds.has(m.petId));
   const payments = [...store.payments.values()].filter((p) => p.userId === userId);
   const familySharing = [...store.familySharing.values()].filter(
     (f) => f.ownerId === userId || f.sharedWithUserId === userId,
@@ -159,8 +155,9 @@ async function generatePetPDF(
     doc.fontSize(12).text(`Export Date: ${new Date().toLocaleDateString()}`);
     doc.moveDown();
 
-    const petRecords = (data.medicalRecords as Array<{ petId: string; type: string; notes?: string }>)
-      .filter((r) => r.petId === pet.id);
+    const petRecords = (
+      data.medicalRecords as Array<{ petId: string; type: string; notes?: string }>
+    ).filter((r) => r.petId === pet.id);
     doc.fontSize(14).text('Medical Records', { underline: true });
     doc.fontSize(10);
     petRecords.forEach((r) => {
@@ -191,7 +188,9 @@ async function createZipArchive(
 
     // Add PDF summaries
     Object.entries(pdfBuffers).forEach(([petId, buffer]) => {
-      const petName = (data.pets as Array<{ id: string; name: string }>).find((p) => p.id === petId)?.name || petId;
+      const petName =
+        (data.pets as Array<{ id: string; name: string }>).find((p) => p.id === petId)?.name ||
+        petId;
       archive.append(buffer, { name: `${petName}_summary.pdf` });
     });
 

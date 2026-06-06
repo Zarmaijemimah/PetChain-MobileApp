@@ -87,10 +87,14 @@ export class NoteService {
           throw new NoteValidationError(`attachments[${index}] must be an object`);
         }
         if (!attachment.type || !['measurement', 'photo'].includes(attachment.type)) {
-          throw new NoteValidationError(`attachments[${index}].type must be either 'measurement' or 'photo'`);
+          throw new NoteValidationError(
+            `attachments[${index}].type must be either 'measurement' or 'photo'`,
+          );
         }
         if (!attachment.label?.trim() || !attachment.value?.trim()) {
-          throw new NoteValidationError(`attachments[${index}] must include a non-empty label and value`);
+          throw new NoteValidationError(
+            `attachments[${index}] must include a non-empty label and value`,
+          );
         }
       });
     }
@@ -199,7 +203,7 @@ export class NoteService {
     const noteHash = this.compileNoteHash(payload);
 
     const transaction = new StellarSdk.TransactionBuilder(account, {
-      fee: String(Math.max(baseFee, StellarSdk.BASE_FEE)),
+      fee: String(Math.max(baseFee, Number(StellarSdk.BASE_FEE))),
       networkPassphrase: this.getNetworkPassphrase(network),
     })
       .addMemo(StellarSdk.Memo.hash(Buffer.from(noteHash, 'hex')))
@@ -298,7 +302,8 @@ function stableStringify(value: unknown): string {
     return `{${Object.keys(value as Record<string, unknown>)
       .sort()
       .map(
-        (key) => `${JSON.stringify(key)}:${stableStringify((value as Record<string, unknown>)[key])}`,
+        (key) =>
+          `${JSON.stringify(key)}:${stableStringify((value as Record<string, unknown>)[key])}`,
       )
       .join(',')}}`;
   }

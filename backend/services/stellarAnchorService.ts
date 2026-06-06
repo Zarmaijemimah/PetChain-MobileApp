@@ -23,12 +23,10 @@ const NETWORK_PASSPHRASE =
     ? StellarSdk.Networks.PUBLIC
     : StellarSdk.Networks.TESTNET;
 
-const ANCHOR_HOME_DOMAIN =
-  process.env.ANCHOR_HOME_DOMAIN ?? 'testanchor.stellar.org';
+const ANCHOR_HOME_DOMAIN = process.env.ANCHOR_HOME_DOMAIN ?? 'testanchor.stellar.org';
 const ANCHOR_ASSET_CODE = process.env.ANCHOR_ASSET_CODE ?? 'SRT';
 const ANCHOR_ASSET_ISSUER =
-  process.env.ANCHOR_ASSET_ISSUER ??
-  'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6';
+  process.env.ANCHOR_ASSET_ISSUER ?? 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6';
 
 export type DepositStatus =
   | 'pending_user_transfer_start'
@@ -93,9 +91,7 @@ async function getSep10Token(
   keypair: StellarSdk.Keypair,
 ): Promise<string> {
   // Step 1: GET challenge
-  const challengeRes = await fetch(
-    `${webAuthEndpoint}?account=${keypair.publicKey()}`,
-  );
+  const challengeRes = await fetch(`${webAuthEndpoint}?account=${keypair.publicKey()}`);
   if (!challengeRes.ok) throw new Error('SEP-10 challenge request failed');
   const { transaction: challengeXdr } = (await challengeRes.json()) as {
     transaction: string;
@@ -233,7 +229,11 @@ export class StellarAnchorService {
     if (!record) throw new Error(`Deposit ${depositId} not found`);
 
     // If already terminal, return cached state
-    if (record.status === 'completed' || record.status === 'error' || record.status === 'refunded') {
+    if (
+      record.status === 'completed' ||
+      record.status === 'error' ||
+      record.status === 'refunded'
+    ) {
       return record;
     }
 
@@ -245,9 +245,7 @@ export class StellarAnchorService {
       const transferServer = toml.TRANSFER_SERVER_SEP0024;
       if (!transferServer) return record;
 
-      const res = await fetch(
-        `${transferServer}/transaction?id=${anchorTxId}`,
-      );
+      const res = await fetch(`${transferServer}/transaction?id=${anchorTxId}`);
       if (!res.ok) return record;
 
       const { transaction } = (await res.json()) as {

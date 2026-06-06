@@ -3,7 +3,6 @@ type Environment = 'development' | 'staging' | 'production';
 
 function getExpoVersion(): string {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const Constants = require('expo-constants') as {
       expoConfig?: { version?: string };
     };

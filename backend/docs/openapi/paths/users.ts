@@ -92,7 +92,8 @@ export const userPaths = {
     get: {
       tags: ['Users'],
       summary: 'Get user by ID',
-      description: 'Returns a user profile by ID. Admins can access any user; regular users can only access their own profile.',
+      description:
+        'Returns a user profile by ID. Admins can access any user; regular users can only access their own profile.',
       operationId: 'getUserById',
       security: [{ BearerAuth: [] }],
       parameters: [{ $ref: '#/components/parameters/UserIdParam' }],
@@ -120,7 +121,8 @@ export const userPaths = {
     put: {
       tags: ['Users'],
       summary: 'Update user profile',
-      description: 'Updates editable user profile fields. Admins can update any user; regular users can only update their own profile.',
+      description:
+        'Updates editable user profile fields. Admins can update any user; regular users can only update their own profile.',
       operationId: 'updateUser',
       security: [{ BearerAuth: [] }],
       parameters: [{ $ref: '#/components/parameters/UserIdParam' }],

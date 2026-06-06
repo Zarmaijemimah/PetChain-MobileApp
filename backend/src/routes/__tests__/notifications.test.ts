@@ -16,10 +16,14 @@ jest.mock('../../../services/pushService', () => ({
   unsubscribe: jest.fn().mockResolvedValue(undefined),
   getSubscriptions: jest.fn().mockResolvedValue(['medication_reminders']),
   isSubscribed: jest.fn().mockResolvedValue(true),
-  getPreferences: jest.fn().mockResolvedValue({ enabled: true, topics: { medication_reminders: true } }),
+  getPreferences: jest
+    .fn()
+    .mockResolvedValue({ enabled: true, topics: { medication_reminders: true } }),
   setPreferences: jest.fn().mockResolvedValue(undefined),
   sendToUser: jest.fn().mockResolvedValue(2),
-  getMetrics: jest.fn().mockResolvedValue({ queued: 5, delivered: 4, failed: 1, retried: 1, deadLettered: 1 }),
+  getMetrics: jest
+    .fn()
+    .mockResolvedValue({ queued: 5, delivered: 4, failed: 1, retried: 1, deadLettered: 1 }),
   getDLQ: jest.fn().mockResolvedValue([]),
   clearDLQ: jest.fn().mockResolvedValue(undefined),
 }));
@@ -38,14 +42,26 @@ function auth(userId: string) {
 beforeEach(() => {
   store.users.clear();
   store.users.set(OWNER_ID, {
-    id: OWNER_ID, email: 'owner@test.com', name: 'Owner',
-    role: UserRole.OWNER, pets: [], createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(), isEmailVerified: true, twoFactorEnabled: false,
+    id: OWNER_ID,
+    email: 'owner@test.com',
+    name: 'Owner',
+    role: UserRole.OWNER,
+    pets: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isEmailVerified: true,
+    twoFactorEnabled: false,
   });
   store.users.set(ADMIN_ID, {
-    id: ADMIN_ID, email: 'admin@test.com', name: 'Admin',
-    role: UserRole.ADMIN, pets: [], createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(), isEmailVerified: true, twoFactorEnabled: true,
+    id: ADMIN_ID,
+    email: 'admin@test.com',
+    name: 'Admin',
+    role: UserRole.ADMIN,
+    pets: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isEmailVerified: true,
+    twoFactorEnabled: true,
   });
 });
 
@@ -62,10 +78,7 @@ describe('POST /api/notifications/tokens', () => {
   });
 
   it('rejects missing token', async () => {
-    const res = await request(app)
-      .post('/api/notifications/tokens')
-      .set(auth(OWNER_ID))
-      .send({});
+    const res = await request(app).post('/api/notifications/tokens').set(auth(OWNER_ID)).send({});
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
@@ -90,9 +103,7 @@ describe('POST /api/notifications/tokens', () => {
 
 describe('GET /api/notifications/tokens', () => {
   it('returns masked token list', async () => {
-    const res = await request(app)
-      .get('/api/notifications/tokens')
-      .set(auth(OWNER_ID));
+    const res = await request(app).get('/api/notifications/tokens').set(auth(OWNER_ID));
     expect(res.status).toBe(200);
     expect(res.body.data.count).toBe(1);
     expect(res.body.data.tokens[0].prefix).toBeDefined();
@@ -111,19 +122,14 @@ describe('DELETE /api/notifications/tokens', () => {
   });
 
   it('rejects missing token', async () => {
-    const res = await request(app)
-      .delete('/api/notifications/tokens')
-      .set(auth(OWNER_ID))
-      .send({});
+    const res = await request(app).delete('/api/notifications/tokens').set(auth(OWNER_ID)).send({});
     expect(res.status).toBe(400);
   });
 });
 
 describe('DELETE /api/notifications/tokens/all', () => {
   it('removes all tokens', async () => {
-    const res = await request(app)
-      .delete('/api/notifications/tokens/all')
-      .set(auth(OWNER_ID));
+    const res = await request(app).delete('/api/notifications/tokens/all').set(auth(OWNER_ID));
     expect(res.status).toBe(200);
   });
 });
@@ -132,9 +138,7 @@ describe('DELETE /api/notifications/tokens/all', () => {
 
 describe('GET /api/notifications/subscriptions', () => {
   it('returns subscriptions and available topics', async () => {
-    const res = await request(app)
-      .get('/api/notifications/subscriptions')
-      .set(auth(OWNER_ID));
+    const res = await request(app).get('/api/notifications/subscriptions').set(auth(OWNER_ID));
     expect(res.status).toBe(200);
     expect(res.body.data.subscriptions).toContain('medication_reminders');
     expect(res.body.data.available).toHaveLength(4);
@@ -178,9 +182,7 @@ describe('DELETE /api/notifications/subscriptions/:topic', () => {
 
 describe('GET /api/notifications/preferences', () => {
   it('returns preferences', async () => {
-    const res = await request(app)
-      .get('/api/notifications/preferences')
-      .set(auth(OWNER_ID));
+    const res = await request(app).get('/api/notifications/preferences').set(auth(OWNER_ID));
     expect(res.status).toBe(200);
     expect(res.body.data.enabled).toBe(true);
   });
@@ -261,51 +263,39 @@ describe('POST /api/notifications/send', () => {
 
 describe('GET /api/notifications/metrics', () => {
   it('returns metrics for admin', async () => {
-    const res = await request(app)
-      .get('/api/notifications/metrics')
-      .set(auth(ADMIN_ID));
+    const res = await request(app).get('/api/notifications/metrics').set(auth(ADMIN_ID));
     expect(res.status).toBe(200);
     expect(res.body.data.queued).toBe(5);
     expect(res.body.data.delivered).toBe(4);
   });
 
   it('returns 403 for non-admin', async () => {
-    const res = await request(app)
-      .get('/api/notifications/metrics')
-      .set(auth(OWNER_ID));
+    const res = await request(app).get('/api/notifications/metrics').set(auth(OWNER_ID));
     expect(res.status).toBe(403);
   });
 });
 
 describe('GET /api/notifications/dlq', () => {
   it('returns DLQ for admin', async () => {
-    const res = await request(app)
-      .get('/api/notifications/dlq')
-      .set(auth(ADMIN_ID));
+    const res = await request(app).get('/api/notifications/dlq').set(auth(ADMIN_ID));
     expect(res.status).toBe(200);
     expect(res.body.data.items).toBeDefined();
   });
 
   it('returns 403 for non-admin', async () => {
-    const res = await request(app)
-      .get('/api/notifications/dlq')
-      .set(auth(OWNER_ID));
+    const res = await request(app).get('/api/notifications/dlq').set(auth(OWNER_ID));
     expect(res.status).toBe(403);
   });
 });
 
 describe('DELETE /api/notifications/dlq', () => {
   it('clears DLQ for admin', async () => {
-    const res = await request(app)
-      .delete('/api/notifications/dlq')
-      .set(auth(ADMIN_ID));
+    const res = await request(app).delete('/api/notifications/dlq').set(auth(ADMIN_ID));
     expect(res.status).toBe(200);
   });
 
   it('returns 403 for non-admin', async () => {
-    const res = await request(app)
-      .delete('/api/notifications/dlq')
-      .set(auth(OWNER_ID));
+    const res = await request(app).delete('/api/notifications/dlq').set(auth(OWNER_ID));
     expect(res.status).toBe(403);
   });
 });

@@ -3,7 +3,13 @@
  * Issue #99 — Comprehensive Logging Infrastructure
  */
 
-import { correlationStore, runWithContext, getCorrelationId, trackError, _resetErrorWindow } from '../logger';
+import {
+  correlationStore,
+  runWithContext,
+  getCorrelationId,
+  trackError,
+  _resetErrorWindow,
+} from '../logger';
 
 // ─── Correlation ID propagation ───────────────────────────────────────────────
 
@@ -48,11 +54,14 @@ describe('correlationStore / runWithContext', () => {
   });
 
   it('supports arbitrary extra fields on the context', () => {
-    runWithContext({ correlationId: 'cid', service: 'petchain-api', requestPath: '/api/pets' }, () => {
-      const ctx = correlationStore.getStore();
-      expect(ctx?.service).toBe('petchain-api');
-      expect(ctx?.requestPath).toBe('/api/pets');
-    });
+    runWithContext(
+      { correlationId: 'cid', service: 'petchain-api', requestPath: '/api/pets' },
+      () => {
+        const ctx = correlationStore.getStore();
+        expect(ctx?.service).toBe('petchain-api');
+        expect(ctx?.requestPath).toBe('/api/pets');
+      },
+    );
   });
 });
 

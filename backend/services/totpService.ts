@@ -1,19 +1,17 @@
 import { randomBytes } from 'crypto';
 
 import bcrypt from 'bcryptjs';
-import { authenticator } from 'otplib';
+import { generateSecret as generateOtpSecret, generateURI, verifySync } from 'otplib';
 import QRCode from 'qrcode';
 
 const BCRYPT_ROUNDS = 10;
 const BACKUP_CODE_COUNT = 10;
 const RECOVERY_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
-authenticator.options = { window: 1 }; // ±30 s clock-drift tolerance
-
 // ── Secret & QR ───────────────────────────────────────────────────────────
 
 export function generateSecret(): string {
-  return authenticator.generateSecret(20);
+  return generateOtpSecret({ length: 20 });
 }
 
 export async function generateQRCodeDataURL(
@@ -21,7 +19,11 @@ export async function generateQRCodeDataURL(
   email: string,
   issuer = 'PetChain',
 ): Promise<string> {
-  const otpauth = authenticator.keyuri(email, issuer, secret);
+  const otpauth = generateURI({
+    issuer,
+    label: email,
+    secret,
+  });
   return QRCode.toDataURL(otpauth);
 }
 
@@ -29,7 +31,7 @@ export async function generateQRCodeDataURL(
 
 export function verifyTOTP(token: string, secret: string): boolean {
   try {
-    return authenticator.verify({ token, secret });
+    return verifySync({ token, secret }).valid;
   } catch {
     return false;
   }

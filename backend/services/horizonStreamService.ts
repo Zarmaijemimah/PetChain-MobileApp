@@ -1,6 +1,7 @@
-import { Horizon } from '@stellar/stellar-sdk';
-import { WebSocket } from 'ws';
 import { EventEmitter } from 'events';
+
+import { type Horizon } from '@stellar/stellar-sdk';
+import { WebSocket } from 'ws';
 
 import config from '../config';
 import { loggerService } from './loggerService';
@@ -9,7 +10,7 @@ import { loggerService } from './loggerService';
 // the current Horizon.Server namespace export.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _sdk = require('@stellar/stellar-sdk') as any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const _StellarServer: new (url: string) => Horizon.Server =
   _sdk.Server ?? _sdk.Horizon?.Server ?? _sdk.default?.Horizon?.Server;
 
@@ -50,7 +51,12 @@ export interface PetChainTransaction {
 
 export interface StreamEvent {
   type: 'transaction' | 'ledger' | 'operation' | 'payment' | 'status';
-  data: PetChainTransaction | Horizon.ServerApi.LedgerRecord | Horizon.ServerApi.OperationRecord | Horizon.ServerApi.PaymentOperationRecord | StreamStatus;
+  data:
+    | PetChainTransaction
+    | Horizon.ServerApi.LedgerRecord
+    | Horizon.ServerApi.OperationRecord
+    | Horizon.ServerApi.PaymentOperationRecord
+    | StreamStatus;
   cursor: string;
   timestamp: string;
 }
@@ -81,8 +87,8 @@ class InMemoryCursorStorage implements CursorStorage {
 
 const DEFAULT_CONFIG: HorizonStreamConfig = {
   horizonUrl: config.isDev ? 'https://horizon-testnet.stellar.org' : 'https://horizon.stellar.org',
-  networkPassphrase: config.isDev 
-    ? 'Test SDF Network ; September 2015' 
+  networkPassphrase: config.isDev
+    ? 'Test SDF Network ; September 2015'
     : 'Public Global Stellar Network ; September 2015',
   reconnectDelay: 5000,
   maxReconnectAttempts: 10,
@@ -103,7 +109,7 @@ export class HorizonStreamService extends EventEmitter {
     super();
     this.config = { ...DEFAULT_CONFIG, ...customConfig };
     this.server = new _StellarServer(this.config.horizonUrl);
-    
+
     this.status = {
       isConnected: false,
       lastEventTime: null,
@@ -123,15 +129,15 @@ export class HorizonStreamService extends EventEmitter {
    */
   async startTransactionStream(accounts: string[]): Promise<void> {
     const streamId = 'petchain-transactions';
-    
+
     try {
       // Get last cursor for resumption
       const lastCursor = await this.config.cursorStorage.getCursor(streamId);
-      
-      loggerService.info('Starting transaction stream', { 
-        accounts, 
+
+      loggerService.info('Starting transaction stream', {
+        accounts,
         lastCursor,
-        horizonUrl: this.config.horizonUrl 
+        horizonUrl: this.config.horizonUrl,
       });
 
       // Update status
@@ -140,7 +146,6 @@ export class HorizonStreamService extends EventEmitter {
 
       // Start streaming
       await this.createTransactionStream(streamId, accounts, lastCursor);
-      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.status.error = errorMessage;
@@ -154,7 +159,7 @@ export class HorizonStreamService extends EventEmitter {
    */
   stopAllStreams(): void {
     loggerService.info('Stopping all streams');
-    
+
     // Close all active streams
     for (const [streamId, closeFunction] of this.activeStreams) {
       try {
@@ -164,15 +169,15 @@ export class HorizonStreamService extends EventEmitter {
         loggerService.warn('Error closing stream', { streamId, error });
       }
     }
-    
+
     this.activeStreams.clear();
-    
+
     // Clear reconnect timeouts
     for (const timeout of this.reconnectTimeouts.values()) {
       clearTimeout(timeout);
     }
     this.reconnectTimeouts.clear();
-    
+
     // Update status
     this.status.isConnected = false;
     this.status.reconnectAttempts = 0;
@@ -184,7 +189,7 @@ export class HorizonStreamService extends EventEmitter {
    */
   addWebSocketClient(ws: WebSocket): void {
     this.webSocketClients.add(ws);
-    
+
     // Send current status
     this.sendToWebSocket(ws, {
       type: 'status',
@@ -204,8 +209,8 @@ export class HorizonStreamService extends EventEmitter {
       loggerService.warn('WebSocket client error', { error: error.message });
     });
 
-    loggerService.debug('WebSocket client connected', { 
-      totalClients: this.webSocketClients.size 
+    loggerService.debug('WebSocket client connected', {
+      totalClients: this.webSocketClients.size,
     });
   }
 
@@ -228,14 +233,14 @@ export class HorizonStreamService extends EventEmitter {
   // ─── Private Methods ──────────────────────────────────────────────────────────
 
   private async createTransactionStream(
-    streamId: string, 
-    accounts: string[], 
-    cursor?: string | null
+    streamId: string,
+    accounts: string[],
+    cursor?: string | null,
   ): Promise<void> {
     try {
       // Build stream query
       let streamBuilder = this.server.transactions();
-      
+
       if (cursor) {
         streamBuilder = streamBuilder.cursor(cursor);
       }
@@ -250,13 +255,12 @@ export class HorizonStreamService extends EventEmitter {
       this.activeStreams.set(streamId, closeFunction);
       this.status.isConnected = true;
       this.status.reconnectAttempts = 0;
-      
+
       loggerService.info('Transaction stream started', { streamId, accounts });
-      
     } catch (error) {
-      loggerService.error('Failed to create transaction stream', { 
-        streamId, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      loggerService.error('Failed to create transaction stream', {
+        streamId,
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;
     }
@@ -265,12 +269,12 @@ export class HorizonStreamService extends EventEmitter {
   private async handleTransaction(
     streamId: string,
     transaction: Horizon.ServerApi.TransactionRecord,
-    accounts: string[]
+    accounts: string[],
   ): Promise<void> {
     try {
       // Check if transaction involves any of our accounts
       const isRelevant = this.isTransactionRelevant(transaction, accounts);
-      
+
       if (!isRelevant) {
         // Still update cursor for non-relevant transactions
         await this.updateCursor(streamId, transaction.paging_token);
@@ -279,7 +283,7 @@ export class HorizonStreamService extends EventEmitter {
 
       // Transform to our format
       const petChainTransaction = await this.transformTransaction(transaction);
-      
+
       // Create stream event
       const streamEvent: StreamEvent = {
         type: 'transaction',
@@ -306,7 +310,6 @@ export class HorizonStreamService extends EventEmitter {
         sourceAccount: transaction.source_account,
         successful: transaction.successful,
       });
-
     } catch (error) {
       loggerService.error('Error handling transaction', {
         transactionHash: transaction.hash,
@@ -319,10 +322,10 @@ export class HorizonStreamService extends EventEmitter {
     streamId: string,
     error: any,
     accounts: string[],
-    lastCursor?: string | null
+    lastCursor?: string | null,
   ): Promise<void> {
     const errorMessage = error instanceof Error ? error.message : 'Stream error';
-    
+
     this.status.error = errorMessage;
     this.status.isConnected = false;
 
@@ -337,11 +340,11 @@ export class HorizonStreamService extends EventEmitter {
       });
 
       const delay = this.config.reconnectDelay * Math.pow(2, this.status.reconnectAttempts - 1);
-      
-      loggerService.info('Scheduling reconnection', { 
-        streamId, 
+
+      loggerService.info('Scheduling reconnection', {
+        streamId,
         attempt: this.status.reconnectAttempts,
-        delay 
+        delay,
       });
 
       const timeout = setTimeout(async () => {
@@ -349,14 +352,14 @@ export class HorizonStreamService extends EventEmitter {
         try {
           await this.createTransactionStream(streamId, accounts, lastCursor);
         } catch (reconnectError) {
-          loggerService.error('Reconnection failed', { 
-            streamId, 
-            error: reconnectError instanceof Error ? reconnectError.message : 'Unknown error' 
+          loggerService.error('Reconnection failed', {
+            streamId,
+            error: reconnectError instanceof Error ? reconnectError.message : 'Unknown error',
           });
         }
       }, delay);
 
-      this.reconnectTimeouts.set(streamId, timeout);
+      this.reconnectTimeouts.set(streamId, timeout as unknown as NodeJS.Timeout);
     } else {
       loggerService.error('Stream error occurred', {
         streamId,
@@ -370,7 +373,7 @@ export class HorizonStreamService extends EventEmitter {
 
   private isTransactionRelevant(
     transaction: Horizon.ServerApi.TransactionRecord,
-    accounts: string[]
+    accounts: string[],
   ): boolean {
     // Check source account
     if (accounts.includes(transaction.source_account)) {
@@ -384,7 +387,7 @@ export class HorizonStreamService extends EventEmitter {
   }
 
   private async transformTransaction(
-    transaction: Horizon.ServerApi.TransactionRecord
+    transaction: Horizon.ServerApi.TransactionRecord,
   ): Promise<PetChainTransaction> {
     // Fetch operations for this transaction
     const operations = await this.fetchTransactionOperations(transaction.hash);
@@ -403,20 +406,20 @@ export class HorizonStreamService extends EventEmitter {
     };
   }
 
-  private async fetchTransactionOperations(transactionHash: string): Promise<Array<{
-    type: string;
-    sourceAccount?: string;
-    destination?: string;
-    asset?: string;
-    amount?: string;
-    data?: string;
-  }>> {
+  private async fetchTransactionOperations(transactionHash: string): Promise<
+    Array<{
+      type: string;
+      sourceAccount?: string;
+      destination?: string;
+      asset?: string;
+      amount?: string;
+      data?: string;
+    }>
+  > {
     try {
-      const operationsPage = await this.server.operations()
-        .forTransaction(transactionHash)
-        .call();
+      const operationsPage = await this.server.operations().forTransaction(transactionHash).call();
 
-      return operationsPage.records.map(op => ({
+      return operationsPage.records.map((op) => ({
         type: op.type,
         sourceAccount: op.source_account,
         // Add more operation-specific fields as needed
@@ -463,8 +466,8 @@ export class HorizonStreamService extends EventEmitter {
           deadClients.push(client);
         }
       } catch (error) {
-        loggerService.warn('Failed to send to WebSocket client', { 
-          error: error instanceof Error ? error.message : 'Unknown error' 
+        loggerService.warn('Failed to send to WebSocket client', {
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
         deadClients.push(client);
       }
@@ -490,8 +493,8 @@ export class HorizonStreamService extends EventEmitter {
 
   private setupErrorHandling(): void {
     this.on('error', (error) => {
-      loggerService.error('HorizonStreamService error', { 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      loggerService.error('HorizonStreamService error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     });
 

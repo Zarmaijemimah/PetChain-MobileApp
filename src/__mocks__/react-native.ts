@@ -31,7 +31,7 @@ module.exports = {
   KeyboardAvoidingView: 'KeyboardAvoidingView',
   RefreshControl: 'RefreshControl',
 };
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+
 const React = require('react');
 
 const host = (name: string) =>

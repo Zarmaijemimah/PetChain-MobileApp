@@ -16,6 +16,8 @@ import {
   AppointmentStatus,
   type Appointment,
   cancelAppointmentReminder,
+  checkConflicts,
+  type ConflictCheckResponse,
   getAppointments,
   getPast,
   getUpcoming,
@@ -51,6 +53,8 @@ const AppointmentScreen: React.FC = () => {
   const [rescheduleVisible, setRescheduleVisible] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [rescheduleDate, setRescheduleDate] = useState('');
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [conflictState, setConflictState] = useState<ConflictCheckResponse | null>(null);
 
   const load = useCallback(async () => {
     setAppointments(await getAppointments());
@@ -61,6 +65,29 @@ const AppointmentScreen: React.FC = () => {
   }, [load]);
 
   const displayed = tab === 'upcoming' ? getUpcoming(appointments) : getPast(appointments);
+
+  // Debounced conflict check on date/time change
+  useEffect(() => {
+    const debounceTimer = setTimeout(async () => {
+      if (form.date.trim() && form.petName.trim()) {
+        try {
+          const dateObj = new Date(form.date);
+          if (isNaN(dateObj.getTime())) return;
+
+          const date = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+          const time = dateObj.toTimeString().slice(0, 5); // HH:MM
+          const vetId = form.vetName.trim() || 'unknown-vet';
+
+          const conflict = await checkConflicts(form.petId || 'temp-pet', vetId, date, time);
+          setConflictState(conflict);
+        } catch {
+          setConflictState(null);
+        }
+      }
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [form.date, form.petName, form.petId]);
 
   // ─── Book ───────────────────────────────────────────────────────────────────
 
@@ -75,15 +102,64 @@ const AppointmentScreen: React.FC = () => {
       return;
     }
 
+    setBookingLoading(true);
+
+    try {
+      // Final conflict check before saving
+      const date = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+      const time = dateObj.toTimeString().slice(0, 5); // HH:MM
+      const vetId = form.vetName.trim() || 'temp-vet-id';
+
+      const conflict = await checkConflicts(form.petId || 'temp-pet', vetId, date, time);
+
+      if (!conflict.canSave) {
+        Alert.alert(
+          'Cannot Book Appointment',
+          `${conflict.reason || 'An exact time conflict exists with another appointment.'}`,
+        );
+        setBookingLoading(false);
+        return;
+      }
+
+      // Warn but allow near conflicts
+      if (conflict.hasWarning) {
+        Alert.alert(
+          'Time Conflict Warning',
+          `${conflict.reason || 'There is a near-time conflict. Proceed anyway?'}`,
+          [
+            { text: 'Cancel', onPress: () => setBookingLoading(false), style: 'cancel' },
+            {
+              text: 'Proceed',
+              onPress: async () => {
+                await proceedWithBooking(dateObj, vetId);
+                setBookingLoading(false);
+              },
+            },
+          ],
+        );
+        return;
+      }
+
+      // No conflicts, proceed with booking
+      await proceedWithBooking(dateObj, vetId);
+      setBookingLoading(false);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to check conflicts. Please try again.');
+      setBookingLoading(false);
+    }
+  };
+
+  const proceedWithBooking = async (dateObj: Date, vetId: string) => {
     const appt: Appointment = {
       id: uuid(),
       petId: form.petId.trim() || uuid(),
-      vetId: 'temp-vet-id', // Required field
+      vetId,
       petName: form.petName.trim(),
       title: form.title.trim(),
       date: dateObj.toISOString(),
       time: dateObj.toTimeString().slice(0, 5), // Required HH:MM format
       type: 'ROUTINE_CHECKUP' as Appointment['type'],
+      durationMinutes: 30,
       location: form.location.trim() || undefined,
       vetName: form.vetName.trim() || undefined,
       notes: form.notes.trim() || undefined,
@@ -97,6 +173,7 @@ const AppointmentScreen: React.FC = () => {
 
     await saveAppointment(appt);
     setForm(EMPTY_FORM);
+    setConflictState(null);
     setBookingVisible(false);
     await load();
   };
@@ -226,12 +303,20 @@ const AppointmentScreen: React.FC = () => {
       <Modal
         visible={bookingVisible}
         animationType="slide"
-        onRequestClose={() => setBookingVisible(false)}
+        onRequestClose={() => {
+          setBookingVisible(false);
+          setConflictState(null);
+        }}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Book Appointment</Text>
-            <TouchableOpacity onPress={() => setBookingVisible(false)}>
+            <TouchableOpacity
+              onPress={() => {
+                setBookingVisible(false);
+                setConflictState(null);
+              }}
+            >
               <Text style={styles.modalClose}>✕</Text>
             </TouchableOpacity>
           </View>
@@ -258,8 +343,56 @@ const AppointmentScreen: React.FC = () => {
                 />
               </View>
             ))}
-            <TouchableOpacity style={styles.primaryBtn} onPress={() => void handleBook()}>
-              <Text style={styles.primaryBtnText}>Confirm Booking</Text>
+
+            {/* Conflict warning banner */}
+            {conflictState && conflictState.conflicts.length > 0 && (
+              <View
+                style={[
+                  styles.warningBanner,
+                  conflictState.canSave
+                    ? styles.warningBannerYellow
+                    : styles.warningBannerRed,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.warningBannerTitle,
+                    conflictState.canSave
+                      ? styles.warningBannerTitleYellow
+                      : styles.warningBannerTitleRed,
+                  ]}
+                >
+                  {conflictState.canSave ? '⚠️ Time Conflict' : '❌ Cannot Book'}
+                </Text>
+                <Text style={styles.warningBannerText}>{conflictState.reason}</Text>
+
+                {/* Show conflicting appointment details */}
+                {conflictState.conflicts.map((conflict, idx) => (
+                  <View key={idx} style={styles.conflictDetail}>
+                    <Text style={styles.conflictDetailLabel}>
+                      {conflict.type === 'exact' ? 'Exact conflict:' : 'Near conflict:'}
+                    </Text>
+                    <Text style={styles.conflictDetailValue}>
+                      {conflict.appointment.petName || 'Unknown pet'} on{' '}
+                      {conflict.appointment.date} at {conflict.appointment.time}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={[
+                styles.primaryBtn,
+                (bookingLoading || (conflictState && !conflictState.canSave)) &&
+                  styles.primaryBtnDisabled,
+              ]}
+              onPress={() => void handleBook()}
+              disabled={bookingLoading || (conflictState && !conflictState.canSave)}
+            >
+              <Text style={styles.primaryBtnText}>
+                {bookingLoading ? 'Booking...' : 'Confirm Booking'}
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -445,6 +578,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  primaryBtnDisabled: { backgroundColor: '#9CA3AF', opacity: 0.6 },
   dangerBtn: {
     borderWidth: 1,
     borderColor: '#EF4444',
@@ -456,6 +590,21 @@ const styles = StyleSheet.create({
   dangerBtnText: { color: '#EF4444', fontWeight: '600', fontSize: 15 },
   secondaryBtn: { paddingVertical: 12, alignItems: 'center', marginTop: 8 },
   secondaryBtnText: { color: '#6B7280', fontSize: 14 },
+  // Warning banner
+  warningBanner: { borderRadius: 10, padding: 14, marginBottom: 16 },
+  warningBannerRed: { backgroundColor: '#FEE2E2', borderLeftWidth: 4, borderLeftColor: '#EF4444' },
+  warningBannerYellow: {
+    backgroundColor: '#FEF3C7',
+    borderLeftWidth: 4,
+    borderLeftColor: '#F59E0B',
+  },
+  warningBannerTitle: { fontWeight: '700', fontSize: 14, marginBottom: 6 },
+  warningBannerTitleRed: { color: '#991B1B' },
+  warningBannerTitleYellow: { color: '#92400E' },
+  warningBannerText: { fontSize: 13, color: '#6B7280', marginBottom: 8 },
+  conflictDetail: { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.1)' },
+  conflictDetailLabel: { fontSize: 12, fontWeight: '600', color: '#374151', marginBottom: 4 },
+  conflictDetailValue: { fontSize: 12, color: '#6B7280' },
   detailRow: {
     flexDirection: 'row',
     paddingVertical: 12,
